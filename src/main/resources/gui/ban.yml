@@ -1,0 +1,129 @@
+title: "&c&lBan Menu &8| &7{player}" #dont change
+size: 45
+
+settings:
+  title: "&c&lBan Menu &8| &7{player}" #dont change
+  size: 45
+
+items:
+  hacking:
+    material: REDSTONE
+    slot: 10
+    name: "&c&lHacking/Cheating"
+    lore:
+      - "&7Reason: &cUsing unauthorized modifications"
+      - "&7or exploits to gain unfair advantage"
+      - ""
+      - "&c&l⚠ &cClick to ban permanently"
+    action: "execute_punishment:BAN:Hacking/Cheating - Using unauthorized modifications"
+  
+  griefing:
+    material: TNT
+    slot: 11
+    name: "&c&lGriefing"
+    lore:
+      - "&7Reason: &cDestroying or damaging"
+      - "&7other players' builds without permission"
+      - ""
+      - "&c&l⚠ &cClick to ban permanently"
+    action: "execute_punishment:BAN:Griefing - Destroying other players' builds"
+  
+  harassment:
+    material: IRON_SWORD
+    slot: 12
+    name: "&c&lHarassment"
+    lore:
+      - "&7Reason: &cRepeated harassment"
+      - "&7or bullying of other players"
+      - ""
+      - "&c&l⚠ &cClick to ban permanently"
+    action: "execute_punishment:BAN:Harassment - Repeated bullying of other players"
+  
+  doxxing:
+    material: PAPER
+    slot: 13
+    name: "&4&lDoxxing/Personal Info"
+    lore:
+      - "&7Reason: &4Sharing personal information"
+      - "&7of other players without consent"
+      - ""
+      - "&4&l⚠ &4Click to ban permanently"
+    action: "execute_punishment:BAN:Doxxing - Sharing personal information without consent"
+  
+  advertising:
+    material: SIGN
+    slot: 14
+    name: "&c&lAdvertising"
+    lore:
+      - "&7Reason: &cAdvertising other servers"
+      - "&7or external services repeatedly"
+      - ""
+      - "&c&l⚠ &cClick to ban permanently"
+    action: "execute_punishment:BAN:Advertising - Promoting other servers repeatedly"
+  
+  severe_toxicity:
+    material: WITHER_SKELETON_SKULL
+    slot: 19
+    name: "&4&lSevere Toxicity"
+    lore:
+      - "&7Reason: &4Extreme toxic behavior"
+      - "&7that disrupts the community"
+      - ""
+      - "&4&l⚠ &4Click to ban permanently"
+    action: "execute_punishment:BAN:Severe Toxicity - Extreme disruptive behavior"
+  
+  ban_evasion:
+    material: ENDER_PEARL
+    slot: 20
+    name: "&c&lBan Evasion"
+    lore:
+      - "&7Reason: &cAttempting to evade"
+      - "&7an existing ban using alt accounts"
+      - ""
+      - "&c&l⚠ &cClick to ban permanently"
+    action: "execute_punishment:BAN:Ban Evasion - Using alt accounts to evade punishment"
+  
+  custom:
+    material: WRITABLE_BOOK
+    slot: 21
+    name: "&e&lCustom Reason"
+    lore:
+      - "&7Click to enter a custom reason"
+      - "&7for this permanent ban"
+      - ""
+      - "&e&l✏ &eCustom input required"
+    action: "custom_reason:BAN"
+  
+  back:
+    material: ARROW
+    slot: 36
+    name: "&7&l← Back to Main Menu"
+    lore:
+      - "&7Return to the main punishment menu"
+    action: "back"
+  
+  close:
+    material: BARRIER
+    slot: 40
+    name: "&c&lClose Menu"
+    lore:
+      - "&7Click to close this menu"
+    action: "close"
+  
+  glass_pane_1:
+    material: RED_STAINED_GLASS_PANE
+    slots: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    name: " "
+    lore: []
+  
+  glass_pane_2:
+    material: RED_STAINED_GLASS_PANE
+    slots: [27, 28, 29, 30, 31, 32, 33, 34, 35]
+    name: " "
+    lore: []
+  
+  glass_pane_3:
+    material: RED_STAINED_GLASS_PANE
+    slots: [37, 38, 39, 41, 42, 43, 44]
+    name: " "
+    lore: []

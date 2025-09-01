@@ -1,0 +1,76 @@
+package me.wethink.weGuardian.commands;
+
+import me.wethink.weGuardian.WeGuardian;
+import me.wethink.weGuardian.utils.MessageUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class NotesMenuCommand implements CommandExecutor, TabCompleter {
+
+    private final WeGuardian plugin;
+
+    public NotesMenuCommand(WeGuardian plugin) {
+        this.plugin = plugin;
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(MessageUtils.colorize("&cThis command can only be used by players."));
+            return true;
+        }
+
+        Player staff = (Player) sender;
+
+        if (!staff.hasPermission("weguardian.notes")) {
+            staff.sendMessage(MessageUtils.colorize("&cYou don't have permission to use this command."));
+            return true;
+        }
+
+        if (args.length != 1) {
+            staff.sendMessage(MessageUtils.colorize("&cUsage: /notesmenu <player>"));
+            return true;
+        }
+
+        String targetPlayerName = args[0];
+
+        Player targetPlayer = Bukkit.getPlayer(targetPlayerName);
+        if (targetPlayer == null) {
+            if (Bukkit.getOfflinePlayer(targetPlayerName).hasPlayedBefore()) {
+                targetPlayerName = Bukkit.getOfflinePlayer(targetPlayerName).getName();
+            } else {
+                staff.sendMessage(MessageUtils.colorize("&cPlayer '" + targetPlayerName + "' not found."));
+                return true;
+            }
+        } else {
+            targetPlayerName = targetPlayer.getName();
+        }
+
+        plugin.getPunishmentGUI().getMenuManager().openMenu(staff, targetPlayerName, "notes");
+        return true;
+    }
+
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
+        List<String> completions = new ArrayList<>();
+
+        if (args.length == 1) {
+            String input = args[0].toLowerCase();
+            completions = Bukkit.getOnlinePlayers().stream()
+                    .map(Player::getName)
+                    .filter(name -> name.toLowerCase().startsWith(input))
+                    .collect(Collectors.toList());
+        }
+
+        return completions;
+    }
+}

@@ -1,0 +1,261 @@
+name: WeGuardian
+version: '1.0'
+main: me.wethink.weGuardian.WeGuardian
+api-version: '1.21'
+load: STARTUP
+loadbefore: [ '*' ]
+authors: [ WeThink ]
+description: Next-generation punishment system for Minecraft servers
+website: https://github.com/WeThink/WeGuardian
+softdepend: [ PlaceholderAPI ]
+
+commands:
+  punish:
+    description: Open punishment GUI for a player
+    usage: /punish <player>
+    permission: weguardian.punish
+  ban:
+    description: Permanently ban a player with LibertyBans features
+    usage: /ban <player> <reason> [-s] [-t template] [-d duration]
+    permission: weguardian.ban
+  tempban:
+    description: Temporarily ban a player with LibertyBans features
+    usage: /tempban <player> <duration> <reason> [-s] [-t template]
+    permission: weguardian.tempban
+  mute:
+    description: Permanently mute a player with LibertyBans features
+    usage: /mute <player> <reason> [-s] [-t template] [-d duration] [--ip]
+    permission: weguardian.mute
+  tempmute:
+    description: Temporarily mute a player with LibertyBans features
+    usage: /tempmute <player> <duration> <reason> [-s] [-t template] [--ip]
+    permission: weguardian.tempmute
+  kick:
+    description: Kick a player from the server with LibertyBans features
+    usage: /kick <player> <reason> [-s] [-t template] [--ip]
+    permission: weguardian.kick
+  warn:
+    description: Warn a player
+    usage: /warn <player> <reason>
+    permission: weguardian.warn
+  unban:
+    description: Unban a player
+    usage: /unban <player>
+    permission: weguardian.unban
+  unmute:
+    description: Unmute a player
+    usage: /unmute <player>
+    permission: weguardian.unmute
+  ipban:
+    description: Permanently ban an IP address
+    usage: /ipban <ip> <reason>
+    permission: weguardian.ipban
+  ipmute:
+    description: Permanently mute an IP address
+    usage: /ipmute <ip> <reason>
+    permission: weguardian.ipmute
+  history:
+    description: View punishment history of a player
+    usage: /history <player>
+    permission: weguardian.history
+  checkban:
+    description: Check active punishments for a player
+    usage: /checkban <player>
+    permission: weguardian.checkban
+  notes:
+    description: View or add notes for a player
+    usage: /notes <player> [note]
+    permission: weguardian.notes
+  staffstatus:
+    description: View staff punishment statistics
+    usage: /staffstatus <staff>
+    permission: weguardian.staffstatus
+  stats:
+    description: View global punishment statistics
+    usage: /stats
+    permission: weguardian.stats
+  rollback:
+    description: Rollback a punishment by ID
+    usage: /rollback <id>
+    permission: weguardian.rollback
+  weguardian:
+    description: Main WeGuardian command
+    usage: /weguardian <reload|about|version>
+    permission: weguardian.admin
+    aliases: [ wg ]
+  banlist:
+    description: List all active bans with pagination and filtering
+    usage: /banlist [page] [--ip] [--filter <text>] [--page <number>]
+    permission: weguardian.banlist
+  mutelist:
+    description: List all active mutes with pagination and filtering
+    usage: /mutelist [page] [--ip] [--filter <text>] [--page <number>]
+    permission: weguardian.mutelist
+  blame:
+    description: Show detailed information about who issued a punishment
+    usage: /blame <punishment_id>
+    permission: weguardian.blame
+  alts:
+    description: Check for alt accounts of a player
+    usage: /alts <player> [--strict] [--punished]
+    permission: weguardian.alts
+  warns:
+    description: View all warnings for a player
+    usage: /warns <player> [page]
+    permission: weguardian.warns
+  unwarn:
+    description: Remove a specific warning by ID
+    usage: /unwarn <warning_id> [reason]
+    permission: weguardian.unwarn
+  banmenu:
+    description: Open ban menu GUI for a player
+    usage: /banmenu <player>
+    permission: weguardian.ban
+  tempbanmenu:
+    description: Open tempban menu GUI for a player
+    usage: /tempbanmenu <player>
+    permission: weguardian.tempban
+  mutemenu:
+    description: Open mute menu GUI for a player
+    usage: /mutemenu <player>
+    permission: weguardian.mute
+  tempmutemenu:
+    description: Open tempmute menu GUI for a player
+    usage: /tempmutemenu <player>
+    permission: weguardian.tempmute
+  kickmenu:
+    description: Open kick menu GUI for a player
+    usage: /kickmenu <player>
+    permission: weguardian.kick
+  warnmenu:
+    description: Open warn menu GUI for a player
+    usage: /warnmenu <player>
+    permission: weguardian.warn
+  notesmenu:
+    description: Open notes menu GUI for a player
+    usage: /notesmenu <player>
+    permission: weguardian.notes
+  unbanmenu:
+    description: Open unban menu GUI for a player
+    usage: /unbanmenu <player>
+    permission: weguardian.unban
+  unmutemenu:
+    description: Open unmute menu GUI for a player
+    usage: /unmutemenu <player>
+    permission: weguardian.unmute
+
+permissions:
+  weguardian.*:
+    description: Access to all WeGuardian features
+    children:
+      weguardian.punish: true
+      weguardian.ban: true
+      weguardian.tempban: true
+      weguardian.mute: true
+      weguardian.tempmute: true
+      weguardian.kick: true
+      weguardian.warn: true
+      weguardian.unban: true
+      weguardian.unmute: true
+      weguardian.history: true
+      weguardian.checkban: true
+      weguardian.notes: true
+      weguardian.staffstatus: true
+      weguardian.stats: true
+      weguardian.rollback: true
+      weguardian.admin: true
+      weguardian.bypass: true
+      weguardian.notify: true
+      weguardian.reload: true
+      weguardian.ipban: true
+      weguardian.ipmute: true
+      weguardian.banlist: true
+      weguardian.mutelist: true
+      weguardian.blame: true
+      weguardian.alts: true
+      weguardian.warns: true
+      weguardian.unwarn: true
+  weguardian.punish:
+    description: Access to punishment GUI
+    default: op
+  weguardian.ban:
+    description: Ban players
+    default: op
+  weguardian.tempban:
+    description: Temporarily ban players
+    default: op
+  weguardian.mute:
+    description: Mute players
+    default: op
+  weguardian.tempmute:
+    description: Temporarily mute players
+    default: op
+  weguardian.kick:
+    description: Kick players
+    default: op
+  weguardian.warn:
+    description: Warn players
+    default: op
+  weguardian.unban:
+    description: Unban players
+    default: op
+  weguardian.unmute:
+    description: Unmute players
+    default: op
+  weguardian.history:
+    description: View punishment history
+    default: op
+  weguardian.checkban:
+    description: Check active punishments
+    default: op
+  weguardian.notes:
+    description: Manage player notes
+    default: op
+  weguardian.staffstatus:
+    description: View staff statistics
+    default: op
+  weguardian.stats:
+    description: View global statistics
+    default: op
+  weguardian.rollback:
+    description: Rollback punishments
+    default: op
+  weguardian.admin:
+    description: Administrative commands
+    default: op
+  weguardian.reload:
+    description: Reload plugin configuration
+    default: op
+  weguardian.bypass:
+    description: Bypass all punishments
+    default: false
+  weguardian.bypass.override:
+    description: Override punishment bypass protection
+    default: false
+  weguardian.notify:
+    description: Receive punishment notifications
+    default: op
+  weguardian.ipban:
+    description: Ban IP addresses
+    default: op
+  weguardian.ipmute:
+    description: Mute IP addresses
+    default: op
+  weguardian.banlist:
+    description: List all active bans
+    default: op
+  weguardian.mutelist:
+    description: List all active mutes
+    default: op
+  weguardian.blame:
+    description: Show detailed information about who issued a punishment
+    default: op
+  weguardian.alts:
+    description: Check for alt accounts of a player
+    default: op
+  weguardian.warns:
+    description: View all warnings for a player
+    default: op
+  weguardian.unwarn:
+    description: Remove a specific warning by ID
+    default: op

@@ -1,0 +1,171 @@
+title: "&a&lTempmute Menu &8| &7{player}"
+size: 54
+items:
+  duration_30m:
+    material: CLOCK
+    slot: 10
+    name: "&e&l30 Minutes"
+    lore:
+      - "&7Duration: &e30 minutes"
+      - "&7Click to select this duration"
+      - ""
+      - "&e&l⏰ &eShort temporary mute"
+    action: "set_duration:30m"
+  
+  duration_1h:
+    material: CLOCK
+    slot: 11
+    name: "&e&l1 Hour"
+    lore:
+      - "&7Duration: &e1 hour"
+      - "&7Click to select this duration"
+      - ""
+      - "&e&l⏰ &eTemporary mute"
+    action: "set_duration:1h"
+  
+  duration_6h:
+    material: CLOCK
+    slot: 12
+    name: "&e&l6 Hours"
+    lore:
+      - "&7Duration: &e6 hours"
+      - "&7Click to select this duration"
+      - ""
+      - "&e&l⏰ &eTemporary mute"
+    action: "set_duration:6h"
+  
+  duration_1d:
+    material: CLOCK
+    slot: 13
+    name: "&6&l1 Day"
+    lore:
+      - "&7Duration: &61 day"
+      - "&7Click to select this duration"
+      - ""
+      - "&6&l⏰ &6Temporary mute"
+    action: "set_duration:1d"
+  
+  duration_3d:
+    material: CLOCK
+    slot: 14
+    name: "&6&l3 Days"
+    lore:
+      - "&7Duration: &63 days"
+      - "&7Click to select this duration"
+      - ""
+      - "&6&l⏰ &6Temporary mute"
+    action: "set_duration:3d"
+  
+  duration_7d:
+    material: CLOCK
+    slot: 15
+    name: "&c&l1 Week"
+    lore:
+      - "&7Duration: &c7 days"
+      - "&7Click to select this duration"
+      - ""
+      - "&c&l⏰ &cLong temporary mute"
+    action: "set_duration:7d"
+  
+  duration_30d:
+    material: CLOCK
+    slot: 16
+    name: "&4&l1 Month"
+    lore:
+      - "&7Duration: &430 days"
+      - "&7Click to select this duration"
+      - ""
+      - "&4&l⏰ &4Very long temporary mute"
+    action: "set_duration:30d"
+  
+  toxicity:
+    material: IRON_SWORD
+    slot: 19
+    name: "&a&lToxic Behavior"
+    lore:
+      - "&7Reason: &aToxic behavior in chat"
+      - "&7Duration: &e{selected_duration}"
+      - ""
+      - "&a&l⚠ &aClick to tempmute"
+    action: "execute_punishment:TEMPMUTE:Toxic Behavior - Inappropriate language in chat:{selected_duration}"
+  
+  spam:
+    material: PAPER
+    slot: 20
+    name: "&a&lSpamming"
+    lore:
+      - "&7Reason: &aExcessive chat spam"
+      - "&7Duration: &e{selected_duration}"
+      - ""
+      - "&a&l⚠ &aClick to tempmute"
+    action: "execute_punishment:TEMPMUTE:Spamming - Excessive chat spam:{selected_duration}"
+  
+  caps_spam:
+    material: NAME_TAG
+    slot: 21
+    name: "&a&lExcessive Caps"
+    lore:
+      - "&7Reason: &aShouting in chat repeatedly"
+      - "&7Duration: &e{selected_duration}"
+      - ""
+      - "&a&l⚠ &aClick to tempmute"
+    action: "execute_punishment:TEMPMUTE:Excessive Caps - Shouting in chat repeatedly:{selected_duration}"
+  
+  minor_toxicity:
+    material: YELLOW_CONCRETE
+    slot: 22
+    name: "&e&lMinor Inappropriate Language"
+    lore:
+      - "&7Reason: &eMinor inappropriate language"
+      - "&7Duration: &e{selected_duration}"
+      - ""
+      - "&e&l⚠ &eClick to tempmute"
+    action: "execute_punishment:TEMPMUTE:Minor Inappropriate Language - Mild chat violations:{selected_duration}"
+  
+  advertising:
+    material: SIGN
+    slot: 23
+    name: "&a&lAdvertising"
+    lore:
+      - "&7Reason: &aAdvertising other servers"
+      - "&7Duration: &e{selected_duration}"
+      - ""
+      - "&a&l⚠ &aClick to tempmute"
+    action: "execute_punishment:TEMPMUTE:Advertising - Promoting other servers:{selected_duration}"
+  
+  custom:
+    material: WRITABLE_BOOK
+    slot: 24
+    name: "&e&lCustom Reason"
+    lore:
+      - "&7Click to enter a custom reason"
+      - "&7Duration: &e{selected_duration}"
+      - ""
+      - "&e&l✏ &eCustom input required"
+    action: "custom_reason:TEMPMUTE:{selected_duration}"
+  
+  back:
+    material: ARROW
+    slot: 45
+    name: "&7&l← Back to Main Menu"
+    lore:
+      - "&7Return to the main punishment menu"
+    action: "back"
+  
+  close:
+    material: BARRIER
+    slot: 49
+    name: "&c&lClose Menu"
+    lore:
+      - "&7Click to close this menu"
+    action: "close"
+  
+  status:
+    material: LIME_CONCRETE
+    slot: 53
+    name: "&a&lSelected Duration"
+    lore:
+      - "&7Current: &e{selected_duration}"
+      - ""
+      - "&a&l✓ &aSelect duration first, then reason"
+    action: "none"

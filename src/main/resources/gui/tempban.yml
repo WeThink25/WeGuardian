@@ -1,0 +1,151 @@
+title: "&6&lTempban Menu &8| &7{player}" #dont change
+size: 45
+
+settings:
+  title: "&6&lTempban Menu &8| &7{player}" #dont change
+  size: 45
+
+items:
+  tempban_1h:
+    material: CLOCK
+    slot: 10
+    name: "&6&l1 Hour Ban"
+    lore:
+      - "&7Duration: &61 hour"
+      - "&7Choose reason on next screen"
+      - ""
+      - "&e&l⏰ &eClick to select duration"
+    action: "select_duration:1h"
+  
+  tempban_6h:
+    material: CLOCK
+    slot: 11
+    name: "&6&l6 Hour Ban"
+    lore:
+      - "&7Duration: &66 hours"
+      - "&7Choose reason on next screen"
+      - ""
+      - "&e&l⏰ &eClick to select duration"
+    action: "select_duration:6h"
+  
+  tempban_1d:
+    material: CLOCK
+    slot: 12
+    name: "&6&l1 Day Ban"
+    lore:
+      - "&7Duration: &61 day"
+      - "&7Choose reason on next screen"
+      - ""
+      - "&e&l⏰ &eClick to select duration"
+    action: "select_duration:1d"
+  
+  tempban_3d:
+    material: CLOCK
+    slot: 13
+    name: "&6&l3 Day Ban"
+    lore:
+      - "&7Duration: &63 days"
+      - "&7Choose reason on next screen"
+      - ""
+      - "&e&l⏰ &eClick to select duration"
+    action: "select_duration:3d"
+  
+  tempban_1w:
+    material: CLOCK
+    slot: 14
+    name: "&6&l1 Week Ban"
+    lore:
+      - "&7Duration: &61 week"
+      - "&7Choose reason on next screen"
+      - ""
+      - "&e&l⏰ &eClick to select duration"
+    action: "select_duration:1w"
+  
+  tempban_1m:
+    material: CLOCK
+    slot: 19
+    name: "&6&l1 Month Ban"
+    lore:
+      - "&7Duration: &61 month"
+      - "&7Choose reason on next screen"
+      - ""
+      - "&e&l⏰ &eClick to select duration"
+    action: "select_duration:1m"
+  
+  tempban_grief_1d:
+    material: TNT
+    slot: 21
+    name: "&c&lGriefing - 1 Day"
+    lore:
+      - "&7Reason: &cGriefing/Destroying builds"
+      - "&7Duration: &61 day"
+      - ""
+      - "&c&l⚠ &cClick to tempban immediately"
+    action: "execute_punishment:TEMPBAN:Griefing - Destroying other players' builds:1d"
+  
+  tempban_hack_1w:
+    material: REDSTONE
+    slot: 22
+    name: "&c&lHacking - 1 Week"
+    lore:
+      - "&7Reason: &cHacking/Cheating"
+      - "&7Duration: &61 week"
+      - ""
+      - "&c&l⚠ &cClick to tempban immediately"
+    action: "execute_punishment:TEMPBAN:Hacking/Cheating - Using unauthorized modifications:1w"
+  
+  tempban_toxic_3d:
+    material: WITHER_SKELETON_SKULL
+    slot: 23
+    name: "&c&lToxicity - 3 Days"
+    lore:
+      - "&7Reason: &cToxic behavior"
+      - "&7Duration: &63 days"
+      - ""
+      - "&c&l⚠ &cClick to tempban immediately"
+    action: "execute_punishment:TEMPBAN:Toxic Behavior - Disruptive behavior towards community:3d"
+  
+  custom:
+    material: WRITABLE_BOOK
+    slot: 25
+    name: "&e&lCustom Tempban"
+    lore:
+      - "&7Click to enter custom reason"
+      - "&7and duration for tempban"
+      - ""
+      - "&e&l✏ &eCustom input required"
+    action: "custom_reason:TEMPBAN"
+  
+  back:
+    material: ARROW
+    slot: 36
+    name: "&7&l← Back to Main Menu"
+    lore:
+      - "&7Return to the main punishment menu"
+    action: "back"
+  
+  close:
+    material: BARRIER
+    slot: 40
+    name: "&c&lClose Menu"
+    lore:
+      - "&7Click to close this menu"
+    action: "close"
+  
+  glass_pane_1:
+    material: ORANGE_STAINED_GLASS_PANE
+    slots: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    name: " "
+    lore: []
+  
+  glass_pane_2:
+    material: ORANGE_STAINED_GLASS_PANE
+    slots: [27, 28, 29, 30, 31, 32, 33, 34, 35]
+    name: " "
+    lore: []
+  
+  glass_pane_3:
+    material: ORANGE_STAINED_GLASS_PANE
+    slots: [37, 38, 39, 41, 42, 43, 44]
+    name: " "
+    lore: []

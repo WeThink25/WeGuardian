@@ -1,0 +1,238 @@
+# WeGuardian Punishment Templates Configuration
+# This file defines punishment templates with escalation levels for automated punishment progression
+# Templates allow for consistent punishment escalation based on offense history
+
+templates:
+  spam:
+    category: "chat"
+    enabled: true
+    escalation:
+      1:
+        type: "WARN"
+        reason: "Spamming in chat - First offense"
+      2:
+        type: "TEMPMUTE"
+        duration: "10m"
+        reason: "Spamming in chat - Second offense"
+      3:
+        type: "TEMPMUTE"
+        duration: "1h"
+        reason: "Spamming in chat - Third offense"
+      4:
+        type: "TEMPBAN"
+        duration: "1d"
+        reason: "Spamming in chat - Final warning"
+      5:
+        type: "BAN"
+        reason: "Spamming in chat - Permanent ban"
+
+  toxicity:
+    category: "chat"
+    enabled: true
+    escalation:
+      1:
+        type: "WARN"
+        reason: "Toxic behavior in chat - First warning"
+      2:
+        type: "TEMPMUTE"
+        duration: "30m"
+        reason: "Toxic behavior in chat - Second offense"
+      3:
+        type: "TEMPMUTE"
+        duration: "3h"
+        reason: "Toxic behavior in chat - Third offense"
+      4:
+        type: "TEMPBAN"
+        duration: "3d"
+        reason: "Toxic behavior - Temporary ban"
+      5:
+        type: "BAN"
+        reason: "Toxic behavior - Permanent ban"
+
+  advertising:
+    category: "chat"
+    enabled: true
+    escalation:
+      1:
+        type: "WARN"
+        reason: "Advertising other servers - First warning"
+      2:
+        type: "TEMPMUTE"
+        duration: "1h"
+        reason: "Advertising other servers - Second offense"
+      3:
+        type: "TEMPBAN"
+        duration: "1d"
+        reason: "Advertising other servers - Temporary ban"
+      4:
+        type: "BAN"
+        reason: "Advertising other servers - Permanent ban"
+
+  griefing:
+    category: "gameplay"
+    enabled: true
+    escalation:
+      1:
+        type: "WARN"
+        reason: "Griefing - First offense"
+      2:
+        type: "TEMPBAN"
+        duration: "6h"
+        reason: "Griefing - Second offense"
+      3:
+        type: "TEMPBAN"
+        duration: "3d"
+        reason: "Griefing - Third offense"
+      4:
+        type: "BAN"
+        reason: "Griefing - Permanent ban"
+
+  stealing:
+    category: "gameplay"
+    enabled: true
+    escalation:
+      1:
+        type: "WARN"
+        reason: "Stealing from other players - First warning"
+      2:
+        type: "TEMPBAN"
+        duration: "12h"
+        reason: "Stealing from other players - Second offense"
+      3:
+        type: "TEMPBAN"
+        duration: "7d"
+        reason: "Stealing from other players - Third offense"
+      4:
+        type: "BAN"
+        reason: "Stealing from other players - Permanent ban"
+
+  hacking:
+    category: "cheating"
+    enabled: true
+    escalation:
+      1:
+        type: "TEMPBAN"
+        duration: "7d"
+        reason: "Using hacks/cheats - First offense"
+      2:
+        type: "TEMPBAN"
+        duration: "30d"
+        reason: "Using hacks/cheats - Second offense"
+      3:
+        type: "BAN"
+        reason: "Using hacks/cheats - Permanent ban"
+
+  xray:
+    category: "cheating"
+    enabled: true
+    escalation:
+      1:
+        type: "TEMPBAN"
+        duration: "3d"
+        reason: "X-Ray usage - First offense"
+      2:
+        type: "TEMPBAN"
+        duration: "14d"
+        reason: "X-Ray usage - Second offense"
+      3:
+        type: "BAN"
+        reason: "X-Ray usage - Permanent ban"
+
+  staff_disrespect:
+    category: "conduct"
+    enabled: true
+    escalation:
+      1:
+        type: "WARN"
+        reason: "Disrespecting staff members - First warning"
+      2:
+        type: "TEMPMUTE"
+        duration: "1h"
+        reason: "Disrespecting staff members - Second offense"
+      3:
+        type: "TEMPBAN"
+        duration: "1d"
+        reason: "Disrespecting staff members - Third offense"
+      4:
+        type: "TEMPBAN"
+        duration: "7d"
+        reason: "Disrespecting staff members - Final warning"
+      5:
+        type: "BAN"
+        reason: "Disrespecting staff members - Permanent ban"
+
+  ban_evasion:
+    category: "evasion"
+    enabled: true
+    escalation:
+      1:
+        type: "BAN"
+        reason: "Ban evasion - Permanent ban"
+
+  mute_evasion:
+    category: "evasion"
+    enabled: true
+    escalation:
+      1:
+        type: "TEMPBAN"
+        duration: "1d"
+        reason: "Mute evasion - Temporary ban"
+      2:
+        type: "TEMPBAN"
+        duration: "7d"
+        reason: "Mute evasion - Extended ban"
+      3:
+        type: "BAN"
+        reason: "Mute evasion - Permanent ban"
+
+  caps:
+    category: "chat"
+    enabled: true
+    escalation:
+      1:
+        type: "WARN"
+        reason: "Excessive caps usage - Please use normal text"
+      2:
+        type: "TEMPMUTE"
+        duration: "5m"
+        reason: "Excessive caps usage - Second offense"
+      3:
+        type: "TEMPMUTE"
+        duration: "30m"
+        reason: "Excessive caps usage - Third offense"
+
+  swearing:
+    category: "chat"
+    enabled: true
+    escalation:
+      1:
+        type: "WARN"
+        reason: "Inappropriate language - First warning"
+      2:
+        type: "TEMPMUTE"
+        duration: "15m"
+        reason: "Inappropriate language - Second offense"
+      3:
+        type: "TEMPMUTE"
+        duration: "2h"
+        reason: "Inappropriate language - Third offense"
+      4:
+        type: "TEMPBAN"
+        duration: "12h"
+        reason: "Inappropriate language - Temporary ban"
+
+# Template configuration
+settings:
+  auto_escalation: true
+  
+  # How long to consider previous offenses (in days)
+  offense_expiry_days: 90
+  
+  count_active_only: false
+  
+  notify_staff: true
+  
+  variables:
+    server_name: "Our Server"
+    appeal_url: "https://example.com/appeal"
+    rules_url: "https://example.com/rules"

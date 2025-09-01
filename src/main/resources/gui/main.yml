@@ -1,0 +1,236 @@
+title: "&c&lWeGuardian &8| &7Punishment Center - {player}" #dont change
+size: 54
+
+settings:
+  title: "&c&lWeGuardian &8| &7Punishment Center - {player}" #dont change
+  size: 54
+
+items:
+  # === PUNISHMENT CATEGORIES ===
+  
+  ban_menu:
+    material: RED_CONCRETE
+    slot: 10
+    name: "&c&lBan Menu"
+    lore:
+      - "&7Permanent player bans"
+      - "&7Choose from various ban reasons"
+      - ""
+      - "&c&l⚠ &cPermanent punishment"
+      - "&7Click to open ban menu"
+    action: "open_menu"
+    menu_type: "ban"
+  
+  tempban_menu:
+    material: ORANGE_CONCRETE
+    slot: 11
+    name: "&6&lTempban Menu"
+    lore:
+      - "&7Temporary player bans"
+      - "&7Select duration and reason"
+      - ""
+      - "&e&l⏰ &eTemporary punishment"
+      - "&7Click to open tempban menu"
+    action: "open_menu"
+    menu_type: "tempban"
+  
+  mute_menu:
+    material: YELLOW_CONCRETE
+    slot: 12
+    name: "&e&lMute Menu"
+    lore:
+      - "&7Permanent player mutes"
+      - "&7Choose from various mute reasons"
+      - ""
+      - "&c&l⚠ &cPermanent punishment"
+      - "&7Click to open mute menu"
+    action: "open_menu"
+    menu_type: "mute"
+  
+  tempmute_menu:
+    material: LIME_CONCRETE
+    slot: 13
+    name: "&a&lTempmute Menu"
+    lore:
+      - "&7Temporary player mutes"
+      - "&7Select duration and reason"
+      - ""
+      - "&e&l⏰ &eTemporary punishment"
+      - "&7Click to open tempmute menu"
+    action: "open_menu"
+    menu_type: "tempmute"
+  
+  kick_menu:
+    material: LIGHT_BLUE_CONCRETE
+    slot: 14
+    name: "&b&lKick Menu"
+    lore:
+      - "&7Remove player from server"
+      - "&7Choose from various kick reasons"
+      - ""
+      - "&b&l⚡ &bImmediate action"
+      - "&7Click to open kick menu"
+    action: "open_menu"
+    menu_type: "kick"
+  
+  warn_menu:
+    material: PURPLE_CONCRETE
+    slot: 15
+    name: "&d&lWarn Menu"
+    lore:
+      - "&7Issue warnings to players"
+      - "&7Choose from various warning reasons"
+      - ""
+      - "&d&l📝 &dWarning only"
+      - "&7Click to open warn menu"
+    action: "open_menu"
+    menu_type: "warn"
+  
+  # === MANAGEMENT ACTIONS ===
+  
+  unban_menu:
+    material: GREEN_CONCRETE
+    slot: 19
+    name: "&2&lUnban Menu"
+    lore:
+      - "&7Remove active ban from player"
+      - "&7Requires confirmation"
+      - ""
+      - "&2&l✓ &aReversible action"
+      - "&7Click to open unban menu"
+    action: "open_menu"
+    menu_type: "unban"
+  
+  unmute_menu:
+    material: CYAN_CONCRETE
+    slot: 20
+    name: "&3&lUnmute Menu"
+    lore:
+      - "&7Remove active mute from player"
+      - "&7Requires confirmation"
+      - ""
+      - "&3&l✓ &bReversible action"
+      - "&7Click to open unmute menu"
+    action: "open_menu"
+    menu_type: "unmute"
+  
+  # === INFORMATION ACTIONS ===
+  
+  history:
+    material: WRITABLE_BOOK
+    slot: 22
+    name: "&f&lPunishment History"
+    lore:
+      - "&7View player's punishment history"
+      - "&7Shows all past punishments"
+      - ""
+      - "&f&l📋 &fInformation only"
+      - "&7Click to view history"
+    action: "history"
+  
+  checkban:
+    material: COMPASS
+    slot: 23
+    name: "&e&lCheck Ban Status"
+    lore:
+      - "&7Check if player is banned"
+      - "&7Shows active ban details"
+      - ""
+      - "&e&l🔍 &eInformation only"
+      - "&7Click to check status"
+    action: "checkban"
+  
+  notes_menu:
+    material: MAP
+    slot: 24
+    name: "&6&lPlayer Notes"
+    lore:
+      - "&7View or add staff notes"
+      - "&7Manage player information"
+      - ""
+      - "&6&l📝 &6Staff only"
+      - "&7Click to open notes menu"
+    action: "open_menu"
+    menu_type: "notes"
+  
+  # === TEMPLATE ACTIONS ===
+  
+  template_spam:
+    material: PAPER
+    slot: 28
+    name: "&9&lTemplate: Spam"
+    lore:
+      - "&7Use spam punishment template"
+      - "&7Auto-escalates based on history"
+      - ""
+      - "&9&l⚙ &9Smart punishment"
+      - "&7Click to apply template"
+    action: "template"
+    template: "spam"
+  
+  template_toxicity:
+    material: PAPER
+    slot: 29
+    name: "&9&lTemplate: Toxicity"
+    lore:
+      - "&7Use toxicity punishment template"
+      - "&7Auto-escalates based on history"
+      - ""
+      - "&9&l⚙ &9Smart punishment"
+      - "&7Click to apply template"
+    action: "template"
+    template: "toxicity"
+  
+  template_hacking:
+    material: PAPER
+    slot: 30
+    name: "&9&lTemplate: Hacking"
+    lore:
+      - "&7Use hacking punishment template"
+      - "&7Auto-escalates based on history"
+      - ""
+      - "&9&l⚙ &9Smart punishment"
+      - "&7Click to apply template"
+    action: "template"
+    template: "hacking"
+  
+  # === NAVIGATION ===
+  
+  close:
+    material: BARRIER
+    slot: 49
+    name: "&c&lClose Menu"
+    lore:
+      - "&7Close punishment menu"
+    action: "close"
+  
+  # === DECORATIVE ITEMS ===
+  
+  glass_border_1:
+    material: BLACK_STAINED_GLASS_PANE
+    slots: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    name: " "
+    lore: []
+  
+  glass_border_2:
+    material: BLACK_STAINED_GLASS_PANE
+    slots: [9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 50, 51, 52, 53]
+    name: " "
+    lore: []
+  
+  glass_border_3:
+    material: GRAY_STAINED_GLASS_PANE
+    slots: [16, 25, 34, 43]
+    name: " "
+    lore: []
+  
+  player_info:
+    material: PLAYER_HEAD
+    slot: 4
+    name: "&f&lTarget: &a{player}"
+    lore:
+      - "&7Select a punishment type below"
+      - "&7to open the corresponding menu."
+      - ""
+      - "&e&l⚠ &eAll actions are logged"
+    skull-owner: "{player}"

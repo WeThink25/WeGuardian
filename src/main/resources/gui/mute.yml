@@ -1,0 +1,126 @@
+settings:
+  title: "&e&lMute Menu &8| &7{player}" #dont change
+  size: 45
+
+items:
+  spam:
+    material: PAPER
+    slot: 10
+    name: "&e&lSpam"
+    lore:
+      - "&7Reason: &eRepeated spam messages"
+      - "&7or excessive chat flooding"
+      - ""
+      - "&c&l⚠ &cClick to mute permanently"
+    action: "execute_punishment:MUTE:Spam - Repeated spam messages"
+  
+  inappropriate_language:
+    material: WRITABLE_BOOK
+    slot: 11
+    name: "&e&lInappropriate Language"
+    lore:
+      - "&7Reason: &eUsing inappropriate"
+      - "&7or offensive language in chat"
+      - ""
+      - "&c&l⚠ &cClick to mute permanently"
+    action: "execute_punishment:MUTE:Inappropriate Language - Offensive language in chat"
+  
+  toxicity:
+    material: WITHER_SKELETON_SKULL
+    slot: 12
+    name: "&e&lToxic Behavior"
+    lore:
+      - "&7Reason: &eToxic behavior towards"
+      - "&7other players in chat"
+      - ""
+      - "&c&l⚠ &cClick to mute permanently"
+    action: "execute_punishment:MUTE:Toxic Behavior - Toxic behavior towards other players"
+  
+  advertising:
+    material: SIGN
+    slot: 13
+    name: "&e&lAdvertising"
+    lore:
+      - "&7Reason: &eAdvertising other servers"
+      - "&7or external services in chat"
+      - ""
+      - "&c&l⚠ &cClick to mute permanently"
+    action: "execute_punishment:MUTE:Advertising - Promoting other servers in chat"
+  
+  harassment:
+    material: IRON_SWORD
+    slot: 14
+    name: "&e&lHarassment"
+    lore:
+      - "&7Reason: &eHarassing other players"
+      - "&7through chat messages"
+      - ""
+      - "&c&l⚠ &cClick to mute permanently"
+    action: "execute_punishment:MUTE:Harassment - Harassing other players in chat"
+  
+  caps_abuse:
+    material: NAME_TAG
+    slot: 19
+    name: "&e&lCaps Abuse"
+    lore:
+      - "&7Reason: &eExcessive use of"
+      - "&7capital letters in chat"
+      - ""
+      - "&c&l⚠ &cClick to mute permanently"
+    action: "execute_punishment:MUTE:Caps Abuse - Excessive capital letters"
+  
+  chat_abuse:
+    material: BOOK
+    slot: 20
+    name: "&e&lChat Abuse"
+    lore:
+      - "&7Reason: &eGeneral abuse of"
+      - "&7chat system or rules"
+      - ""
+      - "&c&l⚠ &cClick to mute permanently"
+    action: "execute_punishment:MUTE:Chat Abuse - General abuse of chat system"
+  
+  custom:
+    material: WRITABLE_BOOK
+    slot: 21
+    name: "&6&lCustom Reason"
+    lore:
+      - "&7Click to enter a custom reason"
+      - "&7for this permanent mute"
+      - ""
+      - "&6&l✏ &6Custom input required"
+    action: "custom_reason:MUTE"
+  
+  back:
+    material: ARROW
+    slot: 36
+    name: "&7&l← Back to Main Menu"
+    lore:
+      - "&7Return to the main punishment menu"
+    action: "back"
+  
+  close:
+    material: BARRIER
+    slot: 40
+    name: "&c&lClose Menu"
+    lore:
+      - "&7Click to close this menu"
+    action: "close"
+  
+  glass_pane_1:
+    material: YELLOW_STAINED_GLASS_PANE
+    slots: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    name: " "
+    lore: []
+  
+  glass_pane_2:
+    material: YELLOW_STAINED_GLASS_PANE
+    slots: [27, 28, 29, 30, 31, 32, 33, 34, 35]
+    name: " "
+    lore: []
+  
+  glass_pane_3:
+    material: YELLOW_STAINED_GLASS_PANE
+    slots: [37, 38, 39, 41, 42, 43, 44]
+    name: " "
+    lore: []

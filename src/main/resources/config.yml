@@ -1,0 +1,108 @@
+database:
+  type: "yaml"  # YAML file storage only
+  yaml:
+    file: "punishments.yml"
+    backup_interval: 300  # seconds
+    auto_backup: true
+    max_backups: 5
+
+performance:
+  thread_pool_size: 4
+  max_concurrent_operations: 50
+  operation_timeout: 30
+  
+  cache:
+    enabled: true
+    cleanup_interval: 300
+    max_cache_size: 10000
+    expire_after_access: 1800
+    expire_after_write: 3600
+  
+  database:
+    batch_size: 100
+    connection_pool_size: 10
+    prepared_statement_cache_size: 250
+    query_timeout: 15
+  
+  async:
+    enabled: true
+    queue_size: 1000
+    worker_threads: 2
+    retry_attempts: 3
+    retry_delay: 1000
+
+notifications:
+  actionbar_updates: true
+  actionbar_interval: 30
+  chat:
+    format: "&c[WeGuardian] &f{message}"
+    broadcast_permission: "weguardian.notify"
+  
+  performance:
+    batch_notifications: true
+    max_batch_size: 50
+    batch_delay: 100
+
+appeal_url: "your-server.com/appeals"
+
+server_name: "YourServer"
+
+# Console commands to execute on punishment events
+console_commands:
+  enabled: true
+  on_ban:
+    - "broadcast &c{player} has been banned by {staff} for {reason}"
+    - "log punishment ban {player} {staff} {reason}"
+  on_tempban:
+    - "broadcast &c{player} has been temporarily banned by {staff} for {reason}"
+    - "log punishment tempban {player} {staff} {reason} {duration}"
+  on_mute:
+    - "broadcast &6{player} has been muted by {staff} for {reason}"
+    - "log punishment mute {player} {staff} {reason}"
+  on_tempmute:
+    - "broadcast &6{player} has been temporarily muted by {staff} for {reason}"
+    - "log punishment tempmute {player} {staff} {reason} {duration}"
+  on_kick:
+    - "broadcast &e{player} has been kicked by {staff} for {reason}"
+    - "log punishment kick {player} {staff} {reason}"
+  on_warn:
+    - "log punishment warn {player} {staff} {reason}"
+  on_unban:
+    - "broadcast &a{player} has been unbanned by {staff}"
+    - "log punishment unban {player} {staff}"
+  on_unmute:
+    - "broadcast &a{player} has been unmuted by {staff}"
+    - "log punishment unmute {player} {staff}"
+
+# Discord webhook
+discord:
+  enabled: false
+  webhook_url: "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL"
+  username: "WeGuardian"
+  avatar_url: "https://i.imgur.com/your-avatar.png"
+  embed_color: 0xFF0000
+  send_on:
+    ban: true
+    tempban: true
+    mute: true
+    tempmute: true
+    kick: true
+    warn: true
+    unban: true
+    unmute: true
+
+debug:
+  enabled: false
+  log_level: "INFO"
+  log_sql_queries: false
+  log_performance_metrics: false
+  log_cache_statistics: false
+
+features:
+  placeholderapi_integration: true
+  discord_webhooks: false
+  banwave_system: true
+  staff_statistics: true
+  punishment_history: true
+  auto_expire_punishments: true
+  cross_server_sync: false

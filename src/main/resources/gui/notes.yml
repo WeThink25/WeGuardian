@@ -1,0 +1,98 @@
+title: "&f&lPlayer Notes &8| &7{player}" #dont change
+size: 45
+items:
+  add_note:
+    material: WRITABLE_BOOK
+    slot: 10
+    name: "&a&lAdd New Note"
+    lore:
+      - "&7Click to add a new note"
+      - "&7about this player"
+      - ""
+      - "&a&l+ &aStaff information only"
+    action: "add_note"
+  
+  view_notes:
+    material: BOOK
+    slot: 11
+    name: "&e&lView All Notes"
+    lore:
+      - "&7Click to view all existing"
+      - "&7notes for this player"
+      - ""
+      - "&e&l📖 &eRead staff notes"
+    action: "view_notes"
+  
+  search_notes:
+    material: COMPASS
+    slot: 12
+    name: "&b&lSearch Notes"
+    lore:
+      - "&7Click to search through"
+      - "&7notes by keyword or date"
+      - ""
+      - "&b&l🔍 &bFind specific notes"
+    action: "search_notes"
+  
+  recent_notes:
+    material: CLOCK
+    slot: 13
+    name: "&d&lRecent Notes"
+    lore:
+      - "&7View the most recent"
+      - "&75 notes for this player"
+      - ""
+      - "&d&l⏰ &dLatest activity"
+    action: "recent_notes"
+  
+  player_info:
+    material: PLAYER_HEAD
+    slot: 22
+    name: "&f&l{player} Information"
+    lore:
+      - "&7Player: &f{player}"
+      - "&7Total Notes: &e{note_count}"
+      - "&7Last Note: &e{last_note_date}"
+      - ""
+      - "&7Staff notes and observations"
+    action: "none"
+  
+  back:
+    material: ARROW
+    slot: 36
+    name: "&7&l← Back to Main Menu"
+    lore:
+      - "&7Return to the main punishment menu"
+    action: "open_menu:main"
+  
+  close:
+    material: BARRIER
+    slot: 40
+    name: "&c&lClose Menu"
+    lore:
+      - "&7Click to close this menu"
+    action: "close"
+  
+  glass_pane_1:
+    material: WHITE_STAINED_GLASS_PANE
+    slot: 0
+    name: " "
+    lore: []
+  
+  glass_pane_2:
+    material: WHITE_STAINED_GLASS_PANE
+    slot: 8
+    name: " "
+    lore: []
+  
+  glass_pane_3:
+    material: WHITE_STAINED_GLASS_PANE
+    slot: 36
+    name: " "
+    lore: []
+  
+  glass_pane_4:
+    material: WHITE_STAINED_GLASS_PANE
+    slot: 44
+    name: " "
+    lore: []
