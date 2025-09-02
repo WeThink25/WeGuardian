@@ -15,23 +15,23 @@ commands:
     usage: /punish <player>
     permission: weguardian.punish
   ban:
-    description: Permanently ban a player with LibertyBans features
+    description: Permanently ban a player 
     usage: /ban <player> <reason> [-s] [-t template] [-d duration]
     permission: weguardian.ban
   tempban:
-    description: Temporarily ban a player with LibertyBans features
+    description: Temporarily ban a player 
     usage: /tempban <player> <duration> <reason> [-s] [-t template]
     permission: weguardian.tempban
   mute:
-    description: Permanently mute a player with LibertyBans features
+    description: Permanently mute a playee
     usage: /mute <player> <reason> [-s] [-t template] [-d duration] [--ip]
     permission: weguardian.mute
   tempmute:
-    description: Temporarily mute a player with LibertyBans features
+    description: Temporarily mute a player 
     usage: /tempmute <player> <duration> <reason> [-s] [-t template] [--ip]
     permission: weguardian.tempmute
   kick:
-    description: Kick a player from the server with LibertyBans features
+    description: Kick a player from the server
     usage: /kick <player> <reason> [-s] [-t template] [--ip]
     permission: weguardian.kick
   warn:
