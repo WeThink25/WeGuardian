@@ -23,7 +23,7 @@ commands:
     usage: /tempban <player> <duration> <reason> [-s] [-t template]
     permission: weguardian.tempban
   mute:
-    description: Permanently mute a playee
+    description: Permanently mute a player
     usage: /mute <player> <reason> [-s] [-t template] [-d duration] [--ip]
     permission: weguardian.mute
   tempmute:
