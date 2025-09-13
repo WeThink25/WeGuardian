@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,6 +33,8 @@ public class PunishmentService {
     private final ConcurrentHashMap<UUID, Boolean> banCache;
     private final ConcurrentHashMap<UUID, Boolean> muteCache;
     private final ConcurrentHashMap<UUID, String> playerNameCache;
+    private final ConcurrentHashMap<UUID, Long> cacheTimestamps;
+    private final ConcurrentHashMap<String, UUID> nameToUuidCache;
     private final ScheduledExecutorService executorService;
     private final ExecutorService asyncExecutor;
     private final AtomicInteger activeOperations;
@@ -48,6 +49,8 @@ public class PunishmentService {
         this.banCache = new ConcurrentHashMap<>();
         this.muteCache = new ConcurrentHashMap<>();
         this.playerNameCache = new ConcurrentHashMap<>();
+        this.cacheTimestamps = new ConcurrentHashMap<>();
+        this.nameToUuidCache = new ConcurrentHashMap<>();
         this.activeOperations = new AtomicInteger(0);
 
         this.maxConcurrentOperations = plugin.getConfig().getInt("performance.max_concurrent_operations", 50);
@@ -74,14 +77,20 @@ public class PunishmentService {
     }
 
     public CompletableFuture<Boolean> executePunishment(PunishmentType type, String targetName, String staffName, String reason, String duration) {
+        plugin.debug("Executing punishment: type=%s, target=%s, staff=%s, reason=%s, duration=%s", 
+                type, targetName, staffName, reason, duration);
+        
         if (activeOperations.get() >= maxConcurrentOperations) {
+            plugin.debug("Punishment execution rejected: max concurrent operations reached (%d/%d)", 
+                    activeOperations.get(), maxConcurrentOperations);
             return CompletableFuture.completedFuture(false);
         }
 
         return CompletableFuture.supplyAsync(() -> {
             activeOperations.incrementAndGet();
+            plugin.debug("Punishment execution started: active operations now %d", activeOperations.get());
             try {
-                return switch (type) {
+                boolean result = switch (type) {
                     case BAN -> ban(targetName, staffName, reason).join();
                     case TEMPBAN -> tempban(targetName, staffName, reason, duration).join();
                     case MUTE -> mute(targetName, staffName, reason).join();
@@ -92,22 +101,30 @@ public class PunishmentService {
                     case IPMUTE -> ipmute(targetName, staffName, reason).join();
                     default -> false;
                 };
+                plugin.debug("Punishment execution completed: result=%s", result);
+                return result;
             } finally {
                 activeOperations.decrementAndGet();
+                plugin.debug("Punishment execution finished: active operations now %d", activeOperations.get());
             }
         }, asyncExecutor).orTimeout(operationTimeout, TimeUnit.SECONDS);
     }
 
     public CompletableFuture<Boolean> ban(String targetName, String staffName, String reason) {
+        plugin.debug("Starting ban process for player: %s", targetName);
         return executePlayerLookup(targetName).thenCompose(targetUuid -> {
             if (targetUuid == null) {
+                plugin.debug("Ban failed: player not found - %s", targetName);
                 return CompletableFuture.completedFuture(false);
             }
 
             return getPlayerName(targetUuid).thenCompose(finalTargetName -> {
                 UUID staffUuid = getStaffUuid(staffName);
+                plugin.debug("Ban process: targetUuid=%s, finalTargetName=%s, staffUuid=%s", 
+                        targetUuid, finalTargetName, staffUuid);
 
-                if (cacheEnabled && banCache.getOrDefault(targetUuid, false)) {
+                if (cacheEnabled && isCacheValid(targetUuid) && banCache.getOrDefault(targetUuid, false)) {
+                    plugin.debug("Ban skipped: player already banned (cached) - %s", finalTargetName);
                     return CompletableFuture.completedFuture(false);
                 }
 
@@ -118,24 +135,33 @@ public class PunishmentService {
 
                 return database.addPunishment(punishment).thenCompose(punishmentId -> {
                     if (punishmentId > 0) {
+                        plugin.debug("Ban punishment added to database with ID: %d", punishmentId);
                         if (cacheEnabled) {
                             banCache.put(targetUuid, true);
+                            updateCacheTimestamp(targetUuid);
+                            nameToUuidCache.put(finalTargetName.toLowerCase(), targetUuid);
+                            plugin.debug("Ban cache updated for player: %s", finalTargetName);
                         }
 
                         Player targetPlayer = Bukkit.getPlayer(targetUuid);
                         if (targetPlayer != null && targetPlayer.isOnline()) {
+                            plugin.debug("Kicking online player: %s", finalTargetName);
                             String kickMessage = getKickMessage(punishment);
                             Component kickComponent = MessageUtils.toComponent(kickMessage);
-                            Bukkit.getScheduler().runTask(plugin, task -> {
+                            plugin.getFoliaLib().getScheduler().runAtEntity(targetPlayer, task -> {
                                 if (targetPlayer.isOnline()) {
                                     targetPlayer.kick(kickComponent);
                                 }
                             });
+                        } else {
+                            plugin.debug("Player not online, skipping kick: %s", finalTargetName);
                         }
 
                         plugin.getNotificationService().broadcastPunishment(punishment);
+                        plugin.debug("Ban completed successfully for player: %s", finalTargetName);
                         return CompletableFuture.completedFuture(true);
                     }
+                    plugin.debug("Ban failed: could not add punishment to database");
                     return CompletableFuture.completedFuture(false);
                 });
             });
@@ -169,13 +195,15 @@ public class PunishmentService {
                     if (punishmentId > 0) {
                         if (cacheEnabled) {
                             banCache.put(targetUuid, true);
+                            updateCacheTimestamp(targetUuid);
+                            nameToUuidCache.put(finalTargetName.toLowerCase(), targetUuid);
                         }
 
                         Player targetPlayer = Bukkit.getPlayer(targetUuid);
                         if (targetPlayer != null && targetPlayer.isOnline()) {
                             String kickMessage = getKickMessage(punishment);
                             Component kickComponent = MessageUtils.toComponent(kickMessage);
-                            Bukkit.getScheduler().runTask(plugin, task -> {
+                            plugin.getFoliaLib().getScheduler().runAtEntity(targetPlayer, task -> {
                                 if (targetPlayer.isOnline()) {
                                     targetPlayer.kick(kickComponent);
                                 }
@@ -300,7 +328,7 @@ public class PunishmentService {
                         if (targetPlayer != null && targetPlayer.isOnline()) {
                             String kickMessage = getKickMessage(punishment);
                             Component kickComponent = MessageUtils.toComponent(kickMessage);
-                            Bukkit.getScheduler().runTask(plugin, task -> {
+                            plugin.getFoliaLib().getScheduler().runAtEntity(targetPlayer, task -> {
                                 if (targetPlayer.isOnline()) {
                                     targetPlayer.kick(kickComponent);
                                 }
@@ -591,7 +619,7 @@ public class PunishmentService {
     }
 
     public void kickPlayersWithIP(String ipAddress, Punishment punishment) {
-        Bukkit.getScheduler().runTask(plugin, task -> {
+        plugin.getFoliaLib().getScheduler().runNextTick(task -> {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 InetSocketAddress address = player.getAddress();
                 if (address != null && address.getAddress().getHostAddress().equals(ipAddress)) {
@@ -604,7 +632,7 @@ public class PunishmentService {
     }
 
     public void notifyPlayersWithIP(String ipAddress, Punishment punishment) {
-        Bukkit.getScheduler().runTask(plugin, task -> {
+        plugin.getFoliaLib().getScheduler().runNextTick(task -> {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 InetSocketAddress address = player.getAddress();
                 if (address != null && address.getAddress().getHostAddress().equals(ipAddress)) {
@@ -624,15 +652,23 @@ public class PunishmentService {
         int cleanupInterval = plugin.getConfig().getInt("performance.cache.cleanup_interval", 300);
         int maxCacheSize = plugin.getConfig().getInt("performance.cache.max_cache_size", 10000);
 
-        executorService.scheduleAtFixedRate(() -> {
+        plugin.getFoliaLib().getScheduler().runTimerAsync(() -> {
             try {
-                if (banCache.size() > maxCacheSize) {
+                plugin.debug("Starting cache cleanup task");
+                int banCacheSize = banCache.size();
+                int muteCacheSize = muteCache.size();
+                int nameCacheSize = playerNameCache.size();
+                
+                if (banCacheSize > maxCacheSize) {
+                    plugin.debug("Clearing ban cache: size %d > max %d", banCacheSize, maxCacheSize);
                     banCache.clear();
                 }
-                if (muteCache.size() > maxCacheSize) {
+                if (muteCacheSize > maxCacheSize) {
+                    plugin.debug("Clearing mute cache: size %d > max %d", muteCacheSize, maxCacheSize);
                     muteCache.clear();
                 }
-                if (playerNameCache.size() > maxCacheSize) {
+                if (nameCacheSize > maxCacheSize) {
+                    plugin.debug("Clearing name cache: size %d > max %d", nameCacheSize, maxCacheSize);
                     playerNameCache.clear();
                 }
 
@@ -641,24 +677,58 @@ public class PunishmentService {
                             ", Mute: " + muteCache.size() +
                             ", Names: " + playerNameCache.size());
                 }
+                plugin.debug("Cache cleanup completed successfully");
             } catch (Exception e) {
                 plugin.getLogger().severe("Error during cache cleanup: " + e.getMessage());
+                plugin.debug("Cache cleanup error: %s", e.getMessage());
             }
-        }, cleanupInterval, cleanupInterval, TimeUnit.SECONDS);
+        }, cleanupInterval * 20, cleanupInterval * 20);
     }
 
     private void startPerformanceMonitoring() {
         if (!plugin.getConfig().getBoolean("debug.log_performance_metrics", false)) return;
 
-        executorService.scheduleAtFixedRate(() -> {
+        plugin.getFoliaLib().getScheduler().runTimerAsync(() -> {
             try {
                 int active = activeOperations.get();
+                plugin.debug("Performance monitoring: active operations %d/%d", active, maxConcurrentOperations);
                 plugin.getLogger().info("Performance Metrics - Active Operations: " + active +
                         "/" + maxConcurrentOperations);
             } catch (Exception e) {
                 plugin.getLogger().severe("Error during performance monitoring: " + e.getMessage());
+                plugin.debug("Performance monitoring error: %s", e.getMessage());
             }
-        }, 60, 60, TimeUnit.SECONDS);
+        }, 60 * 20, 60 * 20);
+    }
+
+    private boolean isCacheValid(UUID uuid) {
+        if (!cacheEnabled) return false;
+        Long timestamp = cacheTimestamps.get(uuid);
+        if (timestamp == null) return false;
+        
+        int expireAfterAccess = plugin.getConfig().getInt("performance.cache.expire_after_access", 1800);
+        return (System.currentTimeMillis() - timestamp) < (expireAfterAccess * 1000L);
+    }
+
+    private void updateCacheTimestamp(UUID uuid) {
+        if (cacheEnabled) {
+            cacheTimestamps.put(uuid, System.currentTimeMillis());
+        }
+    }
+
+    private void invalidateCache(UUID uuid) {
+        banCache.remove(uuid);
+        muteCache.remove(uuid);
+        cacheTimestamps.remove(uuid);
+        plugin.debug("Cache invalidated for UUID: %s", uuid);
+    }
+
+    private void invalidateCache(String playerName) {
+        UUID uuid = nameToUuidCache.get(playerName.toLowerCase());
+        if (uuid != null) {
+            invalidateCache(uuid);
+        }
+        nameToUuidCache.remove(playerName.toLowerCase());
     }
 
     private UUID getStaffUuid(String staffName) {

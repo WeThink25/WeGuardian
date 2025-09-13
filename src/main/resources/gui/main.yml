@@ -1,12 +1,11 @@
-title: "&c&lWeGuardian &8| &7Punishment Center - {player}" #dont change
+title: "&c&lWeGuardian &8| &7Punishment Center - {player}"
 size: 54
 
 settings:
-  title: "&c&lWeGuardian &8| &7Punishment Center - {player}" #dont change
+  title: "&c&lWeGuardian &8| &7Punishment Center - {player}"
   size: 54
 
 items:
-  # === PUNISHMENT CATEGORIES ===
   
   ban_menu:
     material: RED_CONCRETE
@@ -86,7 +85,6 @@ items:
     action: "open_menu"
     menu_type: "warn"
   
-  # === MANAGEMENT ACTIONS ===
   
   unban_menu:
     material: GREEN_CONCRETE
@@ -114,7 +112,6 @@ items:
     action: "open_menu"
     menu_type: "unmute"
   
-  # === INFORMATION ACTIONS ===
   
   history:
     material: WRITABLE_BOOK
@@ -153,7 +150,6 @@ items:
     action: "open_menu"
     menu_type: "notes"
   
-  # === TEMPLATE ACTIONS ===
   
   template_spam:
     material: PAPER
@@ -194,7 +190,6 @@ items:
     action: "template"
     template: "hacking"
   
-  # === NAVIGATION ===
   
   close:
     material: BARRIER
@@ -204,7 +199,6 @@ items:
       - "&7Close punishment menu"
     action: "close"
   
-  # === DECORATIVE ITEMS ===
   
   glass_border_1:
     material: BLACK_STAINED_GLASS_PANE

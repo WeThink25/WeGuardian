@@ -6,7 +6,6 @@ import me.wethink.weGuardian.utils.MessageUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
-import java.util.Map;
 
 public class KickMenu extends MenuHandler {
 
@@ -31,7 +30,6 @@ public class KickMenu extends MenuHandler {
         if (action.startsWith("execute_punishment:")) {
             String[] parts = action.split(":", 3);
             if (parts.length >= 3) {
-                String punishmentType = parts[1];
                 String reason = parts[2];
                 executeKick(staff, targetPlayer, reason);
                 return;
@@ -97,6 +95,8 @@ public class KickMenu extends MenuHandler {
 
     @Override
     protected void onMenuOpen(Player staff, String targetPlayer) {
-        plugin.getLogger().info("Staff " + staff.getName() + " opened kick menu for " + targetPlayer);
+        if (plugin.getConfig().getBoolean("debug.enabled", false)) {
+            plugin.debug("Staff %s opened kick menu for %s", staff.getName(), targetPlayer);
+        }
     }
 }

@@ -1,5 +1,3 @@
-# WeGuardian Messages Configuration
-# Available placeholders: {player}, {staff}, {reason}, {date}, {datetime}, {expires}, {time-left}, {duration}, {appeal-url}
 
 
 screen:
@@ -468,21 +466,4 @@ success:
   configuration_updated: "&aConfiguration updated"
   cache_cleared: "&aCache cleared successfully"
 
-# Available Placeholders:
-# {player} - Target player name
-# {staff} - Staff member name
-# {reason} - Punishment reason
-# {date} - Punishment date
-# {expires} - Expiration date (for temporary punishments)
-# {time-left} - Time remaining (for temporary punishments)
-# {duration} - Duration of punishment
-# {appeal-url} - Appeal URL from config.yml
-# {id} - Punishment ID
-# {type} - Punishment type
-# {count} - Count/number value
-# {total} - Total count
-# {active} - Active count
-# {expired} - Expired count
-
-# Configuration Version (DO NOT MODIFY)
 config-version: 2

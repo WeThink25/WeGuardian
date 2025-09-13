@@ -29,12 +29,16 @@ public class BanCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        plugin.debug("Ban command executed by %s with args: %s", sender.getName(), String.join(" ", args));
+        
         if (!sender.hasPermission("weguardian.ban")) {
+            plugin.debug("Ban command denied: %s lacks permission", sender.getName());
             sender.sendMessage(MessageUtils.colorize("&cYou don't have permission to use this command."));
             return true;
         }
 
         if (args.length < 2) {
+            plugin.debug("Ban command usage help shown to %s", sender.getName());
             sender.sendMessage(MessageUtils.colorize("&cUsage: /ban <player> <reason> [-s] [-t template] [-d duration]"));
             sender.sendMessage(MessageUtils.colorize("&7Options:"));
             sender.sendMessage(MessageUtils.colorize("&7  -s: Silent ban (no broadcast)"));
@@ -82,18 +86,23 @@ public class BanCommand implements CommandExecutor, TabCompleter {
 
         punishmentService.getPlayerUUID(targetName).thenCompose(uuid -> {
             if (uuid == null) {
+                plugin.debug("Ban command failed: player not found - %s", targetName);
                 sender.sendMessage(MessageUtils.colorize("&cPlayer '" + targetName + "' not found."));
                 return CompletableFuture.completedFuture(false);
             }
 
+            plugin.debug("Ban command: found player UUID %s for %s", uuid, targetName);
             return plugin.getDatabaseManager().isPlayerBanned(uuid).thenCompose(isBanned -> {
                 if (isBanned) {
+                    plugin.debug("Ban command failed: player already banned - %s", targetName);
                     sender.sendMessage(MessageUtils.colorize("&cPlayer " + targetName + " is already banned."));
                     return CompletableFuture.completedFuture(false);
                 }
 
+                plugin.debug("Ban command: checking if %s can punish %s", sender.getName(), targetName);
                 return plugin.getPunishmentService().canPunish(sender, uuid).thenCompose(canPunish -> {
                     if (!canPunish) {
+                        plugin.debug("Ban command failed: %s cannot punish %s", sender.getName(), targetName);
                         sender.sendMessage(MessageUtils.colorize("&cYou cannot punish this player."));
                         return CompletableFuture.completedFuture(false);
                     }

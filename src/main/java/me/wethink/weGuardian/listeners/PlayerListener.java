@@ -30,16 +30,22 @@ public class PlayerListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent event) {
+        plugin.debug("Player pre-login event: %s (%s) from %s", 
+                event.getName(), event.getUniqueId(), event.getAddress().getHostAddress());
+        
         if (event.getLoginResult() != AsyncPlayerPreLoginEvent.Result.ALLOWED) {
+            plugin.debug("Player pre-login skipped: login result not allowed - %s", event.getName());
             return;
         }
 
         try {
             PlayerData playerData = databaseManager.getPlayerData(event.getUniqueId()).join();
             if (playerData == null) {
+                plugin.debug("Creating new player data for: %s", event.getName());
                 playerData = new PlayerData(event.getUniqueId(), event.getName(), event.getAddress().getHostAddress());
                 databaseManager.savePlayerData(playerData);
             } else {
+                plugin.debug("Updating existing player data for: %s", event.getName());
                 playerData.setName(event.getName());
                 playerData.setIpAddress(event.getAddress().getHostAddress());
                 playerData.updateLastSeen();
@@ -53,12 +59,16 @@ public class PlayerListener implements Listener {
             );
 
             List<Punishment> punishments = databaseManager.getActivePunishments(event.getUniqueId()).join();
+            plugin.debug("Checking %d active punishments for player: %s", punishments.size(), event.getName());
+            
             for (Punishment punishment : punishments) {
                 if (punishment.isExpired()) {
+                    plugin.debug("Skipping expired punishment: %s for %s", punishment.getType(), event.getName());
                     continue;
                 }
 
                 if (punishment.getType() == PunishmentType.BAN || punishment.getType() == PunishmentType.TEMPBAN) {
+                    plugin.debug("Player %s is banned, blocking connection", event.getName());
                     String kickMessage = getBanMessage(punishment);
                     Component kickComponent = MessageUtils.toComponent(kickMessage);
                     event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, kickComponent);
@@ -76,7 +86,9 @@ public class PlayerListener implements Listener {
                 
                 Component kickComponent = MessageUtils.toComponent(ipBanMessage);
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, kickComponent);
-                plugin.getLogger().info("Blocked IP banned connection attempt from " + playerIP + " (" + event.getName() + ")");
+                if (plugin.getConfig().getBoolean("debug.enabled", false)) {
+                    plugin.getLogger().info("Blocked IP banned connection attempt from " + playerIP + " (" + event.getName() + ")");
+                }
                 return;
             }
 

@@ -74,6 +74,8 @@ public class UnmuteMenu extends MenuHandler {
 
     @Override
     protected void onMenuOpen(Player staff, String targetPlayer) {
-        plugin.getLogger().info("Staff " + staff.getName() + " opened unmute menu for " + targetPlayer);
+        if (plugin.getConfig().getBoolean("debug.enabled", false)) {
+            plugin.debug("Staff %s opened unmute menu for %s", staff.getName(), targetPlayer);
+        }
     }
 }

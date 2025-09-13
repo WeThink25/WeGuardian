@@ -7,7 +7,6 @@ import me.wethink.weGuardian.utils.MessageUtils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Map;
 import java.util.UUID;
@@ -15,11 +14,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import com.tcoded.folialib.wrapper.task.WrappedTask;
 
 public class NotificationService {
 
     private final WeGuardian plugin;
-    private final Map<UUID, BukkitRunnable> actionBarTasks = new ConcurrentHashMap<>();
+    private final Map<UUID, WrappedTask> actionBarTasks = new ConcurrentHashMap<>();
     private final ScheduledExecutorService executorService;
 
     public NotificationService(WeGuardian plugin) {
@@ -49,18 +49,23 @@ public class NotificationService {
     }
 
     public void broadcastPunishment(Punishment punishment) {
+        plugin.debug("Broadcasting punishment notification: type=%s, target=%s, staff=%s", 
+                punishment.getType(), punishment.getTargetName(), punishment.getStaffName());
         broadcastPunishment(punishment, "chat");
     }
 
     public void broadcastPunishment(Punishment punishment, String context) {
         if (!plugin.getConfig().getBoolean("notifications.chat.enabled", true)) {
+            plugin.debug("Punishment notification skipped: chat notifications disabled");
             return;
         }
 
         String template = getMessageTemplate(context, punishment.getType());
         String message = MessageUtils.formatPunishmentMessage(template, punishment);
+        plugin.debug("Formatted punishment message: %s", message);
 
         String permission = plugin.getConfig().getString("notifications.chat.broadcast_permission", "weguardian.notify");
+        plugin.debug("Broadcasting to staff with permission: %s", permission);
 
         broadcastToStaff(message, permission);
         logToConsole(message);
@@ -112,43 +117,41 @@ public class NotificationService {
 
         int interval = plugin.getConfig().getInt("notifications.actionbar_interval", 30) * 20;
 
-        BukkitRunnable task = new BukkitRunnable() {
-            @Override
-            public void run() {
-                Player player = Bukkit.getPlayer(targetUuid);
-                if (player == null) {
-                    cancel();
-                    return;
-                }
-
-                if (punishment.isExpired()) {
-                    cancel();
-                    actionBarTasks.remove(targetUuid);
-                    return;
-                }
-
-                sendActionBarMessage(player, punishment);
+        var task = plugin.getFoliaLib().getScheduler().runTimer(() -> {
+            Player player = Bukkit.getPlayer(targetUuid);
+            if (player == null) {
+                stopActionBarUpdates(targetUuid);
+                return;
             }
-        };
 
-        task.runTaskTimer(plugin, 0, interval);
+            if (punishment.isExpired()) {
+                stopActionBarUpdates(targetUuid);
+                return;
+            }
+
+            sendActionBarMessage(player, punishment);
+        }, 0, interval);
+        
         actionBarTasks.put(targetUuid, task);
     }
 
     private void stopActionBarUpdates(UUID playerUuid) {
-        BukkitRunnable task = actionBarTasks.remove(playerUuid);
+        WrappedTask task = actionBarTasks.remove(playerUuid);
         if (task != null) {
-            task.cancel();
+            plugin.getFoliaLib().getScheduler().cancelTask(task);
         }
     }
 
     private void broadcastToStaff(String message, String permission) {
         Component component = MessageUtils.toComponent(message);
+        int notifiedCount = 0;
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (player.hasPermission(permission)) {
                 player.sendMessage(component);
+                notifiedCount++;
             }
         }
+        plugin.debug("Notified %d staff members with permission: %s", notifiedCount, permission);
     }
 
     private void logToConsole(String message) {
@@ -156,8 +159,8 @@ public class NotificationService {
     }
 
     public void shutdown() {
-        for (BukkitRunnable task : actionBarTasks.values()) {
-            task.cancel();
+        for (WrappedTask task : actionBarTasks.values()) {
+            plugin.getFoliaLib().getScheduler().cancelTask(task);
         }
         actionBarTasks.clear();
 

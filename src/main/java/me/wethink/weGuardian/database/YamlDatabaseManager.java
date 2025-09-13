@@ -165,7 +165,7 @@ public class YamlDatabaseManager implements DatabaseManager {
     private void setupAutoBackup() {
         if (plugin.getConfig().getBoolean("database.yaml.auto_backup", true)) {
             int interval = plugin.getConfig().getInt("database.yaml.backup_interval", 300) * 20;
-            plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, this::createBackup, interval, interval);
+            plugin.getFoliaLib().getScheduler().runTimerAsync(this::createBackup, interval, interval);
         }
     }
 
@@ -253,26 +253,33 @@ public class YamlDatabaseManager implements DatabaseManager {
             int id = nextId.getAndIncrement();
             punishment.setId(id);
             punishmentCache.put(id, punishment);
+            plugin.debug("Added punishment to cache with ID: %d, type: %s, target: %s", 
+                    id, punishment.getType(), punishment.getTargetName());
             
             UUID targetUuid = punishment.getTargetUuid();
             if (targetUuid != null) {
+                plugin.debug("Saving punishment to player file: %s", targetUuid);
                 YamlConfiguration playerConfig = getPlayerConfig(targetUuid);
                 
                 ConfigurationSection punishmentsSection = playerConfig.getConfigurationSection("punishments");
                 if (punishmentsSection == null) {
                     punishmentsSection = playerConfig.createSection("punishments");
+                    plugin.debug("Created punishments section for player: %s", targetUuid);
                 }
                 
                 ConfigurationSection punishmentSection = punishmentsSection.createSection(String.valueOf(id));
                 serializePunishment(punishmentSection, punishment);
+                plugin.debug("Serialized punishment to player config: %s", targetUuid);
                 
                 savePlayerConfig(targetUuid, playerConfig);
             } else {
+                plugin.debug("Saving IP punishment to IP punishments file");
                 saveIPPunishment(punishment);
             }
             
             globalConfig.set("next_id", nextId.get());
             saveGlobalConfig();
+            plugin.debug("Punishment saved successfully with ID: %d", id);
             
             return id;
         });
@@ -443,7 +450,7 @@ public class YamlDatabaseManager implements DatabaseManager {
             punishment.setReason(section.getString("reason"));
             punishment.setServerName(section.getString("server_name"));
             punishment.setCreatedAt(LocalDateTime.parse(section.getString("created_at"), formatter));
-            punishment.setActive(section.getBoolean("active", true)); // Default to true for backward compatibility
+            punishment.setActive(section.getBoolean("active", true));
             
             String expiresAt = section.getString("expires_at");
             if (expiresAt != null) {

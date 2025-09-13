@@ -20,25 +20,39 @@ public class ConsoleCommandService {
 
     public void executeConsoleCommands(Punishment punishment) {
         if (!plugin.getConfig().getBoolean("console_commands.enabled", false)) {
+            plugin.debug("Console commands skipped: disabled in config");
             return;
         }
 
+        plugin.debug("Executing console commands for punishment: type=%s, target=%s", 
+                punishment.getType(), punishment.getTargetName());
+
         CompletableFuture.runAsync(() -> {
             String eventKey = getEventKey(punishment.getType());
-            if (eventKey == null) return;
+            if (eventKey == null) {
+                plugin.debug("No console commands configured for punishment type: %s", punishment.getType());
+                return;
+            }
 
+            plugin.debug("Looking for console commands with event key: %s", eventKey);
             ConfigurationSection commandsSection = plugin.getConfig().getConfigurationSection("console_commands." + eventKey);
             if (commandsSection == null) {
                 List<String> commands = plugin.getConfig().getStringList("console_commands." + eventKey);
                 if (commands != null && !commands.isEmpty()) {
+                    plugin.debug("Found %d console commands to execute", commands.size());
                     executeCommands(commands, punishment);
+                } else {
+                    plugin.debug("No console commands found for event key: %s", eventKey);
                 }
                 return;
             }
 
             List<String> commands = plugin.getConfig().getStringList("console_commands." + eventKey);
             if (commands != null && !commands.isEmpty()) {
+                plugin.debug("Found %d console commands to execute (fallback)", commands.size());
                 executeCommands(commands, punishment);
+            } else {
+                plugin.debug("No console commands found for event key: %s (fallback)", eventKey);
             }
         });
     }
@@ -60,14 +74,19 @@ public class ConsoleCommandService {
     }
 
     private void executeCommands(List<String> commands, Punishment punishment) {
+        plugin.debug("Executing %d console commands", commands.size());
         for (String command : commands) {
             String processedCommand = processPlaceholders(command, punishment);
+            plugin.debug("Processed command: %s", processedCommand);
             
-            Bukkit.getScheduler().runTask(plugin, () -> {
+            plugin.getFoliaLib().getScheduler().runNextTick(task -> {
                 try {
+                    plugin.debug("Dispatching console command: %s", processedCommand);
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), processedCommand);
+                    plugin.debug("Console command executed successfully: %s", processedCommand);
                 } catch (Exception e) {
                     plugin.getLogger().warning("Failed to execute console command: " + processedCommand + " - " + e.getMessage());
+                    plugin.debug("Console command execution failed: %s - %s", processedCommand, e.getMessage());
                 }
             });
         }
@@ -77,7 +96,7 @@ public class ConsoleCommandService {
         for (String command : commands) {
             String processedCommand = processUnpunishmentPlaceholders(command, punishment, staffName);
             
-            Bukkit.getScheduler().runTask(plugin, () -> {
+            plugin.getFoliaLib().getScheduler().runNextTick(task -> {
                 try {
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), processedCommand);
                 } catch (Exception e) {

@@ -83,58 +83,27 @@ public abstract class MenuHandler {
         Player staff = (Player) event.getWhoClicked();
         String targetPlayer = targetPlayers.get(staff);
         
-        if (plugin.getConfig().getBoolean("debug.enabled", false)) {
-            plugin.getLogger().info("MenuHandler (" + this.getClass().getSimpleName() + "): Processing click for player " + staff.getName());
-            plugin.getLogger().info("MenuHandler: Target player: " + targetPlayer);
-            plugin.getLogger().info("MenuHandler: Clicked slot: " + slot);
-        }
-        
-        if (targetPlayer == null) {
-            plugin.getLogger().warning("MenuHandler: No target player found for staff " + staff.getName());
-            return;
-        }
-
         ItemStack clicked = event.getCurrentItem();
         if (clicked == null || clicked.getType() == Material.AIR) {
-            if (plugin.getConfig().getBoolean("debug.enabled", false)) {
-                plugin.getLogger().info("MenuHandler: Clicked item is null or air");
-            }
             return;
-        }
-
-        if (plugin.getConfig().getBoolean("debug.enabled", false)) {
-            plugin.getLogger().info("MenuHandler: Clicked item: " + clicked.getType());
         }
 
         ConfigurationSection config = getMenuConfig();
         if (config == null) {
-            plugin.getLogger().warning("MenuHandler: Menu config is null");
             return;
         }
 
         ConfigurationSection items = config.getConfigurationSection("items");
         if (items == null) {
-            plugin.getLogger().warning("MenuHandler: Items section is null");
             return;
-        }
-
-        if (plugin.getConfig().getBoolean("debug.enabled", false)) {
-            plugin.getLogger().info("MenuHandler: Checking " + items.getKeys(false).size() + " items for slot match");
         }
 
         for (String key : items.getKeys(false)) {
             ConfigurationSection itemConfig = items.getConfigurationSection(key);
             if (itemConfig != null && isSlotMatch(itemConfig, slot)) {
-                if (plugin.getConfig().getBoolean("debug.enabled", false)) {
-                    plugin.getLogger().info("MenuHandler: Found matching item: " + key + " for slot " + slot);
-                }
                 handleItemClick(staff, targetPlayer, key, itemConfig);
                 return;
             }
-        }
-        
-        if (plugin.getConfig().getBoolean("debug.enabled", false)) {
-            plugin.getLogger().warning("MenuHandler: No matching item found for slot " + slot);
         }
     }
 
@@ -149,39 +118,20 @@ public abstract class MenuHandler {
     }
 
     private boolean isSlotMatch(ConfigurationSection itemConfig, int slot) {
-        if (plugin.getConfig().getBoolean("debug.enabled", false)) {
-            plugin.getLogger().info("MenuHandler: Checking slot match for slot " + slot);
-        }
-        
         if (itemConfig.contains("slot")) {
             int configSlot = itemConfig.getInt("slot", -1);
-            if (plugin.getConfig().getBoolean("debug.enabled", false)) {
-                plugin.getLogger().info("MenuHandler: Item has single slot: " + configSlot);
-            }
             if (configSlot == slot) {
-                if (plugin.getConfig().getBoolean("debug.enabled", false)) {
-                    plugin.getLogger().info("MenuHandler: Single slot match found!");
-                }
                 return true;
             }
         }
         
         if (itemConfig.contains("slots")) {
             List<Integer> slots = itemConfig.getIntegerList("slots");
-            if (plugin.getConfig().getBoolean("debug.enabled", false)) {
-                plugin.getLogger().info("MenuHandler: Item has multiple slots: " + slots);
-            }
             if (slots.contains(slot)) {
-                if (plugin.getConfig().getBoolean("debug.enabled", false)) {
-                    plugin.getLogger().info("MenuHandler: Multiple slot match found!");
-                }
                 return true;
             }
         }
         
-        if (plugin.getConfig().getBoolean("debug.enabled", false)) {
-            plugin.getLogger().info("MenuHandler: No slot match for slot " + slot);
-        }
         return false;
     }
 
@@ -194,18 +144,12 @@ public abstract class MenuHandler {
 
     public void setTargetPlayer(Player staff, String targetPlayer) {
         targetPlayers.put(staff, targetPlayer);
-        if (plugin.getConfig().getBoolean("debug.enabled", false)) {
-            plugin.getLogger().info("MenuHandler: Set target player " + targetPlayer + " for staff " + staff.getName());
-        }
     }
     
 
     public void preserveSelectedData(Player staff, Map<String, Object> data) {
         if (data != null && !data.isEmpty()) {
             selectedData.put(staff, new HashMap<>(data));
-            if (plugin.getConfig().getBoolean("debug.enabled", false)) {
-                plugin.getLogger().info("MenuHandler: Preserved selected data for staff " + staff.getName() + ": " + data);
-            }
         }
     }
 

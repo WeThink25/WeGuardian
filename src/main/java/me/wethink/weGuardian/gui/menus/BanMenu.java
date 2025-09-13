@@ -97,6 +97,6 @@ public class BanMenu extends MenuHandler {
 
     @Override
     protected void onMenuOpen(Player staff, String targetPlayer) {
-        plugin.getLogger().info("Staff " + staff.getName() + " opened ban menu for " + targetPlayer);
+        plugin.debug("Staff %s opened ban menu for %s", staff.getName(), targetPlayer);
     }
 }

@@ -8,6 +8,7 @@ authors: [ WeThink ]
 description: Next-generation punishment system for Minecraft servers
 website: https://github.com/WeThink/WeGuardian
 softdepend: [ PlaceholderAPI ]
+folia-supported: true
 
 commands:
   punish:
@@ -23,7 +24,7 @@ commands:
     usage: /tempban <player> <duration> <reason> [-s] [-t template]
     permission: weguardian.tempban
   mute:
-    description: Permanently mute a player
+    description: Permanently mute a player 
     usage: /mute <player> <reason> [-s] [-t template] [-d duration] [--ip]
     permission: weguardian.mute
   tempmute:
@@ -31,7 +32,7 @@ commands:
     usage: /tempmute <player> <duration> <reason> [-s] [-t template] [--ip]
     permission: weguardian.tempmute
   kick:
-    description: Kick a player from the server
+    description: Kick a player from the server 
     usage: /kick <player> <reason> [-s] [-t template] [--ip]
     permission: weguardian.kick
   warn:

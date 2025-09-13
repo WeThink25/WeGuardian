@@ -86,6 +86,6 @@ public class WarnMenu extends MenuHandler {
 
     @Override
     protected void onMenuOpen(Player staff, String targetPlayer) {
-        plugin.getLogger().info("Staff " + staff.getName() + " opened warn menu for " + targetPlayer);
+        plugin.debug("Staff %s opened warn menu for %s", staff.getName(), targetPlayer);
     }
 }

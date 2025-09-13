@@ -3,11 +3,14 @@ package me.wethink.weGuardian;
 import com.tcoded.folialib.FoliaLib;
 import me.wethink.weGuardian.commands.*;
 import me.wethink.weGuardian.database.DatabaseManager;
+import me.wethink.weGuardian.database.HikariDatabaseManager;
 import me.wethink.weGuardian.database.YamlDatabaseManager;
 import me.wethink.weGuardian.gui.GUIConfigLoader;
 import me.wethink.weGuardian.gui.PunishmentGUI;
 import me.wethink.weGuardian.listeners.ChatListener;
 import me.wethink.weGuardian.listeners.PlayerListener;
+import me.wethink.weGuardian.services.CrossServerSyncService;
+import me.wethink.weGuardian.services.MenuValidationService;
 import me.wethink.weGuardian.services.NotificationService;
 import me.wethink.weGuardian.services.PunishmentService;
 import me.wethink.weGuardian.services.TemplateService;
@@ -37,6 +40,8 @@ public final class WeGuardian extends JavaPlugin {
     private PunishmentService punishmentService;
     private NotificationService notificationService;
     private TemplateService templateService;
+    private CrossServerSyncService crossServerSyncService;
+    private MenuValidationService menuValidationService;
     private PunishmentGUI punishmentGUI;
     private GUIConfigLoader guiConfigLoader;
     private FileConfiguration messagesConfig;
@@ -64,18 +69,24 @@ public final class WeGuardian extends JavaPlugin {
         registerCommands();
         registerPlaceholders();
         initializeMetrics();
-        executorService.scheduleAtFixedRate(this::cleanupCache, 5, 5, TimeUnit.MINUTES);
+        foliaLib.getScheduler().runTimerAsync(this::cleanupCache, 5 * 60 * 20, 5 * 60 * 20);
         sendStartupMessage();
     }
 
     @Override
     public void onDisable() {
         sendShutdownMessage();
+        if (foliaLib != null) {
+            foliaLib.getScheduler().cancelAllTasks();
+        }
         if (punishmentService != null) {
             punishmentService.shutdown();
         }
         if (notificationService != null) {
             notificationService.shutdown();
+        }
+        if (crossServerSyncService != null) {
+            crossServerSyncService.shutdown();
         }
         if (databaseManager != null) {
             databaseManager.close();
@@ -97,11 +108,20 @@ public final class WeGuardian extends JavaPlugin {
     }
 
     private void initializeDatabase() {
-        getLogger().info("Initializing YAML file storage...");
-        this.databaseManager = new YamlDatabaseManager(this);
+        String databaseType = getConfig().getString("database.type", "yaml").toLowerCase();
+        boolean useMySQL = getConfig().getBoolean("database.mysql.enabled", false);
+        
+        if (useMySQL && "mysql".equals(databaseType)) {
+            getLogger().info("Initializing MySQL database connection...");
+            this.databaseManager = new HikariDatabaseManager(this);
+        } else {
+            getLogger().info("Initializing YAML file storage...");
+            this.databaseManager = new YamlDatabaseManager(this);
+        }
+        
         try {
             this.databaseManager.initialize().get();
-            getLogger().info("Database initialized successfully!");
+            getLogger().info("Database initialized successfully! Type: " + (useMySQL ? "MySQL" : "YAML"));
         } catch (Exception e) {
             getLogger().severe("Failed to initialize database: " + e.getMessage());
             e.printStackTrace();
@@ -114,7 +134,20 @@ public final class WeGuardian extends JavaPlugin {
         this.punishmentService = new PunishmentService(this);
         this.notificationService = new NotificationService(this);
         this.templateService = new TemplateService(this);
+        this.crossServerSyncService = new CrossServerSyncService(this);
+        this.menuValidationService = new MenuValidationService(this);
         this.punishmentGUI = new PunishmentGUI(this);
+        
+        if (crossServerSyncService.isEnabled()) {
+            foliaLib.getScheduler().runNextTick(task -> {
+                crossServerSyncService.validateServerConnections();
+            });
+        }
+        if (menuValidationService.isValidationEnabled()) {
+            foliaLib.getScheduler().runNextTick(task -> {
+                menuValidationService.validateMenuPerformance();
+            });
+        }
     }
 
     private void initializeListeners() {
@@ -339,6 +372,14 @@ public final class WeGuardian extends JavaPlugin {
         return templateService;
     }
 
+    public CrossServerSyncService getCrossServerSyncService() {
+        return crossServerSyncService;
+    }
+
+    public MenuValidationService getMenuValidationService() {
+        return menuValidationService;
+    }
+
     public DatabaseManager getDatabaseManager() {
         return databaseManager;
     }
@@ -369,6 +410,18 @@ public final class WeGuardian extends JavaPlugin {
 
     public String getAppealUrl() {
         return getConfig().getString("appeal_url", "your-server.com/appeals");
+    }
+
+    public void debug(String message) {
+        if (getConfig().getBoolean("debug.enabled", false)) {
+            getLogger().info("[DEBUG] " + message);
+        }
+    }
+
+    public void debug(String message, Object... args) {
+        if (getConfig().getBoolean("debug.enabled", false)) {
+            getLogger().info("[DEBUG] " + String.format(message, args));
+        }
     }
 
     private void clearMessageCache() {

@@ -96,13 +96,13 @@ public class MenuManager implements Listener {
         String title = event.getView().title().toString();
         String strippedTitle = title.replaceAll("§[0-9a-fk-or]", "");
         
-        plugin.getLogger().info("MenuManager: Player " + player.getName() + " clicked slot " + event.getSlot() + " in inventory: " + title);
-        plugin.getLogger().info("MenuManager: Active menu for player: " + (activeMenu != null ? activeMenu.getClass().getSimpleName() : "null"));
-        plugin.getLogger().info("MenuManager: Stripped title: " + strippedTitle);
+        plugin.debug("MenuManager: Player %s clicked slot %d in inventory: %s", player.getName(), event.getSlot(), title);
+        plugin.debug("MenuManager: Active menu for player: %s", (activeMenu != null ? activeMenu.getClass().getSimpleName() : "null"));
+        plugin.debug("MenuManager: Stripped title: %s", strippedTitle);
         
         if (activeMenu != null) {
             event.setCancelled(true);
-            plugin.getLogger().info("MenuManager: Calling handleClick on active menu: " + activeMenu.getClass().getSimpleName());
+            plugin.debug("MenuManager: Calling handleClick on active menu: %s", activeMenu.getClass().getSimpleName());
             
             activeMenu.handleClick(event, event.getSlot());
         } else {
@@ -117,49 +117,26 @@ public class MenuManager implements Listener {
                 strippedTitle.contains("Unban Menu") || strippedTitle.contains("Unmute Menu") || 
                 strippedTitle.contains("Notes Menu") || strippedTitle.contains("Punishment");
                 
-            plugin.getLogger().info("MenuManager: Is WeGuardian GUI: " + isWeGuardianGUI);
+            plugin.debug("MenuManager: Is WeGuardian GUI: %s", isWeGuardianGUI);
                 
             if (isWeGuardianGUI) {
                 event.setCancelled(true);
                 
                 MenuHandler recoveredMenu = findMenuByTitle(strippedTitle);
                 if (recoveredMenu != null) {
-                    if (plugin.getConfig().getBoolean("debug.enabled", false)) {
-                        plugin.getLogger().info("MenuManager: Recovered menu: " + recoveredMenu.getClass().getSimpleName());
-                    }
-                    
                     String targetPlayer = extractTargetPlayerFromTitle(strippedTitle);
                     if (targetPlayer != null) {
-                        if (plugin.getConfig().getBoolean("debug.enabled", false)) {
-                            plugin.getLogger().info("MenuManager: Extracted target player from title: " + targetPlayer);
-                        }
                         recoveredMenu.setTargetPlayer(player, targetPlayer);
-                        
-                        for (MenuHandler existingMenu : activeMenus.values()) {
-                            if (existingMenu.getClass().equals(recoveredMenu.getClass())) {
-                                Map<String, Object> existingData = existingMenu.getSelectedData(player);
-                                if (existingData != null && !existingData.isEmpty()) {
-                                    recoveredMenu.preserveSelectedData(player, existingData);
-                                    break;
-                                }
-                            }
-                        }
-                    } else {
-                        plugin.getLogger().warning("MenuManager: Could not extract target player from title: " + strippedTitle);
                     }
                     
                     activeMenus.put(player, recoveredMenu);
-                    if (plugin.getConfig().getBoolean("debug.enabled", false)) {
-                        plugin.getLogger().info("Recovered untracked menu for player " + player.getName() + ": " + title);
-                        plugin.getLogger().info("MenuManager: Calling handleClick on recovered menu: " + recoveredMenu.getClass().getSimpleName());
-                    }
                     recoveredMenu.handleClick(event, event.getSlot());
                     return;
                 } else {
                     if (isWeGuardianGUI) {
-                        plugin.getLogger().warning("Failed to recover WeGuardian menu with title: " + strippedTitle);
-                        plugin.getLogger().warning("This indicates a menu tracking issue. Active menus: " + activeMenus.size());
-                        plugin.getLogger().warning("Stripped title: " + strippedTitle);
+                        plugin.debug("Failed to recover WeGuardian menu with title: %s", strippedTitle);
+                        plugin.debug("This indicates a menu tracking issue. Active menus: %d", activeMenus.size());
+                        plugin.debug("Stripped title: %s", strippedTitle);
                     }
                 }
             }

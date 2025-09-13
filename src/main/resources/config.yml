@@ -1,11 +1,25 @@
+# ===========================================
+# DATABASE CONFIGURATION
+# ===========================================
 database:
-  type: "yaml"  # YAML file storage only
+  type: "yaml"
+  
   yaml:
-    file: "punishments.yml"
-    backup_interval: 300  # seconds
     auto_backup: true
+    backup_interval: 300
     max_backups: 5
+  
+  mysql:
+    enabled: false
+    host: "localhost"
+    port: 3306
+    database: "weguardian"
+    username: "root"
+    password: ""
 
+# ===========================================
+# PERFORMANCE OPTIMIZATION
+# ===========================================
 performance:
   thread_pool_size: 4
   max_concurrent_operations: 50
@@ -16,71 +30,84 @@ performance:
     cleanup_interval: 300
     max_cache_size: 10000
     expire_after_access: 1800
-    expire_after_write: 3600
-  
-  database:
-    batch_size: 100
-    connection_pool_size: 10
-    prepared_statement_cache_size: 250
-    query_timeout: 15
   
   async:
-    enabled: true
-    queue_size: 1000
     worker_threads: 2
-    retry_attempts: 3
-    retry_delay: 1000
 
+# ===========================================
+# NOTIFICATIONS
+# ===========================================
 notifications:
-  actionbar_updates: true
-  actionbar_interval: 30
   chat:
-    format: "&c[WeGuardian] &f{message}"
+    enabled: true
     broadcast_permission: "weguardian.notify"
   
-  performance:
-    batch_notifications: true
-    max_batch_size: 50
-    batch_delay: 100
+  actionbar_updates: true
+  actionbar_interval: 30
 
-appeal_url: "your-server.com/appeals"
+# ===========================================
+# CROSS-SERVER SYNCHRONIZATION
+# ===========================================
+cross_server:
+  enabled: false
+  sync_interval: 30
+  sync_punishments: true
+  sync_player_data: true
+  sync_banwave: true
+  broadcast_punishments: true
+  require_authentication: false
+  authentication_key: "your-secret-key-here"
+  
+  servers:
+    - name: "lobby"
+      host: "localhost"
+      port: 25565
+      enabled: true
+    - name: "survival"
+      host: "localhost"
+      port: 25566
+      enabled: true
 
-server_name: "YourServer"
-
-# Console commands to execute on punishment events
+# ===========================================
+# CONSOLE COMMANDS
+# ===========================================
 console_commands:
-  enabled: true
+  enabled: false
+  
   on_ban:
     - "broadcast &c{player} has been banned by {staff} for {reason}"
-    - "log punishment ban {player} {staff} {reason}"
+  
   on_tempban:
     - "broadcast &c{player} has been temporarily banned by {staff} for {reason}"
-    - "log punishment tempban {player} {staff} {reason} {duration}"
+  
   on_mute:
     - "broadcast &6{player} has been muted by {staff} for {reason}"
-    - "log punishment mute {player} {staff} {reason}"
+  
   on_tempmute:
     - "broadcast &6{player} has been temporarily muted by {staff} for {reason}"
-    - "log punishment tempmute {player} {staff} {reason} {duration}"
+  
   on_kick:
     - "broadcast &e{player} has been kicked by {staff} for {reason}"
-    - "log punishment kick {player} {staff} {reason}"
+  
   on_warn:
     - "log punishment warn {player} {staff} {reason}"
+  
   on_unban:
     - "broadcast &a{player} has been unbanned by {staff}"
-    - "log punishment unban {player} {staff}"
+  
   on_unmute:
     - "broadcast &a{player} has been unmuted by {staff}"
-    - "log punishment unmute {player} {staff}"
 
-# Discord webhook
+# ===========================================
+# DISCORD INTEGRATION
+# ===========================================
 discord:
   enabled: false
   webhook_url: "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL"
   username: "WeGuardian"
   avatar_url: "https://i.imgur.com/your-avatar.png"
-  embed_color: 0xFF0000
+  embed_color: 16711680
+  
   send_on:
     ban: true
     tempban: true
@@ -91,18 +118,147 @@ discord:
     unban: true
     unmute: true
 
+# ===========================================
+# DEBUG & LOGGING
+# ===========================================
 debug:
   enabled: false
-  log_level: "INFO"
-  log_sql_queries: false
   log_performance_metrics: false
   log_cache_statistics: false
 
+# ===========================================
+# FEATURES
+# ===========================================
 features:
   placeholderapi_integration: true
-  discord_webhooks: false
-  banwave_system: true
-  staff_statistics: true
-  punishment_history: true
-  auto_expire_punishments: true
-  cross_server_sync: false
+  metrics: true
+
+# ===========================================
+# SERVER CONFIGURATION
+# ===========================================
+appeal_url: "your-server.com/appeals"
+server_name: "Unknown"
+
+# ===========================================
+# MENU CONFIGURATION
+# ===========================================
+menus:
+  validation:
+    enabled: true
+    check_menu_links: true
+    check_item_materials: true
+    check_action_formats: true
+    auto_fix_issues: false
+  
+  performance:
+    cache_menu_configs: true
+  
+  available_menus:
+    - "main"
+    - "ban"
+    - "tempban"
+    - "mute"
+    - "tempmute"
+    - "kick"
+    - "warn"
+    - "notes"
+    - "unban"
+    - "unmute"
+  
+  link_validation:
+    valid_actions:
+      - "open_menu"
+      - "execute_punishment"
+      - "custom_reason"
+      - "select_duration"
+      - "template"
+      - "history"
+      - "checkban"
+      - "back"
+      - "close"
+    
+    action_requirements:
+      open_menu:
+        required_params: ["menu_type"]
+        valid_menu_types: ["ban", "tempban", "mute", "tempmute", "kick", "warn", "notes", "unban", "unmute"]
+      
+      execute_punishment:
+        required_params: ["punishment_type", "reason"]
+        valid_punishment_types: ["BAN", "TEMPBAN", "MUTE", "TEMPMUTE", "KICK", "WARN"]
+      
+      custom_reason:
+        required_params: ["punishment_type"]
+        valid_punishment_types: ["BAN", "TEMPBAN", "MUTE", "TEMPMUTE", "KICK", "WARN"]
+      
+      select_duration:
+        required_params: ["duration"]
+        valid_durations: ["1h", "6h", "1d", "3d", "1w", "2w", "1m"]
+      
+      template:
+        required_params: ["template"]
+        valid_templates: ["spam", "toxicity", "hacking", "griefing", "advertising"]
+  
+  item_validation:
+    required_properties:
+      - "material"
+      - "slot"
+      - "name"
+      - "action"
+    
+    optional_properties:
+      - "lore"
+      - "slots"
+      - "skull-owner"
+      - "menu_type"
+      - "template"
+      - "duration"
+      - "punishment_type"
+      - "reason"
+    
+    valid_materials:
+      - "RED_CONCRETE"
+      - "ORANGE_CONCRETE"
+      - "YELLOW_CONCRETE"
+      - "LIME_CONCRETE"
+      - "LIGHT_BLUE_CONCRETE"
+      - "PURPLE_CONCRETE"
+      - "GREEN_CONCRETE"
+      - "CYAN_CONCRETE"
+      - "BLACK_STAINED_GLASS_PANE"
+      - "GRAY_STAINED_GLASS_PANE"
+      - "RED_STAINED_GLASS_PANE"
+      - "YELLOW_STAINED_GLASS_PANE"
+      - "PLAYER_HEAD"
+      - "ARROW"
+      - "BARRIER"
+      - "PAPER"
+      - "WRITABLE_BOOK"
+      - "CLOCK"
+      - "COMPASS"
+      - "MAP"
+      - "SIGN"
+      - "TNT"
+      - "REDSTONE"
+      - "IRON_SWORD"
+      - "WITHER_SKELETON_SKULL"
+      - "ENDER_PEARL"
+      - "NAME_TAG"
+      - "BOOK"
+      - "COBBLESTONE"
+      - "HOPPER"
+      - "SLIME_BALL"
+  
+  size_validation:
+    valid_sizes: [9, 18, 27, 36, 45, 54]
+    
+    default_sizes:
+      main: 54
+      ban: 45
+      tempban: 45
+      mute: 45
+      tempmute: 45
+      kick: 45
+      warn: 45
+      notes: 45
+      unban: 45
+      unmute: 45

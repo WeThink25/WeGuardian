@@ -79,6 +79,8 @@ public class UnbanMenu extends MenuHandler {
 
     @Override
     protected void onMenuOpen(Player staff, String targetPlayer) {
-        plugin.getLogger().info("Staff " + staff.getName() + " opened unban menu for " + targetPlayer);
+        if (plugin.getConfig().getBoolean("debug.enabled", false)) {
+            plugin.debug("Staff %s opened unban menu for %s", staff.getName(), targetPlayer);
+        }
     }
 }

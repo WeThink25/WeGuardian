@@ -356,6 +356,9 @@ public class HikariDatabaseManager implements DatabaseManager {
     @Override
     public CompletableFuture<Integer> addPunishment(Punishment punishment) {
         return CompletableFuture.supplyAsync(() -> {
+            plugin.debug("Adding punishment to database: type=%s, target=%s, staff=%s", 
+                    punishment.getType(), punishment.getTargetName(), punishment.getStaffName());
+            
             String sql = "INSERT INTO wg_punishments (target_uuid, target_name, staff_uuid, staff_name, " +
                     "type, reason, created_at, expires_at, active, server_name) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -373,22 +376,29 @@ public class HikariDatabaseManager implements DatabaseManager {
 
                 if (punishment.getExpiresAt() != null) {
                     stmt.setTimestamp(8, Timestamp.valueOf(punishment.getExpiresAt()));
+                    plugin.debug("Punishment has expiration: %s", punishment.getExpiresAt());
                 } else {
                     stmt.setNull(8, Types.TIMESTAMP);
+                    plugin.debug("Punishment is permanent");
                 }
 
                 stmt.setBoolean(9, punishment.isActive());
                 stmt.setString(10, punishment.getServerName());
 
+                plugin.debug("Executing SQL insert for punishment");
                 stmt.executeUpdate();
 
                 ResultSet keys = stmt.getGeneratedKeys();
                 if (keys.next()) {
-                    return keys.getInt(1);
+                    int id = keys.getInt(1);
+                    plugin.debug("Punishment added to database with ID: %d", id);
+                    return id;
                 }
+                plugin.debug("Failed to get generated key for punishment");
                 return -1;
             } catch (SQLException e) {
                 plugin.getLogger().log(Level.SEVERE, "Failed to add punishment", e);
+                plugin.debug("SQL error adding punishment: %s", e.getMessage());
                 return -1;
             }
         });

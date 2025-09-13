@@ -44,7 +44,7 @@ public class NotesMenu extends MenuHandler {
 
     @Override
     protected void onMenuOpen(Player staff, String targetPlayer) {
-        plugin.getLogger().info("Staff " + staff.getName() + " opened notes menu for " + targetPlayer);
+        plugin.debug("Staff %s opened notes menu for %s", staff.getName(), targetPlayer);
         staff.sendMessage(MessageUtils.colorize("&eNotes system is under development!"));
     }
 }

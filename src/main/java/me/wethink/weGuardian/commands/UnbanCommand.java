@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -38,11 +39,6 @@ public class UnbanCommand implements CommandExecutor, TabCompleter {
 
         String targetName = args[0];
 
-        if (!Bukkit.getOfflinePlayer(targetName).hasPlayedBefore()) {
-            sender.sendMessage(MessageUtils.colorize("&cPlayer not found."));
-            return true;
-        }
-
         String staffName = sender instanceof Player ? sender.getName() : "Console";
 
         UUID targetUuid = Bukkit.getOfflinePlayer(targetName).getUniqueId();
@@ -61,10 +57,20 @@ public class UnbanCommand implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         if (args.length == 1) {
-            return Bukkit.getOnlinePlayers().stream()
+            List<String> suggestions = new ArrayList<>();
+            
+            suggestions.addAll(Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
                     .filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase()))
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toList()));
+            
+            suggestions.addAll(Arrays.stream(Bukkit.getOfflinePlayers())
+                    .map(org.bukkit.OfflinePlayer::getName)
+                    .filter(name -> name != null && name.toLowerCase().startsWith(args[0].toLowerCase()))
+                    .limit(10)
+                    .collect(Collectors.toList()));
+            
+            return suggestions;
         }
         return new ArrayList<>();
     }

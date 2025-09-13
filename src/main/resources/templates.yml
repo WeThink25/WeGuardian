@@ -1,6 +1,3 @@
-# WeGuardian Punishment Templates Configuration
-# This file defines punishment templates with escalation levels for automated punishment progression
-# Templates allow for consistent punishment escalation based on offense history
 
 templates:
   spam:
@@ -221,11 +218,9 @@ templates:
         duration: "12h"
         reason: "Inappropriate language - Temporary ban"
 
-# Template configuration
 settings:
   auto_escalation: true
   
-  # How long to consider previous offenses (in days)
   offense_expiry_days: 90
   
   count_active_only: false

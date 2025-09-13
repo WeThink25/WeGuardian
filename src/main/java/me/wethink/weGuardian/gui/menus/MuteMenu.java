@@ -97,6 +97,6 @@ public class MuteMenu extends MenuHandler {
 
     @Override
     protected void onMenuOpen(Player staff, String targetPlayer) {
-        plugin.getLogger().info("Staff " + staff.getName() + " opened mute menu for " + targetPlayer);
+        plugin.debug("Staff %s opened mute menu for %s", staff.getName(), targetPlayer);
     }
 }

@@ -31,7 +31,9 @@ public class TempmuteMenu extends MenuHandler {
     protected void handleItemClick(Player staff, String targetPlayer, String itemKey, ConfigurationSection itemConfig) {
         String action = itemConfig.getString("action", "");
         
-        plugin.getLogger().info("TempmuteMenu: Player " + staff.getName() + " clicked item " + itemKey + " with action: " + action);
+        if (plugin.getConfig().getBoolean("debug.enabled", false)) {
+            plugin.getLogger().info("TempmuteMenu: Player " + staff.getName() + " clicked item " + itemKey + " with action: " + action);
+        }
         
         if (action.startsWith("set_duration:")) {
             String duration = action.substring("set_duration:".length());
@@ -161,6 +163,8 @@ public class TempmuteMenu extends MenuHandler {
 
     @Override
     protected void onMenuOpen(Player staff, String targetPlayer) {
-        plugin.getLogger().info("Staff " + staff.getName() + " opened tempmute menu for " + targetPlayer);
+        if (plugin.getConfig().getBoolean("debug.enabled", false)) {
+            plugin.debug("Staff %s opened tempmute menu for %s", staff.getName(), targetPlayer);
+        }
     }
 }
