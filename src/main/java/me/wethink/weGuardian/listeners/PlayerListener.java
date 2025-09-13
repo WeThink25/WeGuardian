@@ -99,7 +99,7 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
+    public void onPlayeJoin(PlayerJoinEvent event) {
         CompletableFuture.runAsync(() -> {
             try {
                 List<Punishment> punishments = databaseManager.getActivePunishments(event.getPlayer().getUniqueId()).join();

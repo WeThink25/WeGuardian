@@ -39,7 +39,7 @@ public class GUIConfigLoader {
             try {
                 FileConfiguration config = YamlConfiguration.loadConfiguration(guiFile);
                 guiConfigs.put(guiName, config);
-                plugin.getLogger().info("Loaded GUI config: " + fileName);
+                plugin.debug("Loaded GUI config: " + fileName);
             } catch (Exception e) {
                 plugin.getLogger().severe("Failed to load GUI config " + fileName + ": " + e.getMessage());
             }

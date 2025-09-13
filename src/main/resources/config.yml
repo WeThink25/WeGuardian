@@ -1,6 +1,3 @@
-# ===========================================
-# DATABASE CONFIGURATION
-# ===========================================
 database:
   type: "yaml"
   
@@ -17,9 +14,6 @@ database:
     username: "root"
     password: ""
 
-# ===========================================
-# PERFORMANCE OPTIMIZATION
-# ===========================================
 performance:
   thread_pool_size: 4
   max_concurrent_operations: 50
@@ -34,9 +28,6 @@ performance:
   async:
     worker_threads: 2
 
-# ===========================================
-# NOTIFICATIONS
-# ===========================================
 notifications:
   chat:
     enabled: true
@@ -45,9 +36,6 @@ notifications:
   actionbar_updates: true
   actionbar_interval: 30
 
-# ===========================================
-# CROSS-SERVER SYNCHRONIZATION
-# ===========================================
 cross_server:
   enabled: false
   sync_interval: 30
@@ -68,9 +56,6 @@ cross_server:
       port: 25566
       enabled: true
 
-# ===========================================
-# CONSOLE COMMANDS
-# ===========================================
 console_commands:
   enabled: false
   
@@ -98,9 +83,6 @@ console_commands:
   on_unmute:
     - "broadcast &a{player} has been unmuted by {staff}"
 
-# ===========================================
-# DISCORD INTEGRATION
-# ===========================================
 discord:
   enabled: false
   webhook_url: "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL"
@@ -118,30 +100,18 @@ discord:
     unban: true
     unmute: true
 
-# ===========================================
-# DEBUG & LOGGING
-# ===========================================
 debug:
   enabled: false
   log_performance_metrics: false
   log_cache_statistics: false
 
-# ===========================================
-# FEATURES
-# ===========================================
 features:
   placeholderapi_integration: true
   metrics: true
 
-# ===========================================
-# SERVER CONFIGURATION
-# ===========================================
 appeal_url: "your-server.com/appeals"
 server_name: "Unknown"
 
-# ===========================================
-# MENU CONFIGURATION
-# ===========================================
 menus:
   validation:
     enabled: true

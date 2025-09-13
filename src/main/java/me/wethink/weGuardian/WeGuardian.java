@@ -54,11 +54,11 @@ public final class WeGuardian extends JavaPlugin {
         foliaLib = new FoliaLib(this);
         boolean isFolia = foliaLib.isFolia();
         String platform = isFolia ? "Folia" : "Paper/Spigot/Bukkit";
-        getLogger().info("Starting WeGuardian on " + platform + " platform");
+        debug("Starting WeGuardian on " + platform + " platform");
         int threadPoolSize = isFolia ? 4 : 2;
         executorService = Executors.newScheduledThreadPool(threadPoolSize);
         if (isFolia) {
-            getLogger().info("Folia detected - Using region-based scheduling optimizations");
+            debug("Folia detected - Using region-based scheduling optimizations");
         }
         loadConfigurations();
         saveDefaultConfig();
@@ -112,16 +112,16 @@ public final class WeGuardian extends JavaPlugin {
         boolean useMySQL = getConfig().getBoolean("database.mysql.enabled", false);
         
         if (useMySQL && "mysql".equals(databaseType)) {
-            getLogger().info("Initializing MySQL database connection...");
+            debug("Initializing MySQL database connection...");
             this.databaseManager = new HikariDatabaseManager(this);
         } else {
-            getLogger().info("Initializing YAML file storage...");
+            debug("Initializing YAML file storage...");
             this.databaseManager = new YamlDatabaseManager(this);
         }
         
         try {
             this.databaseManager.initialize().get();
-            getLogger().info("Database initialized successfully! Type: " + (useMySQL ? "MySQL" : "YAML"));
+            debug("Database initialized successfully! Type: " + (useMySQL ? "MySQL" : "YAML"));
         } catch (Exception e) {
             getLogger().severe("Failed to initialize database: " + e.getMessage());
             e.printStackTrace();
@@ -290,7 +290,7 @@ public final class WeGuardian extends JavaPlugin {
             saveResource("messages.yml", false);
         }
         messagesConfig = YamlConfiguration.loadConfiguration(messagesFile);
-        getLogger().info("Loaded messages configuration with " + messagesConfig.getKeys(true).size() + " message keys");
+        debug("Loaded messages configuration with " + messagesConfig.getKeys(true).size() + " message keys");
     }
 
     private void loadGuiConfigs() {
@@ -320,7 +320,7 @@ public final class WeGuardian extends JavaPlugin {
             }
         }
         reasonsConfig = YamlConfiguration.loadConfiguration(reasonsFile);
-        getLogger().info("Loaded GUI configurations - Menu: " + guiConfig.getKeys(false).size() +
+        debug("Loaded GUI configurations - Menu: " + guiConfig.getKeys(false).size() +
                 " sections, Reasons loaded with " + reasonsConfig.getKeys(false).size() + " categories");
     }
 
@@ -328,7 +328,7 @@ public final class WeGuardian extends JavaPlugin {
         reloadConfig();
         loadConfigurations();
         clearMessageCache();
-        getLogger().info("§aConfigurations reloaded successfully!");
+        debug("§aConfigurations reloaded successfully!");
     }
 
     public String getMessage(String path) {

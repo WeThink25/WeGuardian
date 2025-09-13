@@ -563,10 +563,10 @@ This project is licensed under the **Open Contribution License (MIT + Non-Commer
 See the [LICENSE.txt](LICENSE.txt) file for the full legal text.
 
 ### 🔎 TL;DR
-- ✅ Free to use, share, and modify.  
-- 🚫 Not allowed for commercial use (no selling, no paid forks, no bundling into paid products).  
-- 🔄 If you change or improve things, you must license your changes under the same terms and contribute them back (e.g. via a pull request or patch).  
-- 📝 Keep the copyright & license notice in all copies.  
+- ✅ Free to use, share, and modify.
+- 🚫 Not allowed for commercial use (no selling, no paid forks, no bundling into paid products).
+- 🔄 If you change or improve things, you must license your changes under the same terms and contribute them back (e.g. via a pull request or patch).
+- 📝 Keep the copyright & license notice in all copies.
 - ⚠️ No warranty.
 
 ## 🙏 Acknowledgments
@@ -584,4 +584,5 @@ See the [LICENSE.txt](LICENSE.txt) file for the full legal text.
 
 
 *Built with ❤️ for the Minecraft community*
+
 

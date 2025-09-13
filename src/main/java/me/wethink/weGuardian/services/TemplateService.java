@@ -47,7 +47,7 @@ public class TemplateService {
             }
         }
 
-        plugin.getLogger().info("Loaded " + templates.size() + " punishment templates");
+        plugin.debug("Loaded " + templates.size() + " punishment templates");
     }
 
     private void loadTemplate(String name, ConfigurationSection section) {

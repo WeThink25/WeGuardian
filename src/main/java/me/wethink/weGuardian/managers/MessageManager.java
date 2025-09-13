@@ -27,13 +27,13 @@ public class MessageManager {
 
             if (!messagesFile.exists()) {
                 plugin.saveResource("messages.yml", false);
-                plugin.getLogger().info("Created default messages.yml file");
+                plugin.debug("Created default messages.yml file");
             }
 
             messagesConfig = YamlConfiguration.loadConfiguration(messagesFile);
             countLoadedMessages();
 
-            plugin.getLogger().info("Loaded " + loadedMessagesCount + " messages from messages.yml");
+            plugin.debug("Loaded " + loadedMessagesCount + " messages from messages.yml");
 
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load messages.yml", e);
@@ -61,7 +61,7 @@ public class MessageManager {
 
     public void reloadMessages() {
         loadMessagesConfig();
-        plugin.getLogger().info("Messages configuration reloaded");
+        plugin.debug("Messages configuration reloaded");
     }
 
     public String getMessage(String path) {
