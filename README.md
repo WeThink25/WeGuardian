@@ -3,7 +3,7 @@
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://openjdk.java.net/projects/jdk/21/)
 [![Paper](https://img.shields.io/badge/Paper-1.21.1-blue.svg)](https://papermc.io/)
 [![Folia](https://img.shields.io/badge/Folia-Fully%20Supported-green.svg)](https://papermc.io/software/folia)
-[![License](https://img.shields.io/badge/License-Open--Contribution--NC-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Open--Contribution--NC-blue.svg)](LICENSE.txt)
 [![bStats](https://img.shields.io/badge/bStats-27046-brightgreen.svg)](https://bstats.org/plugin/bukkit/WeGuardian/27046)
 [![Discord](https://img.shields.io/badge/Discord-WeGuardian-blue.svg)](https://discord.gg/aSWKs3k4XA)
 [![GitHub](https://img.shields.io/badge/GitHub-WeThink25/WeGuardian-blue.svg)](https://github.com/WeThink25/WeGuardian)
@@ -584,3 +584,4 @@ See the [LICENSE.txt](LICENSE.txt) file for the full legal text.
 
 
 *Built with ❤️ for the Minecraft community*
+
