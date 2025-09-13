@@ -1,1 +1,1 @@
-⚠️ WeGuardian is in development. Do not use in production.
+**⚠️ WeGuardian is in development. Only use stable releases in production.**
