@@ -3,7 +3,7 @@
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://openjdk.java.net/projects/jdk/21/)
 [![Paper](https://img.shields.io/badge/Paper-1.21.1-blue.svg)](https://papermc.io/)
 [![Folia](https://img.shields.io/badge/Folia-Fully%20Supported-green.svg)](https://papermc.io/software/folia)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Open--Contribution--NC-blue.svg)](LICENSE)
 [![bStats](https://img.shields.io/badge/bStats-27046-brightgreen.svg)](https://bstats.org/plugin/bukkit/WeGuardian/27046)
 [![Discord](https://img.shields.io/badge/Discord-WeGuardian-blue.svg)](https://discord.gg/aSWKs3k4XA)
 [![GitHub](https://img.shields.io/badge/GitHub-WeThink25/WeGuardian-blue.svg)](https://github.com/WeThink25/WeGuardian)
@@ -525,14 +525,6 @@ debug:
   log_sql_queries: true
 ```
 
-## 🔄 Migration & Updates
-
-### From Other Plugins
-
-WeGuardian provides migration tools for:
-- **LiteBans**: Automatic migration of bans, mutes, and warnings
-- **AdvancedBan**: Import punishment history and player data
-- **BanManager**: Convert ban configurations and templates
 
 ### Version Updates
 
@@ -565,9 +557,17 @@ WeGuardian provides migration tools for:
 - Test on both Paper and Folia
 - Update documentation for new features
 
-## 📄 License
+## 📜 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **Open Contribution License (MIT + Non-Commercial)**.  
+See the [LICENSE.txt](LICENSE.txt) file for the full legal text.
+
+### 🔎 TL;DR
+- ✅ Free to use, share, and modify.  
+- 🚫 Not allowed for commercial use (no selling, no paid forks, no bundling into paid products).  
+- 🔄 If you change or improve things, you must license your changes under the same terms and contribute them back (e.g. via a pull request or patch).  
+- 📝 Keep the copyright & license notice in all copies.  
+- ⚠️ No warranty.
 
 ## 🙏 Acknowledgments
 
@@ -581,5 +581,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **WeGuardian** - Professional Minecraft punishment system for the modern server.
+
 
 *Built with ❤️ for the Minecraft community*
