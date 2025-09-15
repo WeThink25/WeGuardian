@@ -1,5 +1,5 @@
 name: WeGuardian
-version: '1.0'
+version: '1.1'
 main: me.wethink.weGuardian.WeGuardian
 api-version: '1.21'
 load: STARTUP

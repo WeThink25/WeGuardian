@@ -6,7 +6,7 @@
 
     <groupId>me.wethink</groupId>
     <artifactId>WeGuardian</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
     <packaging>jar</packaging>
 
     <name>WeGuardian</name>
@@ -40,7 +40,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <minimizeJar>true</minimizeJar>
                     <relocations>
                         <relocation>
                             <pattern>com.zaxxer.hikari</pattern>
