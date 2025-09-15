@@ -795,17 +795,6 @@ public class YamlDatabaseManager implements DatabaseManager {
     }
 
     @Override
-    public CompletableFuture<List<PlayerData>> searchPlayersByName(String name) {
-        return CompletableFuture.supplyAsync(() -> 
-            playerDataCache.values().stream()
-                .filter(playerData -> playerData.getPlayerName().toLowerCase().contains(name.toLowerCase()))
-                .sorted((p1, p2) -> p2.getLastSeen().compareTo(p1.getLastSeen()))
-                .limit(10)
-                .collect(Collectors.toList())
-        );
-    }
-
-    @Override
     public CompletableFuture<Integer> getTotalPunishments() {
         return CompletableFuture.completedFuture(punishmentCache.size());
     }

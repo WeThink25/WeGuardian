@@ -33,7 +33,6 @@
           </execution>
         </executions>
         <configuration>
-          <minimizeJar>true</minimizeJar>
           <relocations>
             <relocation>
               <pattern>com.zaxxer.hikari</pattern>

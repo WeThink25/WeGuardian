@@ -7,7 +7,6 @@ import me.wethink.weGuardian.database.HikariDatabaseManager;
 import me.wethink.weGuardian.database.YamlDatabaseManager;
 import me.wethink.weGuardian.gui.GUIConfigLoader;
 import me.wethink.weGuardian.gui.PunishmentGUI;
-import me.wethink.weGuardian.listeners.AsyncSuggestionsListener;
 import me.wethink.weGuardian.listeners.ChatListener;
 import me.wethink.weGuardian.listeners.PlayerListener;
 import me.wethink.weGuardian.services.CrossServerSyncService;
@@ -154,7 +153,6 @@ public final class WeGuardian extends JavaPlugin {
     private void initializeListeners() {
         getServer().getPluginManager().registerEvents(new PlayerListener(this, databaseManager), this);
         getServer().getPluginManager().registerEvents(new ChatListener(this, databaseManager), this);
-        getServer().getPluginManager().registerEvents(new AsyncSuggestionsListener(this, databaseManager, templateService), this);
     }
 
     private void registerCommands() {

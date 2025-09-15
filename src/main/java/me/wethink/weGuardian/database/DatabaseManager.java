@@ -78,8 +78,6 @@ public interface DatabaseManager {
 
     CompletableFuture<List<String>> searchPlayers(String query);
 
-    CompletableFuture<List<PlayerData>> searchPlayersByName(String name);
-
     CompletableFuture<Integer> getTotalPunishments();
 
     CompletableFuture<List<PlayerConnection>> getPlayerConnections(UUID uuid);

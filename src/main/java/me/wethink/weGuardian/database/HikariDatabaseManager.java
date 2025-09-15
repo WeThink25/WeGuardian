@@ -682,44 +682,6 @@ public class HikariDatabaseManager implements DatabaseManager {
     }
 
     @Override
-    public CompletableFuture<List<PlayerData>> searchPlayersByName(String name) {
-        return CompletableFuture.supplyAsync(() -> {
-            List<PlayerData> results = new ArrayList<>();
-            String sql = "SELECT uuid, name, ip_address, first_join, last_seen, banned, muted FROM wg_players WHERE name LIKE ? ORDER BY last_seen DESC LIMIT 10";
-
-            try (Connection conn = dataSource.getConnection();
-                 PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-                stmt.setString(1, "%" + name + "%");
-                ResultSet rs = stmt.executeQuery();
-
-                while (rs.next()) {
-                    UUID uuid = UUID.fromString(rs.getString("uuid"));
-                    String playerName = rs.getString("name");
-                    String ipAddress = rs.getString("ip_address");
-                    LocalDateTime firstJoin = rs.getTimestamp("first_join").toLocalDateTime();
-                    LocalDateTime lastSeen = rs.getTimestamp("last_seen").toLocalDateTime();
-                    boolean banned = rs.getBoolean("banned");
-                    boolean muted = rs.getBoolean("muted");
-
-                    PlayerData playerData = new PlayerData(uuid, playerName, ipAddress);
-                    playerData.setFirstJoin(firstJoin);
-                    playerData.setLastSeen(lastSeen);
-                    playerData.setBanned(banned);
-                    playerData.setMuted(muted);
-
-                    results.add(playerData);
-                }
-
-            } catch (SQLException e) {
-                plugin.getLogger().severe("Failed to search players by name: " + e.getMessage());
-            }
-
-            return results;
-        }, executorService);
-    }
-
-    @Override
     public CompletableFuture<Integer> getTotalPunishments() {
         return CompletableFuture.supplyAsync(() -> {
             String query = "SELECT COUNT(*) FROM wg_punishments";
