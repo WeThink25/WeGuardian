@@ -23,6 +23,7 @@ public abstract class MenuHandler {
     protected final String menuType;
     protected final Map<Player, String> targetPlayers = new HashMap<>();
     protected final Map<Player, Map<String, Object>> selectedData = new HashMap<>();
+    private final java.util.Set<Player> preserveOnClose = new java.util.HashSet<>();
     protected MenuManager menuManager;
 
     public MenuHandler(WeGuardian plugin, String menuType) {
@@ -137,7 +138,11 @@ public abstract class MenuHandler {
 
     public void cleanupPlayer(Player player) {
         targetPlayers.remove(player);
-        selectedData.remove(player);
+        if (preserveOnClose.contains(player)) {
+            preserveOnClose.remove(player);
+        } else {
+            selectedData.remove(player);
+        }
         onMenuClose(player);
     }
     
@@ -163,6 +168,10 @@ public abstract class MenuHandler {
 
     protected void clearSelectedData(Player player) {
         selectedData.remove(player);
+    }
+
+    protected void preserveSelectionOnNextClose(Player player) {
+        preserveOnClose.add(player);
     }
 
     protected abstract ConfigurationSection getMenuConfig();

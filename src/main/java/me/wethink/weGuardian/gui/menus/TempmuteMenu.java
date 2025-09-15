@@ -2,7 +2,6 @@ package me.wethink.weGuardian.gui.menus;
 
 import me.wethink.weGuardian.WeGuardian;
 import me.wethink.weGuardian.gui.MenuHandler;
-import me.wethink.weGuardian.gui.menus.MenuManager;
 import me.wethink.weGuardian.utils.MessageUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -40,7 +39,7 @@ public class TempmuteMenu extends MenuHandler {
             Map<String, Object> selectedData = getSelectedData(staff);
             selectedData.put("selectedDuration", duration);
             staff.sendMessage(MessageUtils.colorize("&eSelected duration: &f" + duration));
-            
+            preserveSelectionOnNextClose(staff);
             refreshInventory(staff, targetPlayer);
             return;
         }
@@ -48,7 +47,6 @@ public class TempmuteMenu extends MenuHandler {
         if (action.startsWith("execute_punishment:")) {
             String[] parts = action.split(":", 4);
             if (parts.length >= 4) {
-                String punishmentType = parts[1];
                 String reason = parts[2];
                 String duration = parts[3];
                 
@@ -117,6 +115,7 @@ public class TempmuteMenu extends MenuHandler {
             String duration = itemConfig.getString("duration", "30m");
             selectedData.put("selectedDuration", duration);
             staff.sendMessage(MessageUtils.colorize("&eSelected duration: &f" + duration));
+            preserveSelectionOnNextClose(staff);
             refreshInventory(staff, targetPlayer);
             return;
         }

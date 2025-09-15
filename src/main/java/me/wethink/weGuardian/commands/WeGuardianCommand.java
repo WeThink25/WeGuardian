@@ -50,16 +50,17 @@ public class WeGuardianCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(MessageUtils.colorize("&6⚡ Reloading WeGuardian..."));
 
         try {
-            plugin.reloadConfig();
+            plugin.reloadConfigurations();
 
-            sender.sendMessage(MessageUtils.colorize("&a✓ Configuration files reloaded successfully"));
+            plugin.getTemplateService().reloadTemplates();
+
+            sender.sendMessage(MessageUtils.colorize("&a✓ Reload complete"));
             sender.sendMessage(MessageUtils.colorize("&7  - config.yml"));
             sender.sendMessage(MessageUtils.colorize("&7  - messages.yml"));
-            sender.sendMessage(MessageUtils.colorize("&7  - gui.yml"));
-            sender.sendMessage(MessageUtils.colorize("&7  - settings.yml"));
-
+            sender.sendMessage(MessageUtils.colorize("&7  - gui/*.yml"));
+            sender.sendMessage(MessageUtils.colorize("&7  - templates.yml"));
         } catch (Exception e) {
-            sender.sendMessage(MessageUtils.colorize("&c✗ Error reloading configuration: " + e.getMessage()));
+            sender.sendMessage(MessageUtils.colorize("&c✗ Error reloading: " + e.getMessage()));
             plugin.getLogger().severe("Error reloading configuration: " + e.getMessage());
         }
     }

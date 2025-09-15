@@ -84,8 +84,8 @@ console_commands:
     - "broadcast &a{player} has been unmuted by {staff}"
 
 discord:
-  enabled: false
-  webhook_url: "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL"
+  enabled: true
+  webhook_url: "https://discord.com/api/webhooks/REPLACE_WITH_YOUR_WEBHOOK"
   username: "WeGuardian"
   avatar_url: "https://i.imgur.com/your-avatar.png"
   embed_color: 16711680

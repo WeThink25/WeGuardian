@@ -214,6 +214,12 @@ public final class WeGuardian extends JavaPlugin {
         getCommand("notesmenu").setTabCompleter(new NotesMenuCommand(this));
         getCommand("unbanmenu").setTabCompleter(new UnbanMenuCommand(this));
         getCommand("unmutemenu").setTabCompleter(new UnmuteMenuCommand(this));
+
+        if (getCommand("weguardian") != null) {
+            WeGuardianCommand wg = new WeGuardianCommand(this);
+            getCommand("weguardian").setExecutor(wg);
+            getCommand("weguardian").setTabCompleter(wg);
+        }
     }
 
     private void registerPlaceholders() {

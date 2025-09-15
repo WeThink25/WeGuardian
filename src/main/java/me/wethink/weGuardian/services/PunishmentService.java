@@ -25,6 +25,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import me.wethink.weGuardian.services.DiscordWebhookService;
 
 public class PunishmentService {
 
@@ -211,6 +212,8 @@ public class PunishmentService {
                         }
 
                         plugin.getNotificationService().broadcastPunishment(punishment);
+                        var webhook = new DiscordWebhookService(plugin);
+                        webhook.sendPunishmentWebhook(punishment);
                         return CompletableFuture.completedFuture(true);
                     }
                     return CompletableFuture.completedFuture(false);
@@ -253,6 +256,8 @@ public class PunishmentService {
                         }
 
                         plugin.getNotificationService().broadcastPunishment(punishment);
+                        var webhook = new DiscordWebhookService(plugin);
+                        webhook.sendPunishmentWebhook(punishment);
                         return CompletableFuture.completedFuture(true);
                     }
                     return CompletableFuture.completedFuture(false);
@@ -300,6 +305,8 @@ public class PunishmentService {
                         }
 
                         plugin.getNotificationService().broadcastPunishment(punishment);
+                        var webhook = new DiscordWebhookService(plugin);
+                        webhook.sendPunishmentWebhook(punishment);
                         return CompletableFuture.completedFuture(true);
                     }
                     return CompletableFuture.completedFuture(false);
@@ -336,6 +343,8 @@ public class PunishmentService {
                         }
 
                         plugin.getNotificationService().broadcastPunishment(punishment);
+                        var webhook = new DiscordWebhookService(plugin);
+                        webhook.sendPunishmentWebhook(punishment);
                         return CompletableFuture.completedFuture(true);
                     }
                     return CompletableFuture.completedFuture(false);
@@ -368,6 +377,8 @@ public class PunishmentService {
                         }
 
                         plugin.getNotificationService().broadcastPunishment(punishment);
+                        var webhook = new DiscordWebhookService(plugin);
+                        webhook.sendPunishmentWebhook(punishment);
                         return CompletableFuture.completedFuture(true);
                     }
                     return CompletableFuture.completedFuture(false);
@@ -398,6 +409,8 @@ public class PunishmentService {
                         banCache.remove(targetUuid);
                     }
                     plugin.getNotificationService().broadcastUnpunishment(banPunishment, staffName);
+                    var webhook = new DiscordWebhookService(plugin);
+                    webhook.sendUnpunishmentWebhook(banPunishment, staffName);
                     return true;
                 });
             });
@@ -426,6 +439,8 @@ public class PunishmentService {
                         muteCache.remove(targetUuid);
                     }
                     plugin.getNotificationService().broadcastUnpunishment(mutePunishment, staffName);
+                    var webhook = new DiscordWebhookService(plugin);
+                    webhook.sendUnpunishmentWebhook(mutePunishment, staffName);
                     return true;
                 });
             });

@@ -29,6 +29,7 @@ public class YamlDatabaseManager implements DatabaseManager {
     private final Map<Integer, Punishment> punishmentCache;
     private final Map<UUID, PlayerData> playerDataCache;
     private final Map<Integer, BanwaveEntry> banwaveCache;
+    private final Map<UUID, Map<String, Long>> playerConnectionsCache;
     private final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     public YamlDatabaseManager(WeGuardian plugin) {
@@ -39,6 +40,7 @@ public class YamlDatabaseManager implements DatabaseManager {
         this.punishmentCache = new ConcurrentHashMap<>();
         this.playerDataCache = new ConcurrentHashMap<>();
         this.banwaveCache = new ConcurrentHashMap<>();
+        this.playerConnectionsCache = new ConcurrentHashMap<>();
         this.nextId = new AtomicInteger(1);
         
         if (!dataDir.exists()) {
@@ -94,6 +96,15 @@ public class YamlDatabaseManager implements DatabaseManager {
                     PlayerData playerData = deserializePlayerData(playerConfig, playerUuid);
                     if (playerData != null) {
                         playerDataCache.put(playerUuid, playerData);
+                    }
+                    ConfigurationSection connectionsSection = playerConfig.getConfigurationSection("connections");
+                    if (connectionsSection != null) {
+                        Map<String, Long> ipMap = new ConcurrentHashMap<>();
+                        for (String ip : connectionsSection.getKeys(false)) {
+                            long lastSeenTs = connectionsSection.getLong(ip, 0L);
+                            ipMap.put(ip, lastSeenTs);
+                        }
+                        playerConnectionsCache.put(playerUuid, ipMap);
                     }
                     
                     ConfigurationSection punishmentsSection = playerConfig.getConfigurationSection("punishments");
@@ -311,6 +322,7 @@ public class YamlDatabaseManager implements DatabaseManager {
             
             YamlConfiguration playerConfig = getPlayerConfig(playerData.getUuid());
             serializePlayerData(playerConfig, playerData);
+            serializePlayerConnections(playerConfig, playerData.getUuid());
             savePlayerConfig(playerData.getUuid(), playerConfig);
         });
     }
@@ -394,6 +406,18 @@ public class YamlDatabaseManager implements DatabaseManager {
         config.set("first_join", playerData.getFirstJoinTimestamp());
         config.set("last_join", playerData.getLastJoinTimestamp());
         config.set("last_ip", playerData.getLastIP());
+    }
+
+    private void serializePlayerConnections(YamlConfiguration config, UUID uuid) {
+        Map<String, Long> ipMap = playerConnectionsCache.get(uuid);
+        if (ipMap == null) return;
+        ConfigurationSection section = config.getConfigurationSection("connections");
+        if (section == null) {
+            section = config.createSection("connections");
+        }
+        for (Map.Entry<String, Long> entry : ipMap.entrySet()) {
+            section.set(entry.getKey(), entry.getValue());
+        }
     }
 
     private BanwaveEntry deserializeBanwaveEntry(ConfigurationSection section) {
@@ -812,17 +836,55 @@ public class YamlDatabaseManager implements DatabaseManager {
 
     @Override
     public CompletableFuture<List<PlayerConnection>> getPlayerConnections(UUID uuid) {
-        return CompletableFuture.completedFuture(new ArrayList<>());
+        return CompletableFuture.supplyAsync(() -> {
+            List<PlayerConnection> list = new ArrayList<>();
+            Map<String, Long> ipMap = playerConnectionsCache.get(uuid);
+            if (ipMap == null || ipMap.isEmpty()) return list;
+            PlayerData data = playerDataCache.get(uuid);
+            String playerName = data != null ? data.getPlayerName() : "Unknown";
+            for (Map.Entry<String, Long> e : ipMap.entrySet()) {
+                LocalDateTime ts = LocalDateTime.ofEpochSecond(e.getValue() / 1000L, 0, java.time.ZoneOffset.UTC);
+                list.add(new PlayerConnectionImpl(uuid, playerName, e.getKey(), ts));
+            }
+            return list;
+        });
     }
 
     @Override
     public CompletableFuture<List<PlayerConnection>> getPlayersFromIP(String ip) {
-        return CompletableFuture.completedFuture(new ArrayList<>());
+        return CompletableFuture.supplyAsync(() -> {
+            List<PlayerConnection> list = new ArrayList<>();
+            for (Map.Entry<UUID, Map<String, Long>> entry : playerConnectionsCache.entrySet()) {
+                Long tsMillis = entry.getValue().get(ip);
+                if (tsMillis != null) {
+                    UUID uuid = entry.getKey();
+                    PlayerData data = playerDataCache.get(uuid);
+                    String name = data != null ? data.getPlayerName() : "Unknown";
+                    LocalDateTime ts = LocalDateTime.ofEpochSecond(tsMillis / 1000L, 0, java.time.ZoneOffset.UTC);
+                    list.add(new PlayerConnectionImpl(uuid, name, ip, ts));
+                }
+            }
+            return list;
+        });
     }
 
     @Override
     public CompletableFuture<Void> recordPlayerConnection(UUID uuid, String playerName, String ip) {
-        return CompletableFuture.completedFuture(null);
+        return CompletableFuture.runAsync(() -> {
+            Map<String, Long> ipMap = playerConnectionsCache.computeIfAbsent(uuid, k -> new ConcurrentHashMap<>());
+            long now = System.currentTimeMillis();
+            ipMap.put(ip, now);
+
+            PlayerData data = playerDataCache.computeIfAbsent(uuid, u -> new PlayerData(uuid, playerName));
+            data.setPlayerName(playerName);
+            data.setLastIP(ip);
+            data.setLastJoin(now);
+
+            YamlConfiguration playerConfig = getPlayerConfig(uuid);
+            serializePlayerData(playerConfig, data);
+            serializePlayerConnections(playerConfig, uuid);
+            savePlayerConfig(uuid, playerConfig);
+        });
     }
 
     @Override
@@ -832,5 +894,39 @@ public class YamlDatabaseManager implements DatabaseManager {
                 .filter(p -> p.getRemovedAt() == null && (p.getExpiresAt() == null || p.getExpiresAt().isAfter(LocalDateTime.now())))
                 .collect(Collectors.toList())
         );
+    }
+
+    private static class PlayerConnectionImpl implements DatabaseManager.PlayerConnection {
+        private final UUID uuid;
+        private final String playerName;
+        private final String ip;
+        private final LocalDateTime timestamp;
+
+        PlayerConnectionImpl(UUID uuid, String playerName, String ip, LocalDateTime timestamp) {
+            this.uuid = uuid;
+            this.playerName = playerName;
+            this.ip = ip;
+            this.timestamp = timestamp;
+        }
+
+        @Override
+        public UUID getUuid() {
+            return uuid;
+        }
+
+        @Override
+        public String getPlayerName() {
+            return playerName;
+        }
+
+        @Override
+        public String getIp() {
+            return ip;
+        }
+
+        @Override
+        public LocalDateTime getTimestamp() {
+            return timestamp;
+        }
     }
 }
