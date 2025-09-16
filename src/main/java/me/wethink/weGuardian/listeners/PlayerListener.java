@@ -43,19 +43,31 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        foliaLib.getScheduler().runAsync(task -> {
-            try {
-                handlePlayerDataAsync(event);
-                
-                checkPunishmentsAsync(event);
-                
-                checkIPBanAsync(event);
-                
-            } catch (Exception e) {
-                plugin.getLogger().severe("Error in async pre-login processing for " + event.getName() + ": " + e.getMessage());
-                e.printStackTrace();
+        try {
+            checkPunishmentsSync(event);
+            
+            if (event.getLoginResult() == AsyncPlayerPreLoginEvent.Result.ALLOWED) {
+                checkIPBanSync(event);
             }
-        });
+            
+            if (event.getLoginResult() == AsyncPlayerPreLoginEvent.Result.ALLOWED) {
+                foliaLib.getScheduler().runAsync(task -> {
+                    try {
+                        handlePlayerDataAsync(event);
+                    } catch (Exception e) {
+                        plugin.getLogger().severe("Error handling player data for " + event.getName() + ": " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                });
+            }
+            
+        } catch (Exception e) {
+            plugin.getLogger().severe("Critical error in pre-login processing for " + event.getName() + ": " + e.getMessage());
+            e.printStackTrace();
+            
+            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, 
+                MessageUtils.toComponent("&c&lCONNECTION ERROR\n&7An error occurred during login verification.\n&7Please try again later."));
+        }
     }
     
     private void handlePlayerDataAsync(AsyncPlayerPreLoginEvent event) {
@@ -83,26 +95,44 @@ public class PlayerListener implements Listener {
         }
     }
     
-    private void checkPunishmentsAsync(AsyncPlayerPreLoginEvent event) {
+    private void checkPunishmentsSync(AsyncPlayerPreLoginEvent event) {
         try {
+            Boolean isBanned = databaseManager.isPlayerBanned(event.getUniqueId()).join();
+            plugin.debug("Direct ban check for %s: %s", event.getName(), isBanned);
+            
+            if (isBanned != null && isBanned) {
+                plugin.debug("Player %s is banned (direct check), blocking connection", event.getName());
+                event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, 
+                    MessageUtils.toComponent("&c&lYOU ARE BANNED\n&7You have been banned from this server."));
+                return;
+            }
+            
             List<Punishment> punishments = databaseManager.getActivePunishments(event.getUniqueId()).join();
             plugin.debug("Checking %d active punishments for player: %s", punishments.size(), event.getName());
             
+            if (punishments == null) {
+                plugin.getLogger().warning("Database returned null punishments for " + event.getName() + " - denying access for safety");
+                event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, 
+                    MessageUtils.toComponent("&c&lCONNECTION ERROR\n&7Unable to verify your punishment status.\n&7Please try again later."));
+                return;
+            }
+            
             for (Punishment punishment : punishments) {
-                if (punishment.isExpired()) {
-                    plugin.debug("Skipping expired punishment: %s for %s", punishment.getType(), event.getName());
+                if (punishment == null) {
+                    plugin.debug("Skipping null punishment for %s", event.getName());
                     continue;
                 }
+                
+                plugin.debug("Found punishment: type=%s, active=%s, expired=%s, target=%s", 
+                    punishment.getType(), punishment.isActive(), punishment.isExpired(), punishment.getTargetName());
 
                 if (punishment.getType() == PunishmentType.BAN || punishment.getType() == PunishmentType.TEMPBAN) {
                     plugin.debug("Player %s is banned, blocking connection", event.getName());
                     String kickMessage = getBanMessage(punishment);
                     Component kickComponent = MessageUtils.toComponent(kickMessage);
                     
-                    foliaLib.getScheduler().runNextTick(task -> {
-                        event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, kickComponent);
-                        plugin.getNotificationService().broadcastPunishment(punishment, "reconnect_attempt");
-                    });
+                    event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, kickComponent);
+                    plugin.getNotificationService().broadcastPunishment(punishment, "reconnect_attempt");
                     return;
                 }
                 
@@ -113,13 +143,27 @@ public class PlayerListener implements Listener {
             }
         } catch (Exception e) {
             plugin.getLogger().severe("Error checking punishments for " + event.getName() + ": " + e.getMessage());
+            e.printStackTrace();
+            
+            plugin.getLogger().warning("Denying access to " + event.getName() + " due to punishment check failure");
+            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, 
+                MessageUtils.toComponent("&c&lCONNECTION ERROR\n&7Unable to verify your punishment status.\n&7Please try again later."));
         }
     }
     
-    private void checkIPBanAsync(AsyncPlayerPreLoginEvent event) {
+    private void checkIPBanSync(AsyncPlayerPreLoginEvent event) {
         try {
             String playerIP = event.getAddress().getHostAddress();
-            if (databaseManager.isIPBanned(playerIP).join()) {
+            Boolean isIPBanned = databaseManager.isIPBanned(playerIP).join();
+            
+            if (isIPBanned == null) {
+                plugin.getLogger().warning("Database returned null for IP ban check for " + event.getName() + " (" + playerIP + ") - denying access for safety");
+                event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, 
+                    MessageUtils.toComponent("&c&lCONNECTION ERROR\n&7Unable to verify IP ban status.\n&7Please try again later."));
+                return;
+            }
+            
+            if (isIPBanned) {
                 String ipBanMessage = plugin.getMessage("screen.ipban", 
                     "&c&lYOU ARE IP BANNED\n&7Your IP address has been banned from this server.\n&7Appeal at: &e{appeal-url}");
                 String appealUrl = plugin.getAppealUrl();
@@ -127,15 +171,18 @@ public class PlayerListener implements Listener {
                 
                 Component kickComponent = MessageUtils.toComponent(ipBanMessage);
                 
-                foliaLib.getScheduler().runNextTick(task -> {
-                    event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, kickComponent);
-                    if (plugin.getConfig().getBoolean("debug.enabled", false)) {
-                        plugin.getLogger().info("Blocked IP banned connection attempt from " + playerIP + " (" + event.getName() + ")");
-                    }
-                });
+                event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, kickComponent);
+                if (plugin.getConfig().getBoolean("debug.enabled", false)) {
+                    plugin.getLogger().info("Blocked IP banned connection attempt from " + playerIP + " (" + event.getName() + ")");
+                }
             }
         } catch (Exception e) {
             plugin.getLogger().severe("Error checking IP ban for " + event.getName() + ": " + e.getMessage());
+            e.printStackTrace();
+            
+            plugin.getLogger().warning("Denying access to " + event.getName() + " due to IP ban check failure");
+            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, 
+                MessageUtils.toComponent("&c&lCONNECTION ERROR\n&7Unable to verify IP ban status.\n&7Please try again later."));
         }
     }
 

@@ -102,8 +102,8 @@ discord:
 
 debug:
   enabled: false
-  log_performance_metrics: false
-  log_cache_statistics: false
+  log_performance_metrics: true
+  log_cache_statistics: true
 
 features:
   placeholderapi_integration: true
