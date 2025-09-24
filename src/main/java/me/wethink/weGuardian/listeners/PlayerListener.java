@@ -48,17 +48,17 @@ public class PlayerListener implements Listener {
             
             if (event.getLoginResult() == AsyncPlayerPreLoginEvent.Result.ALLOWED) {
                 checkIPBanSync(event);
-            }
-            
-            if (event.getLoginResult() == AsyncPlayerPreLoginEvent.Result.ALLOWED) {
-                foliaLib.getScheduler().runAsync(task -> {
-                    try {
-                        handlePlayerDataAsync(event);
-                    } catch (Exception e) {
-                        plugin.getLogger().severe("Error handling player data for " + event.getName() + ": " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                });
+                
+                if (event.getLoginResult() == AsyncPlayerPreLoginEvent.Result.ALLOWED) {
+                    foliaLib.getScheduler().runAsync(task -> {
+                        try {
+                            handlePlayerDataAsync(event);
+                        } catch (Exception e) {
+                            plugin.getLogger().severe("Error handling player data for " + event.getName() + ": " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    });
+                }
             }
             
         } catch (Exception e) {
@@ -97,16 +97,6 @@ public class PlayerListener implements Listener {
     
     private void checkPunishmentsSync(AsyncPlayerPreLoginEvent event) {
         try {
-            Boolean isBanned = databaseManager.isPlayerBanned(event.getUniqueId()).join();
-            plugin.debug("Direct ban check for %s: %s", event.getName(), isBanned);
-            
-            if (isBanned != null && isBanned) {
-                plugin.debug("Player %s is banned (direct check), blocking connection", event.getName());
-                event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, 
-                    MessageUtils.toComponent("&c&lYOU ARE BANNED\n&7You have been banned from this server."));
-                return;
-            }
-            
             List<Punishment> punishments = databaseManager.getActivePunishments(event.getUniqueId()).join();
             plugin.debug("Checking %d active punishments for player: %s", punishments.size(), event.getName());
             
@@ -123,7 +113,17 @@ public class PlayerListener implements Listener {
                     continue;
                 }
                 
-                plugin.debug("Found punishment: type=%s, active=%s, expired=%s, target=%s", 
+                if (!punishment.isActive()) {
+                    plugin.debug("Skipping inactive punishment for %s", event.getName());
+                    continue;
+                }
+                
+                if (punishment.isExpired()) {
+                    plugin.debug("Punishment expired for %s, skipping", event.getName());
+                    continue;
+                }
+                
+                plugin.debug("Found active punishment: type=%s, active=%s, expired=%s, target=%s", 
                     punishment.getType(), punishment.isActive(), punishment.isExpired(), punishment.getTargetName());
 
                 if (punishment.getType() == PunishmentType.BAN || punishment.getType() == PunishmentType.TEMPBAN) {
@@ -165,9 +165,19 @@ public class PlayerListener implements Listener {
             
             if (isIPBanned) {
                 String ipBanMessage = plugin.getMessage("screen.ipban", 
-                    "&c&lYOU ARE IP BANNED\n&7Your IP address has been banned from this server.\n&7Appeal at: &e{appeal-url}");
+                    "&c&l&m====================\n" +
+                    "&c&lIP BANNED\n" +
+                    "&7&m====================\n\n" +
+                    "&7Your IP address has been banned from this server.\n" +
+                    "&7IP: &f" + playerIP + "\n\n" +
+                    "&7Appeal at: &e{appeal-url}\n" +
+                    "&7&m====================");
                 String appealUrl = plugin.getAppealUrl();
-                ipBanMessage = ipBanMessage.replace("{appeal-url}", appealUrl);
+                if (appealUrl != null && !appealUrl.isEmpty()) {
+                    ipBanMessage = ipBanMessage.replace("{appeal-url}", appealUrl);
+                } else {
+                    ipBanMessage = ipBanMessage.replace("&7Appeal at: &e{appeal-url}\n", "");
+                }
                 
                 Component kickComponent = MessageUtils.toComponent(ipBanMessage);
                 
@@ -224,17 +234,51 @@ public class PlayerListener implements Listener {
 
     private String getBanMessage(Punishment punishment) {
         String template = switch (punishment.getType()) {
-            case BAN -> plugin.getMessage("screen.ban", "&c&lYOU ARE BANNED");
-            case TEMPBAN -> plugin.getMessage("screen.tempban", "&e&lTEMPORARY BAN");
-            default -> "&cYou are banned from this server.";
+            case BAN -> plugin.getMessage("screen.ban", 
+                "&c&l&m====================\n" +
+                "&c&lYOU ARE BANNED\n" +
+                "&7&m====================\n\n" +
+                "&7Reason: &f{reason}\n" +
+                "&7Staff: &f{staff}\n" +
+                "&7Date: &f{datetime}\n" +
+                "&7Duration: &f{duration}\n\n" +
+                "&7Appeal at: &e{appeal-url}\n" +
+                "&7&m====================");
+            case TEMPBAN -> plugin.getMessage("screen.tempban", 
+                "&e&l&m====================\n" +
+                "&e&lTEMPORARY BAN\n" +
+                "&7&m====================\n\n" +
+                "&7Reason: &f{reason}\n" +
+                "&7Staff: &f{staff}\n" +
+                "&7Date: &f{datetime}\n" +
+                "&7Expires: &f{expires}\n" +
+                "&7Time Left: &f{time-left}\n\n" +
+                "&7Appeal at: &e{appeal-url}\n" +
+                "&7&m====================");
+            default -> "&c&lYOU ARE BANNED\n&7You have been banned from this server.";
         };
 
-        return MessageUtils.formatPunishmentMessage(template, punishment);
+        String appealUrl = plugin.getAppealUrl();
+        if (appealUrl != null && !appealUrl.isEmpty()) {
+            return MessageUtils.formatPunishmentMessage(template, punishment, appealUrl);
+        } else {
+            return MessageUtils.formatPunishmentMessage(template, punishment);
+        }
     }
 
     private String getMuteMessage(Punishment punishment) {
-        String key = "actionbar." + punishment.getType().name().toLowerCase();
-        String template = plugin.getMessage(key, "");
+        String template = switch (punishment.getType()) {
+            case MUTE -> plugin.getMessage("actionbar.mute", 
+                "&c&lMUTED &8| &7Reason: &f{reason} &8| &7Staff: &f{staff}");
+            case TEMPMUTE -> plugin.getMessage("actionbar.tempmute", 
+                "&e&lTEMPORARILY MUTED &8| &7Time Left: &f{time-left} &8| &7Reason: &f{reason}");
+            default -> "";
+        };
+        
+        if (template.isEmpty()) {
+            return "";
+        }
+        
         return MessageUtils.formatPunishmentMessage(template, punishment);
     }
 }
