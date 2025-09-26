@@ -10,9 +10,10 @@ public class TimeUtils {
 
     private static final Pattern TIME_PATTERN = Pattern.compile("(\\d+)([smhdwMy])");
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final int MAX_INPUT_LENGTH = 1000;
 
     public static long parseTimeToSeconds(String timeString) {
-        if (timeString == null || timeString.isEmpty()) {
+        if (timeString == null || timeString.isEmpty() || timeString.length() > MAX_INPUT_LENGTH) {
             return 0;
         }
 
@@ -139,10 +140,9 @@ public class TimeUtils {
     }
 
     public static boolean isValidTimeFormat(String timeString) {
-        if (timeString == null || timeString.trim().isEmpty()) {
+        if (timeString == null || timeString.trim().isEmpty() || timeString.length() > MAX_INPUT_LENGTH) {
             return false;
         }
-
         return timeString.matches("^\\d+[smhdwMy]$");
     }
 }
