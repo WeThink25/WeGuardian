@@ -4,7 +4,7 @@
   <groupId>me.wethink</groupId>
   <artifactId>WeGuardian</artifactId>
   <name>WeGuardian</name>
-  <version>1.4</version>
+  <version>1.5</version>
   <build>
     <resources>
       <resource>
@@ -17,8 +17,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.13.0</version>
         <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
+          <release>${maven.compiler.release}</release>
         </configuration>
       </plugin>
       <plugin>
@@ -57,10 +56,6 @@
       <url>https://repo.papermc.io/repository/maven-public/</url>
     </repository>
     <repository>
-      <id>sonatype</id>
-      <url>https://oss.sonatype.org/content/groups/public/</url>
-    </repository>
-    <repository>
       <id>placeholderapi</id>
       <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
     </repository>
@@ -70,7 +65,7 @@
     </repository>
     <repository>
       <id>CodeMC</id>
-      <url>https://repo.codemc.org/repository/maven-public</url>
+      <url>https://repo.codemc.org/repository/maven-public/</url>
     </repository>
   </repositories>
   <dependencies>
@@ -88,6 +83,7 @@
     </dependency>
   </dependencies>
   <properties>
+    <maven.compiler.release>21</maven.compiler.release>
     <java.version>21</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>

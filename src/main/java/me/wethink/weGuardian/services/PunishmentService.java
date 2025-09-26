@@ -707,8 +707,7 @@ public class PunishmentService {
             try {
                 int active = activeOperations.get();
                 plugin.debug("Performance monitoring: active operations %d/%d", active, maxConcurrentOperations);
-                plugin.getLogger().info("Performance Metrics - Active Operations: " + active +
-                        "/" + maxConcurrentOperations);
+
             } catch (Exception e) {
                 plugin.getLogger().severe("Error during performance monitoring: " + e.getMessage());
                 plugin.debug("Performance monitoring error: %s", e.getMessage());

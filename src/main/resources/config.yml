@@ -5,7 +5,25 @@ database:
     auto_backup: true
     backup_interval: 300
     max_backups: 5
-  
+    
+web-dashboard:
+  enabled: false
+  host: "127.0.0.1" #change with your ip ipv4
+  port: 8080 #change with extra port
+  auto-detect-port: true
+  credentials:
+    username: "admin" #change username
+    password: "supersecret" #change password
+  session-timeout: 3600
+  ssl:
+    enabled: false
+    keystore-path: ""
+    keystore-password: ""
+  security:
+    require-https: false
+    max-login-attempts: 5
+    lockout-duration: 300
+
   mysql:
     enabled: false
     host: "localhost"
@@ -18,7 +36,7 @@ performance:
   thread_pool_size: 4
   max_concurrent_operations: 50
   operation_timeout: 30
-  
+
   cache:
     enabled: true
     cleanup_interval: 300
@@ -111,6 +129,8 @@ features:
 
 appeal_url: "your-server.com/appeals"
 server_name: "Unknown"
+
+
 
 menus:
   validation:

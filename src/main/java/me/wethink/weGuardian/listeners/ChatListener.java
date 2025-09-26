@@ -24,7 +24,7 @@ public class ChatListener implements Listener {
         this.databaseManager = databaseManager;
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onAsyncChat(AsyncChatEvent event) {
         Player player = event.getPlayer();
 
@@ -54,7 +54,6 @@ public class ChatListener implements Listener {
                         player.sendActionBar(actionBarComponent);
                     }
 
-                    plugin.getNotificationService().broadcastPunishment(punishment, "chat_attempt");
                     return;
                 }
             }

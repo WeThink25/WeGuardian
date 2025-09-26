@@ -15,6 +15,7 @@ import me.wethink.weGuardian.services.MenuValidationService;
 import me.wethink.weGuardian.services.NotificationService;
 import me.wethink.weGuardian.services.PunishmentService;
 import me.wethink.weGuardian.services.TemplateService;
+import me.wethink.weGuardian.web.WebDashboardService;
 import me.wethink.weGuardian.utils.WeGuardianPlaceholderExpansion;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bstats.bukkit.Metrics;
@@ -45,6 +46,7 @@ public final class WeGuardian extends JavaPlugin {
     private MenuValidationService menuValidationService;
     private PunishmentGUI punishmentGUI;
     private GUIConfigLoader guiConfigLoader;
+    private WebDashboardService webDashboardService;
     private FileConfiguration messagesConfig;
     private FileConfiguration guiConfig;
     private FileConfiguration reasonsConfig;
@@ -88,6 +90,9 @@ public final class WeGuardian extends JavaPlugin {
         }
         if (crossServerSyncService != null) {
             crossServerSyncService.shutdown();
+        }
+        if (webDashboardService != null) {
+            webDashboardService.stop();
         }
         if (databaseManager != null) {
             databaseManager.close();
@@ -138,6 +143,7 @@ public final class WeGuardian extends JavaPlugin {
         this.crossServerSyncService = new CrossServerSyncService(this);
         this.menuValidationService = new MenuValidationService(this);
         this.punishmentGUI = new PunishmentGUI(this);
+        this.webDashboardService = new WebDashboardService(this);
         
         if (crossServerSyncService.isEnabled()) {
             foliaLib.getScheduler().runNextTick(task -> {
@@ -147,6 +153,12 @@ public final class WeGuardian extends JavaPlugin {
         if (menuValidationService.isValidationEnabled()) {
             foliaLib.getScheduler().runNextTick(task -> {
                 menuValidationService.validateMenuPerformance();
+            });
+        }
+        
+        if (getConfig().getBoolean("web-dashboard.enabled", false)) {
+            foliaLib.getScheduler().runAsync(task -> {
+                webDashboardService.start();
             });
         }
     }
@@ -406,6 +418,10 @@ public final class WeGuardian extends JavaPlugin {
 
     public GUIConfigLoader getGUIConfigLoader() {
         return guiConfigLoader;
+    }
+
+    public WebDashboardService getWebDashboardService() {
+        return webDashboardService;
     }
 
     public boolean isFolia() {
