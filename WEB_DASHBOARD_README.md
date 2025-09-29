@@ -129,6 +129,12 @@ web-dashboard:
 - Check browser console for errors
 - Verify WebSocket endpoint is accessible
 
+### Dependencies
+The web dashboard requires the following dependencies:
+- Jetty Server 11.0.18
+- Jakarta Servlet API 6.0.0
+- Gson 2.10.1
+
 These are automatically included when building the plugin.
 
 ## Development
@@ -148,4 +154,3 @@ To add new features:
 
 ## Support
 For issues or questions about the web dashboard, please check the main WeGuardian documentation or contact the development team.
-
