@@ -18,6 +18,7 @@ import me.wethink.weGuardian.services.TemplateService;
 import me.wethink.weGuardian.web.WebDashboardService;
 import me.wethink.weGuardian.utils.WeGuardianPlaceholderExpansion;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import me.wethink.weGuardian.services.ConsoleCommandService;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bstats.charts.SingleLineChart;
@@ -47,6 +48,7 @@ public final class WeGuardian extends JavaPlugin {
     private PunishmentGUI punishmentGUI;
     private GUIConfigLoader guiConfigLoader;
     private WebDashboardService webDashboardService;
+    private ConsoleCommandService consoleCommandService;
     private FileConfiguration messagesConfig;
     private FileConfiguration guiConfig;
     private FileConfiguration reasonsConfig;
@@ -144,6 +146,7 @@ public final class WeGuardian extends JavaPlugin {
         this.menuValidationService = new MenuValidationService(this);
         this.punishmentGUI = new PunishmentGUI(this);
         this.webDashboardService = new WebDashboardService(this);
+        this.consoleCommandService = new ConsoleCommandService(this);
         
         if (crossServerSyncService.isEnabled()) {
             foliaLib.getScheduler().runNextTick(task -> {
@@ -179,8 +182,10 @@ public final class WeGuardian extends JavaPlugin {
         getCommand("warn").setExecutor(new WarnCommand(this, punishmentService));
         getCommand("unban").setExecutor(new UnbanCommand(this, punishmentService));
         getCommand("unmute").setExecutor(new UnmuteCommand(this, punishmentService));
-        getCommand("ipban").setExecutor(new IPBanCommand(punishmentService));
+        getCommand("ipban").setExecutor(new IPBanCommand(this, punishmentService));
+        getCommand("tempipban").setExecutor(new TempIPBanCommand(this, punishmentService));
         getCommand("ipmute").setExecutor(new IPMuteCommand(punishmentService));
+        getCommand("unbanip").setExecutor(new UnbanIPCommand(this, punishmentService));
         getCommand("history").setExecutor(new HistoryCommand(this));
         getCommand("checkban").setExecutor(new CheckbanCommand(this));
         getCommand("banlist").setExecutor(new BanlistCommand(this));
@@ -207,8 +212,9 @@ public final class WeGuardian extends JavaPlugin {
         getCommand("warn").setTabCompleter(new WarnCommand(this, punishmentService));
         getCommand("unban").setTabCompleter(new UnbanCommand(this, punishmentService));
         getCommand("unmute").setTabCompleter(new UnmuteCommand(this, punishmentService));
-        getCommand("ipban").setTabCompleter(new IPBanCommand(punishmentService));
+        getCommand("ipban").setTabCompleter(new IPBanCommand(this, punishmentService));
         getCommand("ipmute").setTabCompleter(new IPMuteCommand(punishmentService));
+        getCommand("unbanip").setTabCompleter(new UnbanIPCommand(this, punishmentService));
         getCommand("history").setTabCompleter(new HistoryCommand(this));
         getCommand("checkban").setTabCompleter(new CheckbanCommand(this));
         getCommand("banlist").setTabCompleter(new BanlistCommand(this));
@@ -414,6 +420,10 @@ public final class WeGuardian extends JavaPlugin {
 
     public PunishmentGUI getPunishmentGUI() {
         return punishmentGUI;
+    }
+
+    public ConsoleCommandService getConsoleCommandService() {
+        return consoleCommandService;
     }
 
     public GUIConfigLoader getGUIConfigLoader() {

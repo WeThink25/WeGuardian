@@ -2,14 +2,16 @@ package me.wethink.weGuardian.gui.menus;
 
 import me.wethink.weGuardian.WeGuardian;
 import me.wethink.weGuardian.gui.MenuHandler;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Pattern;
 
 public class MenuManager implements Listener {
 
@@ -27,9 +29,16 @@ public class MenuManager implements Listener {
     private final UnbanMenu unbanMenu;
     private final UnmuteMenu unmuteMenu;
 
+    private static final Pattern COLOR_CODES = Pattern.compile("§[0-9a-fk-or]");
+    private static final Set<String> KNOWN_MENU_TITLES = Set.of(
+            "Ban Menu", "Mute Menu", "Kick Menu", "Warn Menu",
+            "Tempban Menu", "Tempmute Menu", "Unban Menu",
+            "Unmute Menu", "Notes Menu", "Punishment"
+    );
+
     public MenuManager(WeGuardian plugin) {
         this.plugin = plugin;
-        
+
         this.mainMenu = new MainMenu(plugin, this);
         this.banMenu = new BanMenu(plugin, this);
         this.tempbanMenu = new TempbanMenu(plugin, this);
@@ -88,61 +97,42 @@ public class MenuManager implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player)) return;
+        if (!(event.getWhoClicked() instanceof Player player)) return;
 
-        Player player = (Player) event.getWhoClicked();
         MenuHandler activeMenu = activeMenus.get(player);
-        
-        String title = event.getView().title().toString();
-        String strippedTitle = title.replaceAll("§[0-9a-fk-or]", "");
-        
-        plugin.debug("MenuManager: Player %s clicked slot %d in inventory: %s", player.getName(), event.getSlot(), title);
-        plugin.debug("MenuManager: Active menu for player: %s", (activeMenu != null ? activeMenu.getClass().getSimpleName() : "null"));
-        plugin.debug("MenuManager: Stripped title: %s", strippedTitle);
-        
         if (activeMenu != null) {
             event.setCancelled(true);
-            plugin.debug("MenuManager: Calling handleClick on active menu: %s", activeMenu.getClass().getSimpleName());
-            
             activeMenu.handleClick(event, event.getSlot());
-        } else {
-            boolean isWeGuardianGUI = title.contains("Ban Menu") || title.contains("Mute Menu") ||
-                title.contains("Kick Menu") || title.contains("Warn Menu") || 
-                title.contains("Tempban Menu") || title.contains("Tempmute Menu") ||
-                title.contains("Unban Menu") || title.contains("Unmute Menu") || 
-                title.contains("Notes Menu") || title.contains("Punishment") ||
-                strippedTitle.contains("Ban Menu") || strippedTitle.contains("Mute Menu") || 
-                strippedTitle.contains("Kick Menu") || strippedTitle.contains("Warn Menu") || 
-                strippedTitle.contains("Tempban Menu") || strippedTitle.contains("Tempmute Menu") ||
-                strippedTitle.contains("Unban Menu") || strippedTitle.contains("Unmute Menu") || 
-                strippedTitle.contains("Notes Menu") || strippedTitle.contains("Punishment");
-                
-            plugin.debug("MenuManager: Is WeGuardian GUI: %s", isWeGuardianGUI);
-                
-            if (isWeGuardianGUI) {
-                event.setCancelled(true);
-                
-                MenuHandler recoveredMenu = findMenuByTitle(strippedTitle);
-                if (recoveredMenu != null) {
-                    String targetPlayer = extractTargetPlayerFromTitle(strippedTitle);
-                    if (targetPlayer != null) {
-                        recoveredMenu.setTargetPlayer(player, targetPlayer);
-                    }
-                    
-                    activeMenus.put(player, recoveredMenu);
-                    recoveredMenu.handleClick(event, event.getSlot());
-                    return;
-                } else {
-                    if (isWeGuardianGUI) {
-                        plugin.debug("Failed to recover WeGuardian menu with title: %s", strippedTitle);
-                        plugin.debug("This indicates a menu tracking issue. Active menus: %d", activeMenus.size());
-                        plugin.debug("Stripped title: %s", strippedTitle);
-                    }
+            return;
+        }
+
+        Component componentTitle = event.getView().title();
+        String plainTitle = PlainTextComponentSerializer.plainText().serialize(componentTitle);
+        String strippedTitle = COLOR_CODES.matcher(plainTitle).replaceAll("");
+
+        if (isWeGuardianGUI(strippedTitle)) {
+            event.setCancelled(true);
+            MenuHandler recoveredMenu = findMenuByTitle(strippedTitle);
+            if (recoveredMenu != null) {
+                String targetPlayer = extractTargetPlayerFromTitle(strippedTitle);
+                if (targetPlayer != null) {
+                    recoveredMenu.setTargetPlayer(player, targetPlayer);
                 }
+                activeMenus.put(player, recoveredMenu);
+                recoveredMenu.handleClick(event, event.getSlot());
+            } else {
+                plugin.debug("Failed to recover WeGuardian menu with title: %s", strippedTitle);
             }
         }
     }
-    
+
+    private boolean isWeGuardianGUI(String title) {
+        for (String keyword : KNOWN_MENU_TITLES) {
+            if (title.contains(keyword)) return true;
+        }
+        return false;
+    }
+
     private MenuHandler findMenuByTitle(String strippedTitle) {
         if (strippedTitle.contains("Ban Menu")) return banMenu;
         if (strippedTitle.contains("Tempban Menu")) return tempbanMenu;
@@ -164,23 +154,21 @@ public class MenuManager implements Listener {
             String[] parts = extracted.split("[^a-zA-Z0-9_]");
             return parts.length > 0 ? parts[0] : null;
         }
-        
+
         int dashIndex = strippedTitle.lastIndexOf(" - ");
         if (dashIndex != -1 && dashIndex < strippedTitle.length() - 3) {
             String extracted = strippedTitle.substring(dashIndex + 3).trim();
             String[] parts = extracted.split("[^a-zA-Z0-9_]");
             return parts.length > 0 ? parts[0] : null;
         }
-        
+
         return null;
     }
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
-        if (event.getPlayer() instanceof Player) {
-            Player player = (Player) event.getPlayer();
+        if (event.getPlayer() instanceof Player player) {
             MenuHandler activeMenu = activeMenus.remove(player);
-            
             if (activeMenu != null) {
                 activeMenu.cleanupPlayer(player);
             }

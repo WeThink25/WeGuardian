@@ -106,6 +106,16 @@ public class ConsoleCommandService {
         }
     }
 
+    public void executeCommand(String command) {
+        plugin.getFoliaLib().getScheduler().runNextTick(task -> {
+            try {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to execute console command: " + command + " - " + e.getMessage());
+            }
+        });
+    }
+
     private String processPlaceholders(String command, Punishment punishment) {
         String processed = command;
         

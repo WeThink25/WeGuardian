@@ -124,7 +124,7 @@ public class WebDashboardService {
                             throw e;
                         }
                         int fallbackPort = findAvailablePort(bindHost, 0);
-                        plugin.getLogger().warning("Failed to bind to port " + port + ": " + cause.getMessage() + ". Retrying on free port " + fallbackPort + "");
+                        plugin.getLogger().warning("Failed to bind to port " + port + ": " + (cause != null ? cause.getMessage() : "Unknown error") + ". Retrying on free port " + fallbackPort + "");
                         connector.setPort(fallbackPort);
                         tomcat.start();
                         port = fallbackPort;

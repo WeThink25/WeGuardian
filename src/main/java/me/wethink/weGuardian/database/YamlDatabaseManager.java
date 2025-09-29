@@ -438,7 +438,7 @@ public class YamlDatabaseManager implements DatabaseManager {
     private void serializePunishment(ConfigurationSection section, Punishment punishment) {
         section.set("id", punishment.getId());
         section.set("type", punishment.getType().name());
-        section.set("target_uuid", punishment.getTargetUuid().toString());
+        section.set("target_uuid", punishment.getTargetUuid() != null ? punishment.getTargetUuid().toString() : null);
         section.set("target_name", punishment.getTargetName());
         section.set("target_ip", punishment.getTargetIP());
         section.set("staff_uuid", punishment.getStaffUuid().toString());
@@ -577,7 +577,52 @@ public class YamlDatabaseManager implements DatabaseManager {
 
     @Override
     public CompletableFuture<Punishment> getPunishment(int id) {
-        return CompletableFuture.completedFuture(punishmentCache.get(id));
+        return CompletableFuture.supplyAsync(() -> {
+            Punishment cachedPunishment = punishmentCache.get(id);
+            if (cachedPunishment != null) {
+                return cachedPunishment;
+            }
+
+            File playersFolder = new File(plugin.getDataFolder(), "players");
+            if (playersFolder.exists() && playersFolder.isDirectory()) {
+                for (File playerFile : playersFolder.listFiles()) {
+                    if (playerFile.isFile() && playerFile.getName().endsWith(".yml")) {
+                        YamlConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
+                        ConfigurationSection punishmentsSection = playerConfig.getConfigurationSection("punishments");
+                        if (punishmentsSection != null) {
+                            for (String key : punishmentsSection.getKeys(false)) {
+                                if (key.equals(String.valueOf(id))) {
+                                    Punishment punishment = deserializePunishment(punishmentsSection.getConfigurationSection(key));
+                                    if (punishment != null) {
+                                        punishmentCache.put(punishment.getId(), punishment);
+                                        return punishment;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            File ipPunishmentsFile = new File(plugin.getDataFolder(), "ip_punishments.yml");
+            if (ipPunishmentsFile.exists()) {
+                YamlConfiguration ipConfig = YamlConfiguration.loadConfiguration(ipPunishmentsFile);
+                ConfigurationSection ipPunishmentsSection = ipConfig.getConfigurationSection("punishments");
+                if (ipPunishmentsSection != null) {
+                    for (String key : ipPunishmentsSection.getKeys(false)) {
+                        if (key.equals(String.valueOf(id))) {
+                            Punishment punishment = deserializePunishment(ipPunishmentsSection.getConfigurationSection(key));
+                            if (punishment != null) {
+                                punishmentCache.put(punishment.getId(), punishment);
+                                return punishment;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return null;
+        });
     }
 
     @Override
@@ -626,7 +671,7 @@ public class YamlDatabaseManager implements DatabaseManager {
     public CompletableFuture<List<Punishment>> getPunishmentHistory(UUID uuid, PunishmentType type) {
         return CompletableFuture.supplyAsync(() -> 
             punishmentCache.values().stream()
-                .filter(p -> p.getTargetUuid().equals(uuid) && p.getType() == type)
+                .filter(p -> p.getTargetUuid() != null && p.getTargetUuid().equals(uuid) && p.getType() == type)
                 .sorted(Comparator.comparing(Punishment::getCreatedAt).reversed())
                 .collect(Collectors.toList())
         );
@@ -641,7 +686,7 @@ public class YamlDatabaseManager implements DatabaseManager {
     public CompletableFuture<Punishment> getActivePunishment(UUID uuid, PunishmentType type) {
         return CompletableFuture.supplyAsync(() -> 
             punishmentCache.values().stream()
-                .filter(p -> p.getTargetUuid().equals(uuid) && 
+                .filter(p -> p.getTargetUuid() != null && p.getTargetUuid().equals(uuid) && 
                            p.getType() == type && 
                            p.getRemovedAt() == null && 
                            (p.getExpiresAt() == null || p.getExpiresAt().isAfter(LocalDateTime.now())))
@@ -770,7 +815,7 @@ public class YamlDatabaseManager implements DatabaseManager {
     public CompletableFuture<Boolean> isPlayerBanned(UUID uuid) {
         return CompletableFuture.supplyAsync(() -> 
             punishmentCache.values().stream()
-                .anyMatch(p -> p.getTargetUuid().equals(uuid) && 
+                .anyMatch(p -> p.getTargetUuid() != null && p.getTargetUuid().equals(uuid) && 
                              (p.getType() == PunishmentType.BAN || p.getType() == PunishmentType.TEMPBAN) &&
                              p.getRemovedAt() == null && 
                              (p.getExpiresAt() == null || p.getExpiresAt().isAfter(LocalDateTime.now())))
@@ -781,7 +826,7 @@ public class YamlDatabaseManager implements DatabaseManager {
     public CompletableFuture<Boolean> isPlayerMuted(UUID uuid) {
         return CompletableFuture.supplyAsync(() -> 
             punishmentCache.values().stream()
-                .anyMatch(p -> p.getTargetUuid().equals(uuid) && 
+                .anyMatch(p -> p.getTargetUuid() != null && p.getTargetUuid().equals(uuid) && 
                              (p.getType() == PunishmentType.MUTE || p.getType() == PunishmentType.TEMPMUTE) &&
                              p.getRemovedAt() == null && 
                              (p.getExpiresAt() == null || p.getExpiresAt().isAfter(LocalDateTime.now())))

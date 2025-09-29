@@ -25,6 +25,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
 import me.wethink.weGuardian.services.DiscordWebhookService;
 
 public class PunishmentService {
@@ -475,6 +477,40 @@ public class PunishmentService {
             });
         });
     }
+    
+    public CompletableFuture<Boolean> ipTempban(String ipAddress, String staffName, String reason, String duration) {
+        return executeIPLookup(ipAddress).thenCompose(validIP -> {
+            if (validIP == null) {
+                return CompletableFuture.completedFuture(false);
+            }
+
+            UUID staffUuid = getStaffUuid(staffName);
+            
+            LocalDateTime expiresAt = TimeUtils.parseTime(duration);
+            if (expiresAt == null) {
+                return CompletableFuture.completedFuture(false);
+            }
+
+            Punishment punishment = new Punishment(
+                    validIP,
+                    staffUuid,
+                    staffName,
+                    PunishmentType.IPTEMPBAN,
+                    reason,
+                    expiresAt,
+                    plugin.getServer().getName()
+            );
+
+            return database.addPunishment(punishment).thenCompose(punishmentId -> {
+                if (punishmentId > 0) {
+                    kickPlayersWithIP(ipAddress, punishment);
+                    plugin.getNotificationService().broadcastPunishment(punishment);
+                    return CompletableFuture.completedFuture(true);
+                }
+                return CompletableFuture.completedFuture(false);
+            });
+        });
+    }
 
     public CompletableFuture<Boolean> ipmute(String ipAddress, String staffName, String reason) {
         return executeIPLookup(ipAddress).thenCompose(validIP -> {
@@ -658,6 +694,20 @@ public class PunishmentService {
                     }
                 }
             }
+        });
+    }
+    
+    public CompletableFuture<Void> executeUnmute(String targetName, String staffName) {
+        return CompletableFuture.runAsync(() -> {
+            plugin.getConsoleCommandService().executeCommand("unmute " + targetName);
+            plugin.getLogger().info(staffName + " unmuted " + targetName);
+        });
+    }
+
+    public CompletableFuture<Void> unmuteIP(String targetName, String staffName) {
+        return CompletableFuture.runAsync(() -> {
+            plugin.getConsoleCommandService().executeCommand("unmuteip " + targetName);
+            plugin.getLogger().info(staffName + " unmuted IP " + targetName);
         });
     }
 
@@ -1116,6 +1166,39 @@ public class PunishmentService {
 
     public CompletableFuture<Boolean> unmutePlayer(UUID targetUuid, String targetName, String staffName) {
         return unmute(targetName, staffName);
+    }
+    
+    public CompletableFuture<Boolean> unbanIP(String ipAddress, String staffName) {
+        return executeIPLookup(ipAddress).thenCompose(validIP -> {
+            if (validIP == null) {
+                return CompletableFuture.completedFuture(false);
+            }
+
+            return database.getAllActivePunishments().thenCompose(allPunishments -> {
+                List<Punishment> punishments = allPunishments.stream()
+                    .filter(p -> {
+                        plugin.getLogger().info("Comparing validIP: " + validIP + " with punishment targetIP: " + p.getTargetIP());
+                        return validIP.equals(p.getTargetIP());
+                    })
+                    .collect(Collectors.toList());
+                Punishment banPunishment = punishments.stream()
+                        .filter(p -> (p.getType() == PunishmentType.IPBAN || p.getType() == PunishmentType.IPTEMPBAN) && !p.isExpired())
+                        .findFirst()
+                        .orElse(null);
+
+                if (banPunishment == null) {
+                    return CompletableFuture.completedFuture(false);
+                }
+
+                UUID staffUuid = getStaffUuid(staffName);
+                return database.removePunishment(banPunishment.getId(), staffUuid, staffName, "IP Unbanned by " + staffName).thenApply(success -> {
+                    plugin.getNotificationService().broadcastUnpunishment(banPunishment, staffName);
+                    var webhook = new DiscordWebhookService(plugin);
+                    webhook.sendUnpunishmentWebhook(banPunishment, staffName);
+                    return true;
+                });
+            });
+        });
     }
 
     public CompletableFuture<Boolean> executeBan(CommandSender sender, String targetName, String reason, String duration, boolean silent, String templateName) {

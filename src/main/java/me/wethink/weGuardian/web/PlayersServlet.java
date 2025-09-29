@@ -11,29 +11,29 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class PlayersServlet extends HttpServlet {
-    
+
     private final WeGuardian plugin;
     private final SessionManager sessionManager;
-    
+
     public PlayersServlet(WeGuardian plugin, SessionManager sessionManager) {
         this.plugin = plugin;
         this.sessionManager = sessionManager;
     }
-    
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String sessionId = getSessionIdFromCookies(request);
-        
+
         if (sessionId == null || !sessionManager.isValidSession(sessionId)) {
             response.sendRedirect("/login");
             return;
         }
-        
+
         SessionManager.Session session = sessionManager.getSession(sessionId);
-        
+
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
-        
+
         out.println("<!DOCTYPE html>");
         out.println("<html lang=\"en\">");
         out.println("<head>");
@@ -53,7 +53,7 @@ public class PlayersServlet extends HttpServlet {
         out.println("        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;");
         out.println("               background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);");
         out.println("               color: var(--text-primary); min-height: 100vh; display: flex; flex-direction: column; }");
-        
+
         out.println("        .header { background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-card) 100%);");
         out.println("                  border-bottom: 1px solid var(--border-color); padding: 1.5rem 2rem;");
         out.println("                  display: flex; justify-content: space-between; align-items: center;");
@@ -71,7 +71,7 @@ public class PlayersServlet extends HttpServlet {
         out.println("                      text-decoration: none; font-weight: 600; transition: all 0.3s ease;");
         out.println("                      display: flex; align-items: center; gap: 0.5rem; }");
         out.println("        .logout-btn:hover { transform: translateY(-2px); }");
-        
+
         out.println("        .nav { background: var(--bg-card); border-bottom: 1px solid var(--border-color); padding: 1rem 2rem; }");
         out.println("        .nav ul { list-style: none; display: flex; gap: 0.5rem; flex-wrap: wrap; }");
         out.println("        .nav a { text-decoration: none; color: var(--text-secondary); padding: 0.75rem 1.5rem;");
@@ -79,14 +79,14 @@ public class PlayersServlet extends HttpServlet {
         out.println("                 display: flex; align-items: center; gap: 0.5rem; }");
         out.println("        .nav a:hover { color: var(--text-primary); background: var(--bg-tertiary); transform: translateY(-1px); }");
         out.println("        .nav a.active { background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); color: white; }");
-        
+
         out.println("        .main-content { flex: 1; padding: 2rem; max-width: 1400px; margin: 0 auto; width: 100%; }");
         out.println("        .players-container { background: var(--bg-card); border: 1px solid var(--border-color);");
         out.println("                             padding: 2rem; border-radius: 1rem; box-shadow: var(--shadow-lg); margin-bottom: 2rem; }");
         out.println("        .players-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }");
         out.println("        .players-header h2 { color: var(--text-primary); font-size: 1.5rem; font-weight: 700;");
         out.println("                             display: flex; align-items: center; gap: 0.5rem; }");
-        
+
         out.println("        .search-section { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }");
         out.println("        .search-input { flex: 1; min-width: 300px; padding: 1rem; background: var(--bg-tertiary);");
         out.println("                        border: 1px solid var(--border-color); border-radius: 0.75rem;");
@@ -97,7 +97,7 @@ public class PlayersServlet extends HttpServlet {
         out.println("                      cursor: pointer; font-weight: 600; transition: all 0.3s ease;");
         out.println("                      display: flex; align-items: center; gap: 0.5rem; }");
         out.println("        .search-btn:hover { transform: translateY(-2px); }");
-        
+
         out.println("        .player-info-card { background: var(--bg-tertiary); border: 1px solid var(--border-color);");
         out.println("                            padding: 2rem; border-radius: 1rem; margin-bottom: 2rem; }");
         out.println("        .player-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }");
@@ -106,7 +106,7 @@ public class PlayersServlet extends HttpServlet {
         out.println("        .player-details .status { padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.8rem; font-weight: 600; }");
         out.println("        .status.online { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }");
         out.println("        .status.offline { background: rgba(107, 114, 128, 0.2); color: #9ca3af; border: 1px solid rgba(107, 114, 128, 0.3); }");
-        
+
         out.println("        .punishment-form { background: var(--bg-secondary); border: 1px solid var(--border-color);");
         out.println("                           padding: 2rem; border-radius: 1rem; margin-top: 2rem; }");
         out.println("        .punishment-form h3 { color: var(--text-primary); margin-bottom: 1.5rem; font-size: 1.25rem;");
@@ -120,7 +120,7 @@ public class PlayersServlet extends HttpServlet {
         out.println("        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {");
         out.println("            outline: none; border-color: var(--accent-primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }");
         out.println("        .form-group textarea { resize: vertical; min-height: 80px; }");
-        
+
         out.println("        .btn-group { display: flex; gap: 1rem; flex-wrap: wrap; }");
         out.println("        .apply-btn { background: linear-gradient(135deg, var(--accent-danger), #dc2626);");
         out.println("                     color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.75rem;");
@@ -131,13 +131,13 @@ public class PlayersServlet extends HttpServlet {
         out.println("                      border: 1px solid var(--border-color); padding: 0.75rem 1.5rem; border-radius: 0.75rem;");
         out.println("                      cursor: pointer; font-weight: 600; transition: all 0.3s ease; }");
         out.println("        .cancel-btn:hover { background: var(--bg-card); color: var(--text-primary); }");
-        
+
         out.println("        .info { padding: 1.5rem; border-radius: 0.75rem; margin-top: 1.5rem;");
         out.println("                display: flex; align-items: center; gap: 0.5rem; }");
         out.println("        .info.success { background: rgba(16, 185, 129, 0.1); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }");
         out.println("        .info.error { background: rgba(239, 68, 68, 0.1); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }");
         out.println("        .info.warning { background: rgba(245, 158, 11, 0.1); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }");
-        
+
         out.println("        .footer { background: var(--bg-card); border-top: 1px solid var(--border-color);");
         out.println("                  padding: 2rem; text-align: center; margin-top: auto; }");
         out.println("        .footer-content { max-width: 1400px; margin: 0 auto; display: flex;");
@@ -146,7 +146,7 @@ public class PlayersServlet extends HttpServlet {
         out.println("        .footer-brand .heart { color: var(--accent-danger); animation: heartbeat 2s ease-in-out infinite; }");
         out.println("        .footer-copyright { color: var(--text-muted); font-size: 0.9rem; }");
         out.println("        @keyframes heartbeat { 0%, 50%, 100% { transform: scale(1); } 25%, 75% { transform: scale(1.1); } }");
-        
+
         out.println("        @media (max-width: 768px) {");
         out.println("            .header { padding: 1rem; flex-direction: column; gap: 1rem; }");
         out.println("            .main-content { padding: 1rem; }");
@@ -159,7 +159,7 @@ public class PlayersServlet extends HttpServlet {
         out.println("    </style>");
         out.println("</head>");
         out.println("<body>");
-        
+
         out.println("    <div class=\"header\">");
         out.println("        <div class=\"logo\">");
         out.println("            <i class=\"fas fa-shield-alt\"></i>");
@@ -176,7 +176,7 @@ public class PlayersServlet extends HttpServlet {
         out.println("            </a>");
         out.println("        </div>");
         out.println("    </div>");
-        
+
         out.println("    <nav class=\"nav\">");
         out.println("        <ul>");
         out.println("            <li><a href=\"/dashboard\"><i class=\"fas fa-tachometer-alt\"></i> Dashboard</a></li>");
@@ -185,7 +185,7 @@ public class PlayersServlet extends HttpServlet {
         out.println("            <li><a href=\"/settings\"><i class=\"fas fa-cog\"></i> Settings</a></li>");
         out.println("        </ul>");
         out.println("    </nav>");
-        
+
         out.println("    <div class=\"main-content\">");
         out.println("        <div class=\"players-container\">");
         out.println("            <div class=\"players-header\">");
@@ -204,13 +204,19 @@ public class PlayersServlet extends HttpServlet {
         out.println("                <div class=\"form-row\">");
         out.println("                    <div class=\"form-group\">");
         out.println("                        <label for=\"punishment-type\"><i class=\"fas fa-list\"></i> Punishment Type</label>");
-        out.println("                        <select id=\"punishment-type\">");
+        out.println("                        <select id=\"punishment-type\" onchange=\"updateDurationField()\">");
         out.println("                            <option value=\"BAN\">Ban</option>");
         out.println("                            <option value=\"TEMPBAN\">Temporary Ban</option>");
+        out.println("                            <option value=\"IPBAN\">IP Ban</option>");
+        out.println("                            <option value=\"IPTEMPBAN\">Temporary IP Ban</option>");
         out.println("                            <option value=\"MUTE\">Mute</option>");
         out.println("                            <option value=\"TEMPMUTE\">Temporary Mute</option>");
+        out.println("                            <option value=\"IPMUTE\">IP Mute</option>");
+        out.println("                            <option value=\"IPTEMPMUTE\">Temporary IP Mute</option>");
         out.println("                            <option value=\"KICK\">Kick</option>");
+        out.println("                            <option value=\"IPKICK\">IP Kick</option>");
         out.println("                            <option value=\"WARN\">Warning</option>");
+        out.println("                            <option value=\"IPWARN\">IP Warning</option>");
         out.println("                        </select>");
         out.println("                    </div>");
         out.println("                    <div class=\"form-group\">");
@@ -236,7 +242,7 @@ public class PlayersServlet extends HttpServlet {
         out.println("            <div id=\"message\"></div>");
         out.println("        </div>");
         out.println("    </div>");
-        
+
         out.println("    <footer class=\"footer\">");
         out.println("        <div class=\"footer-content\">");
         out.println("            <div class=\"footer-brand\">");
@@ -249,7 +255,7 @@ public class PlayersServlet extends HttpServlet {
         out.println("            </div>");
         out.println("        </div>");
         out.println("    </footer>");
-        
+
         out.println("    <script>");
         out.println("        let currentPlayer = null;");
         out.println("        function searchPlayer() {");
@@ -267,16 +273,37 @@ public class PlayersServlet extends HttpServlet {
         out.println("            const html = `<div class=\"player-info-card\"><div class=\"player-header\"><img src=\"${avatarUrl}\" alt=\"${player.name}\" class=\"player-avatar\"><div class=\"player-details\"><h3>${player.name}</h3><span class=\"status ${isOnline ? 'online' : 'offline'}\"><i class=\"fas fa-circle\"></i> ${isOnline ? 'Online' : 'Offline'}</span></div></div><button onclick=\"showPunishmentForm()\" class=\"apply-btn\"><i class=\"fas fa-gavel\"></i> Apply Punishment</button></div>`;");
         out.println("            document.getElementById('player-info').innerHTML = html;");
         out.println("        }");
-        out.println("        function showPunishmentForm() { document.getElementById('punishment-form').style.display = 'block'; }");
+        out.println("        function showPunishmentForm() { document.getElementById('punishment-form').style.display = 'block'; updateDurationField(); }");
         out.println("        function hidePunishmentForm() { document.getElementById('punishment-form').style.display = 'none'; }");
+        out.println("        function updateDurationField() {");
+        out.println("            const type = document.getElementById('punishment-type').value;");
+        out.println("            const durationField = document.getElementById('duration');");
+        out.println("            const durationContainer = durationField.parentElement;");
+        out.println("            // Only show duration field for temporary punishments");
+        out.println("            if (type.includes('TEMP')) {");
+        out.println("                durationContainer.style.display = 'block';");
+        out.println("                durationField.required = true;");
+        out.println("            } else {");
+        out.println("                durationContainer.style.display = 'none';");
+        out.println("                durationField.required = false;");
+        out.println("            }");
+        out.println("        }");
         out.println("        function applyPunishment() {");
         out.println("            if (!currentPlayer) { showMessage('No player selected', 'error'); return; }");
         out.println("            const type = document.getElementById('punishment-type').value;");
         out.println("            const duration = document.getElementById('duration').value.trim();");
         out.println("            const reason = document.getElementById('reason').value.trim();");
         out.println("            if (!reason) { showMessage('Please enter a reason', 'warning'); return; }");
+        out.println("            ");
+        out.println("            // Check if duration is required but not provided");
+        out.println("            if (type.includes('TEMP') && !duration) {");
+        out.println("                showMessage('Please enter a duration for temporary punishment', 'warning');");
+        out.println("                return;");
+        out.println("            }");
+        out.println("            ");
         out.println("            const data = { targetName: currentPlayer, type: type, reason: reason };");
-        out.println("            if (duration && (type === 'TEMPBAN' || type === 'TEMPMUTE')) { data.duration = duration; }");
+        out.println("            if (duration && type.includes('TEMP')) { data.duration = duration; }");
+        out.println("            ");
         out.println("            fetch('/api/punishments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })");
         out.println("            .then(r=>r.json()).then(data=>{ if(data.success) { showMessage('Punishment applied successfully', 'success'); hidePunishmentForm(); document.getElementById('reason').value = ''; document.getElementById('duration').value = ''; } else { showMessage('Error: ' + (data.error || 'Failed to apply punishment'), 'error'); } })");
         out.println("            .catch(e=>{ console.error('Error:',e); showMessage('Error applying punishment', 'error'); });");

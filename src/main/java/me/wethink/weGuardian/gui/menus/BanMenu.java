@@ -6,7 +6,7 @@ import me.wethink.weGuardian.utils.MessageUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
-import java.util.Map;
+
 
 public class BanMenu extends MenuHandler {
 

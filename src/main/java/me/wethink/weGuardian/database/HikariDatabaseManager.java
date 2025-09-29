@@ -366,9 +366,9 @@ public class HikariDatabaseManager implements DatabaseManager {
             try (Connection conn = dataSource.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-                stmt.setString(1, punishment.getTargetUuid().toString());
+                stmt.setString(1, punishment.getTargetUuid() != null ? punishment.getTargetUuid().toString() : null);
                 stmt.setString(2, punishment.getTargetName());
-                stmt.setString(3, punishment.getStaffUuid().toString());
+                stmt.setString(3, punishment.getStaffUuid() != null ? punishment.getStaffUuid().toString() : null);
                 stmt.setString(4, punishment.getStaffName());
                 stmt.setString(5, punishment.getType().name());
                 stmt.setString(6, punishment.getReason());

@@ -20,6 +20,7 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
 
 public class PunishmentsApiServlet extends HttpServlet {
     
@@ -69,6 +70,25 @@ public class PunishmentsApiServlet extends HttpServlet {
             handleApplyPunishment(request, response);
         } else if (pathInfo.startsWith("/revoke/")) {
             String punishmentIdStr = pathInfo.substring("/revoke/".length());
+            handleRevokePunishment(request, response, punishmentIdStr);
+        } else {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String sessionId = getSessionIdFromCookies(request);
+
+        if (sessionId == null || !sessionManager.isValidSession(sessionId)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
+        String pathInfo = request.getPathInfo();
+
+        if (pathInfo != null && pathInfo.startsWith("/")) {
+            String punishmentIdStr = pathInfo.substring(1);
             handleRevokePunishment(request, response, punishmentIdStr);
         } else {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -166,11 +186,63 @@ public class PunishmentsApiServlet extends HttpServlet {
             SessionManager.Session session = sessionManager.getSession(getSessionIdFromCookies(request));
             String staffName = session.getUsername();
             
-            CompletableFuture<Void> future = plugin.getDatabaseManager().removePunishment(
+            // Get punishment details before removing it to determine the type
+            CompletableFuture<Punishment> getPunishmentFuture = plugin.getDatabaseManager().getPunishmentById(punishmentId);
+            Punishment punishment = getPunishmentFuture.join();
+            
+            if (punishment == null) {
+                throw new IllegalArgumentException("Punishment not found");
+            }
+            
+            // Execute the appropriate unpunishment command based on the punishment type
+            CompletableFuture<Boolean> unpunishFuture = CompletableFuture.completedFuture(false);
+            
+            // Handle different punishment types
+            switch (punishment.getType()) {
+                case BAN:
+                case TEMPBAN:
+                    unpunishFuture = plugin.getPunishmentService().unbanPlayer(
+                        punishment.getTargetUuid(), 
+                        punishment.getTargetName(), 
+                        staffName
+                    );
+                    break;
+                case MUTE:
+                case TEMPMUTE:
+                    unpunishFuture = plugin.getPunishmentService().unmutePlayer(
+                        punishment.getTargetUuid(), 
+                        punishment.getTargetName(), 
+                        staffName
+                    );
+                    break;
+                case IPBAN:
+                case IPTEMPBAN:
+                    String ip = punishment.getTargetIP();
+                    if (ip != null && !ip.isEmpty()) {
+                        unpunishFuture = plugin.getPunishmentService().unbanIP(ip, staffName);
+                    }
+                    break;
+                case IPMUTE:
+                case IPTEMPMUTE:
+                    String muteIp = punishment.getTargetIP();
+                    if (muteIp != null && !muteIp.isEmpty()) {
+                        unpunishFuture = plugin.getPunishmentService().unmuteIP(muteIp, staffName).thenApply(v -> true);
+                    }
+                    break;
+                default:
+                    // For other punishment types, just remove the punishment
+                    break;
+            }
+            
+            // Wait for the unpunishment to complete
+            unpunishFuture.join();
+            
+            // Now remove the punishment from the database
+            CompletableFuture<Void> removeFuture = plugin.getDatabaseManager().removePunishment(
                 punishmentId, UUID.randomUUID(), staffName, "Revoked via web dashboard"
             );
             
-            future.join();
+            removeFuture.join();
             
             JsonObject result = new JsonObject();
             result.addProperty("success", true);
@@ -182,11 +254,12 @@ public class PunishmentsApiServlet extends HttpServlet {
             out.print(gson.toJson(result));
             
         } catch (Exception e) {
-            plugin.getLogger().severe("Error revoking punishment: " + e.getMessage());
+            plugin.getLogger().severe("Error revoking punishment: " + e.getMessage() + "\n" + java.util.Arrays.toString(e.getStackTrace()));
             
             JsonObject error = new JsonObject();
             error.addProperty("success", false);
             error.addProperty("error", "Failed to revoke punishment: " + e.getMessage());
+            error.addProperty("stackTrace", java.util.Arrays.toString(e.getStackTrace()));
             
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             PrintWriter out = response.getWriter();
