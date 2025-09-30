@@ -8,6 +8,7 @@ database:
     
 web-dashboard:
   enabled: false
+  web-header-title: "WeGuardian"
   host: "127.0.0.1" #change with your ip ipv4
   port: 8080 #change with extra port
   auto-detect-port: true

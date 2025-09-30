@@ -1,5 +1,5 @@
 name: WeGuardian
-version: '1.5'
+version: '1.8'
 main: me.wethink.weGuardian.WeGuardian
 api-version: '1.21'
 load: STARTUP
@@ -50,6 +50,14 @@ commands:
   ipban:
     description: Permanently ban an IP address
     usage: /ipban <ip> <reason>
+    permission: weguardian.ipban
+  tempipban:
+    description: Temporarily ban an IP address
+    usage: /tempipban <ip> <duration> <reason> [-s] [-t template]
+    permission: weguardian.tempipban
+  unbanip:
+    description: Unban an IP address
+    usage: /unbanip <ip>
     permission: weguardian.ipban
   ipmute:
     description: Permanently mute an IP address
