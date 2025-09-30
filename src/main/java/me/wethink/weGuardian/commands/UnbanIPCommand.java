@@ -44,7 +44,6 @@ public class UnbanIPCommand implements CommandExecutor, TabCompleter {
         if (isValidIP(target)) {
             ipAddress = target;
         } else {
-            // Assume it's a player name, try to get their IP
             CompletableFuture<PlayerData> playerDataFuture = plugin.getDatabaseManager().getPlayerData(target);
             PlayerData playerData = playerDataFuture.join();
             if (playerData != null && playerData.getLastIP() != null) {

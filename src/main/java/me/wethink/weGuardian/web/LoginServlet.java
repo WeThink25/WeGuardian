@@ -86,7 +86,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response) t
     out.println("    <div class=\"login-container\">");
     out.println("        <div class=\"login-header\">");
     out.println("            <div class=\"logo\"><i class=\"fas fa-shield-alt\"></i></div>");
-    out.println("            <h1>WeGuardian</h1>");
+    out.println("            <h1>" + plugin.getWebDashboardService().getWebHeaderTitle() + "</h1>");
     out.println("            <p>Secure Admin Access</p>");
     out.println("        </div>");
     

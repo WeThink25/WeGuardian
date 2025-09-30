@@ -163,7 +163,7 @@ public class PlayersServlet extends HttpServlet {
         out.println("    <div class=\"header\">");
         out.println("        <div class=\"logo\">");
         out.println("            <i class=\"fas fa-shield-alt\"></i>");
-        out.println("            <h1>WeGuardian</h1>");
+        out.println("            <h1>" + plugin.getWebDashboardService().getWebHeaderTitle() + "</h1>");
         out.println("        </div>");
         out.println("        <div class=\"user-info\">");
         out.println("            <div class=\"user-welcome\">");

@@ -186,7 +186,6 @@ public class PunishmentsApiServlet extends HttpServlet {
             SessionManager.Session session = sessionManager.getSession(getSessionIdFromCookies(request));
             String staffName = session.getUsername();
             
-            // Get punishment details before removing it to determine the type
             CompletableFuture<Punishment> getPunishmentFuture = plugin.getDatabaseManager().getPunishmentById(punishmentId);
             Punishment punishment = getPunishmentFuture.join();
             
@@ -194,10 +193,8 @@ public class PunishmentsApiServlet extends HttpServlet {
                 throw new IllegalArgumentException("Punishment not found");
             }
             
-            // Execute the appropriate unpunishment command based on the punishment type
             CompletableFuture<Boolean> unpunishFuture = CompletableFuture.completedFuture(false);
             
-            // Handle different punishment types
             switch (punishment.getType()) {
                 case BAN:
                 case TEMPBAN:
@@ -230,14 +227,11 @@ public class PunishmentsApiServlet extends HttpServlet {
                     }
                     break;
                 default:
-                    // For other punishment types, just remove the punishment
                     break;
             }
             
-            // Wait for the unpunishment to complete
             unpunishFuture.join();
             
-            // Now remove the punishment from the database
             CompletableFuture<Void> removeFuture = plugin.getDatabaseManager().removePunishment(
                 punishmentId, UUID.randomUUID(), staffName, "Revoked via web dashboard"
             );

@@ -23,12 +23,14 @@ public class WebDashboardService {
     private SessionManager sessionManager;
     private WebSocketHandler webSocketHandler;
     private ScheduledExecutorService scheduler;
+    private String webHeaderTitle;
     
     public WebDashboardService(WeGuardian plugin) {
         this.plugin = plugin;
         this.sessionManager = new SessionManager(plugin);
         this.webSocketHandler = new WebSocketHandler(plugin, sessionManager);
         this.scheduler = Executors.newScheduledThreadPool(2);
+        this.webHeaderTitle = plugin.getConfig().getString("web-dashboard.web-header-title", "WeGuardian");
         
         WebSocketEndpoint.setPlugin(plugin);
         WebSocketEndpoint.setWebDashboardService(this);
@@ -176,7 +178,10 @@ public class WebDashboardService {
      public WebSocketHandler getWebSocketHandler() {
          return webSocketHandler;
      }
-     
+
+    public String getWebHeaderTitle() {
+        return webHeaderTitle;
+    }
      private static String sanitizeBindHost(String configuredHost) {
          String host = configuredHost == null || configuredHost.isBlank() ? "0.0.0.0" : configuredHost.trim();
          try {
