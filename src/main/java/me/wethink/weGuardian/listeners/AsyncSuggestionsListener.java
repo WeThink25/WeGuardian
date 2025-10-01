@@ -117,40 +117,34 @@ public class AsyncSuggestionsListener implements Listener {
                 .collect(Collectors.toList());
     }
     
-    private List<String> getPlayerSuggestions(String currentArg, CommandSender sender) {
-        String cacheKey = "players_" + currentArg;
-        
+    private List<String> getPlayerSuggestions(String arg, CommandSender sender) {
+        final String cacheKey = "players_" + arg;
+
         if (isCacheValid(cacheKey)) {
-            List<String> cached = playerSuggestionsCache.get(cacheKey);
+            final List<String> cached = playerSuggestionsCache.get(cacheKey);
             if (cached != null) {
                 return cached;
             }
         }
-        
-        List<String> suggestions = new ArrayList<>();
-        
+
+        final List<String> suggestions =
+                new ArrayList<>();
+
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-            if (onlinePlayer.getName().toLowerCase().startsWith(currentArg)) {
-                suggestions.add(onlinePlayer.getName());
+            final String name = onlinePlayer
+                    .getName();
+
+            final String lower = name
+                    .toLowerCase();
+
+            if (lower.startsWith(arg)) {
+                suggestions.add(name);
             }
         }
-        
-        if (suggestions.size() < 10) {
-            try {
-                List<PlayerData> offlinePlayers = databaseManager.searchPlayersByName(currentArg).join();
-                for (PlayerData playerData : offlinePlayers) {
-                    if (playerData.getName().toLowerCase().startsWith(currentArg)) {
-                        suggestions.add(playerData.getName());
-                    }
-                }
-            } catch (Exception e) {
-                plugin.debug("Error fetching offline players for suggestions: %s", e.getMessage());
-            }
-        }
-        
+
         playerSuggestionsCache.put(cacheKey, suggestions);
         cacheTimestamps.put(cacheKey, System.currentTimeMillis());
-        
+
         return suggestions;
     }
     
@@ -260,3 +254,4 @@ public class AsyncSuggestionsListener implements Listener {
         lastTemplateCacheUpdate = 0;
     }
 }
+
