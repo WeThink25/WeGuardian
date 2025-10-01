@@ -105,11 +105,15 @@ public class CheckbanCommand implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
+            final String input = args[0].toLowerCase();
+
             return Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
-                    .filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase()))
+                    .filter(name -> name.toLowerCase().startsWith(input))
                     .collect(Collectors.toList());
         }
-        return new ArrayList<>();
+
+        return Collections.emptyList();
     }
 }
+
