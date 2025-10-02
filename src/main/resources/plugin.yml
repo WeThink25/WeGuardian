@@ -1,5 +1,5 @@
 name: WeGuardian
-version: '1.8'
+version: '1.9'
 main: me.wethink.weGuardian.WeGuardian
 api-version: '1.21'
 load: STARTUP
@@ -79,10 +79,6 @@ commands:
     description: View staff punishment statistics
     usage: /staffstatus <staff>
     permission: weguardian.staffstatus
-  stats:
-    description: View global punishment statistics
-    usage: /stats
-    permission: weguardian.stats
   rollback:
     description: Rollback a punishment by ID
     usage: /rollback <id>
@@ -170,7 +166,6 @@ permissions:
       weguardian.checkban: true
       weguardian.notes: true
       weguardian.staffstatus: true
-      weguardian.stats: true
       weguardian.rollback: true
       weguardian.admin: true
       weguardian.bypass: true
@@ -222,9 +217,6 @@ permissions:
     default: op
   weguardian.staffstatus:
     description: View staff statistics
-    default: op
-  weguardian.stats:
-    description: View global statistics
     default: op
   weguardian.rollback:
     description: Rollback punishments
