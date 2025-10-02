@@ -113,12 +113,23 @@ public class HikariDatabaseManager implements DatabaseManager {
     public CompletableFuture<Void> createTables() {
         return CompletableFuture.runAsync(() -> {
             try (Connection conn = dataSource.getConnection()) {
+                plugin.getLogger().info("Attempting to create wg_players table...");
                 createPlayersTable(conn);
+                plugin.getLogger().info("Successfully created wg_players table.");
+
+                plugin.getLogger().info("Attempting to create wg_punishments table...");
                 createPunishmentsTable(conn);
+                plugin.getLogger().info("Successfully created wg_punishments table.");
+
+                plugin.getLogger().info("Attempting to create wg_banwave table...");
                 createBanwaveTable(conn);
+                plugin.getLogger().info("Successfully created wg_banwave table.");
+
+                plugin.getLogger().info("Attempting to create wg_player_connections table...");
                 createPlayerConnectionsTable(conn);
+                plugin.getLogger().info("Successfully created wg_player_connections table.");
             } catch (SQLException e) {
-                plugin.getLogger().log(Level.SEVERE, "Failed to create tables", e);
+                plugin.getLogger().log(Level.SEVERE, "Failed to create tables: " + e.getMessage(), e);
             }
         });
     }
@@ -768,15 +779,16 @@ public class HikariDatabaseManager implements DatabaseManager {
     }
 
     @Override
-    public CompletableFuture<List<DatabaseManager.PlayerConnection>> getPlayersFromIP(String ip) {
+    public CompletableFuture<List<DatabaseManager.PlayerConnection>> getPlayersFromIP(String ip, long expirationTimeMillis) {
         return CompletableFuture.supplyAsync(() -> {
             List<DatabaseManager.PlayerConnection> players = new ArrayList<>();
-            String query = "SELECT player_uuid, player_name, ip_address, last_seen FROM wg_player_connections WHERE ip_address = ? ORDER BY last_seen DESC";
+            String query = "SELECT player_uuid, player_name, ip_address, last_seen FROM wg_player_connections WHERE ip_address = ? AND last_seen >= ? ORDER BY last_seen DESC";
 
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement statement = connection.prepareStatement(query)) {
 
                 statement.setString(1, ip);
+                statement.setTimestamp(2, new Timestamp(expirationTimeMillis));
 
                 try (ResultSet resultSet = statement.executeQuery()) {
                     while (resultSet.next()) {

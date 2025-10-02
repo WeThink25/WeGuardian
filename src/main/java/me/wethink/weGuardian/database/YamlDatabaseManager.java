@@ -896,12 +896,12 @@ public class YamlDatabaseManager implements DatabaseManager {
     }
 
     @Override
-    public CompletableFuture<List<PlayerConnection>> getPlayersFromIP(String ip) {
+    public CompletableFuture<List<PlayerConnection>> getPlayersFromIP(String ip, long expirationTimeMillis) {
         return CompletableFuture.supplyAsync(() -> {
             List<PlayerConnection> list = new ArrayList<>();
             for (Map.Entry<UUID, Map<String, Long>> entry : playerConnectionsCache.entrySet()) {
                 Long tsMillis = entry.getValue().get(ip);
-                if (tsMillis != null) {
+                if (tsMillis != null && tsMillis >= expirationTimeMillis) {
                     UUID uuid = entry.getKey();
                     PlayerData data = playerDataCache.get(uuid);
                     String name = data != null ? data.getPlayerName() : "Unknown";

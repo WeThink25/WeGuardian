@@ -84,7 +84,7 @@ public interface DatabaseManager {
 
     CompletableFuture<List<PlayerConnection>> getPlayerConnections(UUID uuid);
 
-    CompletableFuture<List<PlayerConnection>> getPlayersFromIP(String ip);
+    CompletableFuture<List<PlayerConnection>> getPlayersFromIP(String ip, long expirationTimeMillis);
 
     CompletableFuture<Void> recordPlayerConnection(UUID uuid, String playerName, String ip);
 

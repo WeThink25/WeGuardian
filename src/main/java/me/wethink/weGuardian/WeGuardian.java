@@ -203,40 +203,10 @@ public final class WeGuardian extends JavaPlugin {
         getCommand("notesmenu").setExecutor(new NotesMenuCommand(this));
         getCommand("unbanmenu").setExecutor(new UnbanMenuCommand(this));
         getCommand("unmutemenu").setExecutor(new UnmuteMenuCommand(this));
-        getCommand("punish").setTabCompleter(new PunishCommand(this, punishmentGUI));
-        getCommand("ban").setTabCompleter(new BanCommand(this, punishmentService));
-        getCommand("tempban").setTabCompleter(new TempbanCommand(this, punishmentService));
-        getCommand("mute").setTabCompleter(new MuteCommand(this, punishmentService));
-        getCommand("tempmute").setTabCompleter(new TempmuteCommand(this, punishmentService));
-        getCommand("kick").setTabCompleter(new KickCommand(this, punishmentService));
-        getCommand("warn").setTabCompleter(new WarnCommand(this, punishmentService));
-        getCommand("unban").setTabCompleter(new UnbanCommand(this, punishmentService));
-        getCommand("unmute").setTabCompleter(new UnmuteCommand(this, punishmentService));
-        getCommand("ipban").setTabCompleter(new IPBanCommand(this, punishmentService));
-        getCommand("ipmute").setTabCompleter(new IPMuteCommand(punishmentService));
-        getCommand("unbanip").setTabCompleter(new UnbanIPCommand(this, punishmentService));
-        getCommand("history").setTabCompleter(new HistoryCommand(this));
-        getCommand("checkban").setTabCompleter(new CheckbanCommand(this));
-        getCommand("banlist").setTabCompleter(new BanlistCommand(this));
-        getCommand("mutelist").setTabCompleter(new MutelistCommand(this));
-        getCommand("blame").setTabCompleter(new BlameCommand(this));
-        getCommand("alts").setTabCompleter(new AltsCommand(this));
-        getCommand("warns").setTabCompleter(new WarnsCommand(this));
-        getCommand("unwarn").setTabCompleter(new UnwarnCommand(this));
-        getCommand("banmenu").setTabCompleter(new BanMenuCommand(this));
-        getCommand("tempbanmenu").setTabCompleter(new TempbanMenuCommand(this));
-        getCommand("mutemenu").setTabCompleter(new MuteMenuCommand(this));
-        getCommand("tempmutemenu").setTabCompleter(new TempmuteMenuCommand(this));
-        getCommand("kickmenu").setTabCompleter(new KickMenuCommand(this));
-        getCommand("warnmenu").setTabCompleter(new WarnMenuCommand(this));
-        getCommand("notesmenu").setTabCompleter(new NotesMenuCommand(this));
-        getCommand("unbanmenu").setTabCompleter(new UnbanMenuCommand(this));
-        getCommand("unmutemenu").setTabCompleter(new UnmuteMenuCommand(this));
 
         if (getCommand("weguardian") != null) {
             WeGuardianCommand wg = new WeGuardianCommand(this);
             getCommand("weguardian").setExecutor(wg);
-            getCommand("weguardian").setTabCompleter(wg);
         }
     }
 
