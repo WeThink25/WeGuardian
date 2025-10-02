@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class StatsCommand implements CommandExecutor, TabCompleter {
+public class StatsCommand implements CommandExecutor {
 
     private final WeGuardian plugin;
 
@@ -91,8 +91,5 @@ public class StatsCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        return new ArrayList<>();
-    }
+
 }

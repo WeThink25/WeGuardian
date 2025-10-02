@@ -17,7 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public class BanwaveCommand implements CommandExecutor, TabCompleter {
+public class BanwaveCommand implements CommandExecutor {
 
     private final WeGuardian plugin;
     private final ConcurrentHashMap<String, BanwaveEntry> queuedBans = new ConcurrentHashMap<>();
@@ -162,29 +162,7 @@ public class BanwaveCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(MessageUtils.colorize("&f/banwave clear &7- Clear the queue"));
     }
 
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        if (args.length == 1) {
-            return Arrays.asList("add", "remove", "list", "execute", "clear").stream()
-                    .filter(cmd -> cmd.toLowerCase().startsWith(args[0].toLowerCase()))
-                    .collect(Collectors.toList());
-        }
 
-        if (args.length == 2) {
-            if (args[0].equalsIgnoreCase("add")) {
-                return Bukkit.getOnlinePlayers().stream()
-                        .map(Player::getName)
-                        .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
-                        .collect(Collectors.toList());
-            } else if (args[0].equalsIgnoreCase("remove")) {
-                return queuedBans.keySet().stream()
-                        .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
-                        .collect(Collectors.toList());
-            }
-        }
-
-        return new ArrayList<>();
-    }
 
     private static class BanwaveEntry {
         final String targetName;

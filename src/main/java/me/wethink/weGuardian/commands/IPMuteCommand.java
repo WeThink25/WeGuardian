@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class IPMuteCommand implements CommandExecutor, TabCompleter {
+public class IPMuteCommand implements CommandExecutor {
 
     private final PunishmentService punishmentService;
 
@@ -71,16 +71,5 @@ public class IPMuteCommand implements CommandExecutor, TabCompleter {
         }
     }
 
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        List<String> completions = new ArrayList<>();
 
-        if (args.length == 1) {
-            completions.addAll(Arrays.asList("192.168.", "10.0.", "127.0.0.1"));
-        } else if (args.length == 2) {
-            completions.addAll(Arrays.asList("Spam", "Inappropriate language", "Chat abuse", "Harassment"));
-        }
-
-        return completions;
-    }
 }

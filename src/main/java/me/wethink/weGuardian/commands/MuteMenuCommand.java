@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MuteMenuCommand implements CommandExecutor, TabCompleter {
+public class MuteMenuCommand implements CommandExecutor {
 
     private final WeGuardian plugin;
 
@@ -69,18 +69,5 @@ public class MuteMenuCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        List<String> completions = new ArrayList<>();
 
-        if (args.length == 1) {
-            String input = args[0].toLowerCase();
-            completions = Bukkit.getOnlinePlayers().stream()
-                    .map(Player::getName)
-                    .filter(name -> name.toLowerCase().startsWith(input))
-                    .collect(Collectors.toList());
-        }
-
-        return completions;
-    }
 }

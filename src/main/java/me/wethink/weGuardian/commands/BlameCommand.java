@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlameCommand implements CommandExecutor, TabCompleter {
+public class BlameCommand implements CommandExecutor {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final WeGuardian plugin;
@@ -109,14 +109,5 @@ public class BlameCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("");
     }
 
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        List<String> completions = new ArrayList<>();
 
-        if (args.length == 1) {
-            completions.add("<punishment_id>");
-        }
-
-        return completions;
-    }
 }

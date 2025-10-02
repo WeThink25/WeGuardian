@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class UnmuteCommand implements CommandExecutor, TabCompleter {
+public class UnmuteCommand implements CommandExecutor {
 
     private final PunishmentService punishmentService;
 
@@ -54,24 +54,5 @@ public class UnmuteCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        if (args.length == 1) {
-            List<String> suggestions = new ArrayList<>();
-            
-            suggestions.addAll(Bukkit.getOnlinePlayers().stream()
-                    .map(Player::getName)
-                    .filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase()))
-                    .collect(Collectors.toList()));
-            
-            suggestions.addAll(Arrays.stream(Bukkit.getOfflinePlayers())
-                    .map(org.bukkit.OfflinePlayer::getName)
-                    .filter(name -> name != null && name.toLowerCase().startsWith(args[0].toLowerCase()))
-                    .limit(10)
-                    .collect(Collectors.toList()));
-            
-            return suggestions;
-        }
-        return new ArrayList<>();
-    }
+
 }

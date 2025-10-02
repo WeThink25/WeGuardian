@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class UnbanIPCommand implements CommandExecutor, TabCompleter {
+public class UnbanIPCommand implements CommandExecutor {
 
     private final PunishmentService punishmentService;
     private final WeGuardian plugin;
@@ -71,14 +71,7 @@ public class UnbanIPCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        if (args.length == 1) {
-            List<String> suggestions = new ArrayList<>();
-            return suggestions;
-        }
-        return new ArrayList<>();
-    }
+
 
     private boolean isValidIP(String ip) {
         try {

@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MutelistCommand implements CommandExecutor, TabCompleter {
+public class MutelistCommand implements CommandExecutor {
 
     private static final int ITEMS_PER_PAGE = 10;
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -207,22 +207,5 @@ public class MutelistCommand implements CommandExecutor, TabCompleter {
         });
 
         return true;
-    }
-
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        List<String> completions = new ArrayList<>();
-
-        if (args.length == 1) {
-            completions.addAll(Arrays.asList("--ip", "--page", "--filter", "1", "2", "3"));
-        } else if (args.length == 2 && args[0].equalsIgnoreCase("--page")) {
-            completions.addAll(Arrays.asList("1", "2", "3", "4", "5"));
-        } else if (args.length == 2 && args[0].equalsIgnoreCase("--filter")) {
-            completions.add("<player_name>");
-        }
-
-        return completions.stream()
-                .filter(completion -> completion.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
-                .collect(Collectors.toList());
     }
 }

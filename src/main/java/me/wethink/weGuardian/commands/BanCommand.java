@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-public class BanCommand implements CommandExecutor, TabCompleter {
+public class BanCommand implements CommandExecutor {
 
     private final WeGuardian plugin;
     private final PunishmentService punishmentService;
@@ -146,47 +146,5 @@ public class BanCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        List<String> completions = new ArrayList<>();
 
-        if (args.length == 1) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                if (player.getName().toLowerCase().startsWith(args[0].toLowerCase())) {
-                    completions.add(player.getName());
-                }
-            }
-        } else if (args.length > 1) {
-            String lastArg = args[args.length - 1];
-
-            if (args.length > 2 && args[args.length - 2].equals("-t")) {
-                templateService.getAllTemplates().forEach(template -> {
-                    if (template.getName().toLowerCase().startsWith(lastArg.toLowerCase())) {
-                        completions.add(template.getName());
-                    }
-                });
-            } else if (args.length > 2 && args[args.length - 2].equals("-d")) {
-                completions.addAll(Arrays.asList("1h", "1d", "1w", "1m", "1y"));
-            } else {
-                if (!Arrays.asList(args).contains("-s")) {
-                    completions.add("-s");
-                }
-                if (!Arrays.asList(args).contains("-t")) {
-                    completions.add("-t");
-                }
-                if (!Arrays.asList(args).contains("-d")) {
-                    completions.add("-d");
-                }
-
-                completions.addAll(Arrays.asList(
-                        "Hacking", "Griefing", "Toxic behavior", "Spam", "Advertising",
-                        "Inappropriate language", "Cheating", "Rule violation"
-                ));
-            }
-        }
-
-        return completions.stream()
-                .filter(completion -> completion.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
-                .collect(Collectors.toList());
-    }
 }

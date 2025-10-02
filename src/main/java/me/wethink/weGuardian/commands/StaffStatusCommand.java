@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class StaffStatusCommand implements CommandExecutor, TabCompleter {
+public class StaffStatusCommand implements CommandExecutor {
 
     private final WeGuardian plugin;
 
@@ -79,18 +79,5 @@ public class StaffStatusCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (args.length == 1) {
-            List<String> suggestions = new ArrayList<>();
 
-            suggestions.addAll(Bukkit.getOnlinePlayers().stream()
-                    .map(Player::getName)
-                    .filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase()))
-                    .collect(Collectors.toList()));
-
-            return suggestions;
-        }
-        return new ArrayList<>();
-    }
 }

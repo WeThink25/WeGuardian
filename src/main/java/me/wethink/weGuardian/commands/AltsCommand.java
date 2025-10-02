@@ -14,8 +14,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.Player;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.time.format.DateTimeFormatter;
@@ -23,7 +22,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-public class AltsCommand implements CommandExecutor, TabCompleter {
+public class AltsCommand implements CommandExecutor {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private final WeGuardian plugin;
@@ -40,27 +39,28 @@ public class AltsCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length < 1) {
-            sender.sendMessage(MessageUtils.colorize("&cUsage: /alts <player> [--strict] [--punished]"));
+            sender.sendMessage(MessageUtils.colorize("&cUsage: /alts <player> [--strict] [--punished] [--truealts]"));
             return true;
         }
 
         String targetName = args[0];
         boolean strict = Arrays.asList(args).contains("--strict");
         boolean punishedOnly = Arrays.asList(args).contains("--punished");
+        boolean requireSharedPunishments = Arrays.asList(args).contains("--truealts");
 
         CompletableFuture<UUID> uuidFuture = plugin.getPunishmentService().getPlayerUUID(targetName);
 
         uuidFuture.thenCompose(uuid -> {
             if (uuid == null) {
-                sender.sendMessage(MessageUtils.colorize("&cPlayer '" + targetName + "' not found."));
+                sender.sendMessage(MessageUtils.colorize("&cPlayer \'" + targetName + "\' not found."));
                 return CompletableFuture.completedFuture(null);
             }
 
-            return findAltAccounts(uuid, targetName, strict, punishedOnly);
+            return findAltAccounts(uuid, targetName, strict, punishedOnly, requireSharedPunishments);
         }).thenAccept(altData -> {
             if (altData == null) return;
 
-            displayAltAccounts(sender, targetName, altData, strict, punishedOnly);
+            displayAltAccounts(sender, targetName, altData, strict, punishedOnly, requireSharedPunishments);
         }).exceptionally(throwable -> {
             sender.sendMessage(MessageUtils.colorize("&cError checking alt accounts: " + throwable.getMessage()));
             plugin.getLogger().severe("Error in alts command: " + throwable.getMessage());
@@ -70,7 +70,8 @@ public class AltsCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    private CompletableFuture<AltAccountData> findAltAccounts(UUID targetUuid, String targetName, boolean strict, boolean punishedOnly) {
+    private CompletableFuture<AltAccountData> findAltAccounts(UUID targetUuid, String targetName, boolean strict, boolean punishedOnly, boolean requireSharedPunishments) {
+        long expirationTimeMillis = System.currentTimeMillis() - (60L * 24 * 60 * 60 * 1000); // 60 days in milliseconds
         return plugin.getDatabaseManager().getPlayerConnections(targetUuid).thenCompose(connections -> {
             if (connections.isEmpty()) {
                 return CompletableFuture.completedFuture(new AltAccountData(new ArrayList<>()));
@@ -81,7 +82,7 @@ public class AltsCommand implements CommandExecutor, TabCompleter {
                     .collect(Collectors.toSet());
 
             List<CompletableFuture<List<DatabaseManager.PlayerConnection>>> ipFutures = targetIPs.stream()
-                    .map(ip -> plugin.getDatabaseManager().getPlayersFromIP(ip))
+                    .map(ip -> plugin.getDatabaseManager().getPlayersFromIP(ip, expirationTimeMillis))
                     .collect(Collectors.toList());
 
             return CompletableFuture.allOf(ipFutures.toArray(new CompletableFuture[0]))
@@ -130,6 +131,10 @@ public class AltsCommand implements CommandExecutor, TabCompleter {
                                     for (UUID altUuid : filteredAltUuids) {
                                         List<Punishment> punishments = punishmentFutures.get(i++).join();
                                         
+                                        if (requireSharedPunishments && punishments.stream().noneMatch(p -> p.isActive() &&
+                                                (p.getType() == PunishmentType.BAN || p.getType() == PunishmentType.TEMPBAN))) {
+                                            continue;
+                                        }
 
                                         if (punishedOnly && punishments.stream().noneMatch(p -> p.isActive() &&
                                                 (p.getType() == PunishmentType.BAN || p.getType() == PunishmentType.TEMPBAN))) {
@@ -164,7 +169,7 @@ public class AltsCommand implements CommandExecutor, TabCompleter {
         });
     }
 
-    private void displayAltAccounts(CommandSender sender, String targetName, AltAccountData data, boolean strict, boolean punishedOnly) {
+    private void displayAltAccounts(CommandSender sender, String targetName, AltAccountData data, boolean strict, boolean punishedOnly, boolean requireSharedPunishments) {
         sender.sendMessage(MessageUtils.colorize("&6&l=== Alt Accounts for " + targetName + " ==="));
 
         if (strict) {
@@ -172,6 +177,11 @@ public class AltsCommand implements CommandExecutor, TabCompleter {
         }
         if (punishedOnly) {
             sender.sendMessage(MessageUtils.colorize("&7Filter: &cPunished accounts only"));
+        }
+        if (requireSharedPunishments) {
+            sender.sendMessage(MessageUtils.colorize("&7Filter: &bTrue Alts (shared active bans/tempbans)"));
+            data.alts.removeIf(alt -> alt.punishments.stream().noneMatch(p -> p.isActive() &&
+                    (p.getType() == PunishmentType.BAN || p.getType() == PunishmentType.TEMPBAN)));
         }
 
         sender.sendMessage(MessageUtils.colorize("&7Found: &f" + data.alts.size() + " potential alt account(s)"));
@@ -265,22 +275,7 @@ public class AltsCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(MessageUtils.colorize("&7Click on a player name to view their full punishment history."));
     }
 
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        List<String> completions = new ArrayList<>();
 
-        if (args.length == 1) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                completions.add(player.getName());
-            }
-        } else {
-            completions.addAll(Arrays.asList("--strict", "--punished"));
-        }
-
-        return completions.stream()
-                .filter(completion -> completion.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
-                .collect(Collectors.toList());
-    }
 
     private static class AltAccountData {
         final List<AltAccount> alts;

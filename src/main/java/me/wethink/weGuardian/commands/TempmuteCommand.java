@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-public class TempmuteCommand implements CommandExecutor, TabCompleter {
+public class TempmuteCommand implements CommandExecutor {
 
     private final WeGuardian plugin;
     private final PunishmentService punishmentService;
@@ -240,48 +240,5 @@ public class TempmuteCommand implements CommandExecutor, TabCompleter {
         }
     }
 
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        List<String> completions = new ArrayList<>();
 
-        if (args.length == 1) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                if (player.getName().toLowerCase().startsWith(args[0].toLowerCase())) {
-                    completions.add(player.getName());
-                }
-            }
-        } else if (args.length == 2) {
-            completions.addAll(Arrays.asList("1h", "2h", "6h", "12h", "1d", "2d", "3d", "7d", "14d", "30d", "1w", "2w", "1m", "3m", "6m", "1y"));
-        } else if (args.length > 2) {
-            String lastArg = args[args.length - 1];
-
-            if (args.length > 3 && args[args.length - 2].equals("-t")) {
-                templateService.getAllTemplates().forEach(template -> {
-                    if (template.getName().toLowerCase().startsWith(lastArg.toLowerCase())) {
-                        completions.add(template.getName());
-                    }
-                });
-            } else {
-                if (!Arrays.asList(args).contains("-s")) {
-                    completions.add("-s");
-                }
-                if (!Arrays.asList(args).contains("-t")) {
-                    completions.add("-t");
-                }
-                if (!Arrays.asList(args).contains("--ip") && sender.hasPermission("weguardian.iptempmute")) {
-                    completions.add("--ip");
-                }
-
-                completions.addAll(Arrays.asList(
-                        "Spam", "Inappropriate language", "Toxic behavior", "Advertising",
-                        "Disrespect", "Harassment", "Chat abuse", "Rule violation",
-                        "Excessive caps", "Flooding", "Political discussion"
-                ));
-            }
-        }
-
-        return completions.stream()
-                .filter(completion -> completion.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
-                .collect(Collectors.toList());
-    }
 }

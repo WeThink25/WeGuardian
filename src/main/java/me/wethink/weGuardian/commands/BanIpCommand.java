@@ -1,46 +1,43 @@
 package me.wethink.weGuardian.commands;
 
+import co.aikar.commands.BaseCommand;
+import co.aikar.commands.annotation.CommandAlias;
+import co.aikar.commands.annotation.CommandCompletion;
+import co.aikar.commands.annotation.CommandPermission;
+import co.aikar.commands.annotation.Description;
+import co.aikar.commands.annotation.Syntax;
 import me.wethink.weGuardian.WeGuardian;
 import me.wethink.weGuardian.database.DatabaseManager;
 import me.wethink.weGuardian.models.PlayerData;
 import me.wethink.weGuardian.services.PunishmentService;
 import me.wethink.weGuardian.utils.MessageUtils;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.TabCompleter;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
 import org.bukkit.command.CommandSender;
+
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
-public class IPBanCommand implements CommandExecutor {
+@CommandAlias("banip")
+@Description("IP ban a player or IP address")
+public class BanIpCommand extends BaseCommand {
 
     private final PunishmentService punishmentService;
     private final WeGuardian plugin;
 
-    public IPBanCommand(WeGuardian plugin, PunishmentService punishmentService) {
+    public BanIpCommand(WeGuardian plugin, PunishmentService punishmentService) {
         this.plugin = plugin;
         this.punishmentService = punishmentService;
     }
 
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (!sender.hasPermission("weguardian.ipban")) {
-            sender.sendMessage(MessageUtils.colorize("&cYou don't have permission to use this command."));
-            return true;
-        }
+    @CommandCompletion("@players @reasons|@templates -s -t <template>")
+    @Syntax("<ip|player> <reason> [-s] [-t template]")
+    @CommandPermission("weguardian.banip")
+    public void onBanIp(CommandSender sender, String target, String[] reasonArgs) {
+        String reason = String.join(" ", reasonArgs);
 
-        if (args.length < 2) {
-            sender.sendMessage(MessageUtils.colorize("&cUsage: /ipban <ip|player> <reason>"));
-            return true;
+        if (reason.isEmpty()) {
+            sender.sendMessage(MessageUtils.colorize("&cUsage: /banip <ip|player> <reason>"));
+            return;
         }
-
-        String target = args[0];
-        String reason = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
 
         String ipAddress;
 
@@ -54,7 +51,7 @@ public class IPBanCommand implements CommandExecutor {
                 sender.sendMessage(MessageUtils.colorize("&aFound IP &e" + ipAddress + " &afor player &e" + target + "."));
             } else {
                 sender.sendMessage(MessageUtils.colorize("&cCould not find IP address for player &e" + target + "."));
-                return true;
+                return;
             }
         }
 
@@ -70,8 +67,6 @@ public class IPBanCommand implements CommandExecutor {
                     sender.sendMessage(MessageUtils.colorize("&cError executing IP ban: " + throwable.getMessage()));
                     return null;
                 });
-
-        return true;
     }
 
     private boolean isValidIP(String ip) {
@@ -88,5 +83,4 @@ public class IPBanCommand implements CommandExecutor {
             return false;
         }
     }
-
 }

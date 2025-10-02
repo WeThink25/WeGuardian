@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-public class MuteCommand implements CommandExecutor, TabCompleter {
+public class MuteCommand implements CommandExecutor {
 
     private final WeGuardian plugin;
     private final PunishmentService punishmentService;
@@ -197,50 +197,5 @@ public class MuteCommand implements CommandExecutor, TabCompleter {
         return ip.matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$");
     }
 
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        List<String> completions = new ArrayList<>();
 
-        if (args.length == 1) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                if (player.getName().toLowerCase().startsWith(args[0].toLowerCase())) {
-                    completions.add(player.getName());
-                }
-            }
-        } else if (args.length > 1) {
-            String lastArg = args[args.length - 1];
-
-            if (args.length > 2 && args[args.length - 2].equals("-t")) {
-                templateService.getAllTemplates().forEach(template -> {
-                    if (template.getName().toLowerCase().startsWith(lastArg.toLowerCase())) {
-                        completions.add(template.getName());
-                    }
-                });
-            } else if (args.length > 2 && args[args.length - 2].equals("-d")) {
-                completions.addAll(Arrays.asList("1h", "1d", "1w", "1m", "1y"));
-            } else {
-                if (!Arrays.asList(args).contains("-s")) {
-                    completions.add("-s");
-                }
-                if (!Arrays.asList(args).contains("-t")) {
-                    completions.add("-t");
-                }
-                if (!Arrays.asList(args).contains("-d")) {
-                    completions.add("-d");
-                }
-                if (!Arrays.asList(args).contains("--ip") && sender.hasPermission("weguardian.ipmute")) {
-                    completions.add("--ip");
-                }
-
-                completions.addAll(Arrays.asList(
-                        "Spam", "Inappropriate language", "Toxic behavior", "Advertising",
-                        "Disrespect", "Harassment", "Chat abuse", "Rule violation"
-                ));
-            }
-        }
-
-        return completions.stream()
-                .filter(completion -> completion.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
-                .collect(Collectors.toList());
-    }
 }

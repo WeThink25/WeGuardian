@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class WarnCommand implements CommandExecutor, TabCompleter {
+public class WarnCommand implements CommandExecutor {
 
     private final PunishmentService punishmentService;
 
@@ -72,14 +72,5 @@ public class WarnCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (args.length == 1) {
-            return Bukkit.getOnlinePlayers().stream()
-                    .map(Player::getName)
-                    .filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase()))
-                    .collect(Collectors.toList());
-        }
-        return new ArrayList<>();
-    }
+
 }

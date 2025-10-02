@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-public class WarnsCommand implements CommandExecutor, TabCompleter {
+public class WarnsCommand implements CommandExecutor {
 
     private static final int ITEMS_PER_PAGE = 10;
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -177,22 +177,5 @@ public class WarnsCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        List<String> completions = new ArrayList<>();
 
-        if (args.length == 1) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                completions.add(player.getName());
-            }
-        } else if (args.length == 2) {
-            completions.add("1");
-            completions.add("2");
-            completions.add("3");
-        }
-
-        return completions.stream()
-                .filter(completion -> completion.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
-                .collect(Collectors.toList());
-    }
 }

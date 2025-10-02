@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class RollbackCommand implements CommandExecutor, TabCompleter {
+public class RollbackCommand implements CommandExecutor {
 
     private final WeGuardian plugin;
 
@@ -115,8 +115,5 @@ public class RollbackCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        return new ArrayList<>();
-    }
+
 }

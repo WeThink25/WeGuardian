@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class UnwarnCommand implements CommandExecutor, TabCompleter {
+public class UnwarnCommand implements CommandExecutor {
 
     private final WeGuardian plugin;
 
@@ -104,18 +104,5 @@ public class UnwarnCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        List<String> completions = new ArrayList<>();
 
-        if (args.length == 1) {
-            completions.add("<warning_id>");
-        } else if (args.length == 2) {
-            completions.add("Removed by staff");
-            completions.add("Appeal accepted");
-            completions.add("False warning");
-        }
-
-        return completions;
-    }
 }

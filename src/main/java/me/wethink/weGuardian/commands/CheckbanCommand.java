@@ -14,11 +14,12 @@ import org.bukkit.entity.Player;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-public class CheckbanCommand implements CommandExecutor, TabCompleter {
+public class CheckbanCommand implements CommandExecutor {
 
     private final WeGuardian plugin;
 
@@ -102,18 +103,5 @@ public class CheckbanCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("");
     }
 
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (args.length == 1) {
-            final String input = args[0].toLowerCase();
-
-            return Bukkit.getOnlinePlayers().stream()
-                    .map(Player::getName)
-                    .filter(name -> name.toLowerCase().startsWith(input))
-                    .collect(Collectors.toList());
-        }
-
-        return Collections.emptyList();
-    }
 }
 

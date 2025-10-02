@@ -20,7 +20,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 
-public class TempIPBanCommand implements CommandExecutor, TabCompleter {
+public class TempIPBanCommand implements CommandExecutor {
 
     private final WeGuardian plugin;
     private final PunishmentService punishmentService;
@@ -151,23 +151,5 @@ public class TempIPBanCommand implements CommandExecutor, TabCompleter {
         } catch (NumberFormatException e) {
             return false;
         }
-    }
-
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        List<String> completions = new ArrayList<>();
-
-        if (args.length == 1) {
-            completions.addAll(Arrays.asList("192.168.", "10.0.", "127.0.0.1"));
-        } else if (args.length == 2) {
-            completions.addAll(Arrays.asList("1h", "6h", "12h", "1d", "3d", "1w", "1m"));
-        } else if (args.length == 3) {
-            completions.addAll(Arrays.asList("Hacking", "Griefing", "Inappropriate behavior", "Spam"));
-        } else if (args.length == 4) {
-            completions.add("-s");
-            completions.add("-t");
-        }
-
-        return completions;
     }
 }

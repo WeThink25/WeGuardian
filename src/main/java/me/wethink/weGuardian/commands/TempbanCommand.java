@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-public class TempbanCommand implements CommandExecutor, TabCompleter {
+public class TempbanCommand implements CommandExecutor {
 
     private final WeGuardian plugin;
     private final PunishmentService punishmentService;
@@ -145,45 +145,5 @@ public class TempbanCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        List<String> completions = new ArrayList<>();
 
-        if (args.length == 1) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                if (player.getName().toLowerCase().startsWith(args[0].toLowerCase())) {
-                    completions.add(player.getName());
-                }
-            }
-        } else if (args.length == 2) {
-            completions.addAll(Arrays.asList("1h", "2h", "6h", "12h", "1d", "2d", "3d", "7d", "14d", "30d", "1w", "2w", "1m", "3m", "6m", "1y"));
-        } else if (args.length > 2) {
-            String lastArg = args[args.length - 1];
-
-            if (args.length > 3 && args[args.length - 2].equals("-t")) {
-                templateService.getAllTemplates().forEach(template -> {
-                    if (template.getName().toLowerCase().startsWith(lastArg.toLowerCase())) {
-                        completions.add(template.getName());
-                    }
-                });
-            } else {
-                if (!Arrays.asList(args).contains("-s")) {
-                    completions.add("-s");
-                }
-                if (!Arrays.asList(args).contains("-t")) {
-                    completions.add("-t");
-                }
-
-                completions.addAll(Arrays.asList(
-                        "Hacking", "Griefing", "Toxic behavior", "Spam", "Advertising",
-                        "Inappropriate language", "Cheating", "Rule violation", "X-ray",
-                        "Duping", "Exploiting", "Alt account"
-                ));
-            }
-        }
-
-        return completions.stream()
-                .filter(completion -> completion.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
-                .collect(Collectors.toList());
-    }
 }

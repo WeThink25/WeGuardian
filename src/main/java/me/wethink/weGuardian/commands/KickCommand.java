@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class KickCommand implements CommandExecutor, TabCompleter {
+public class KickCommand implements CommandExecutor {
 
     private final WeGuardian plugin;
     private final PunishmentService punishmentService;
@@ -193,45 +193,5 @@ public class KickCommand implements CommandExecutor, TabCompleter {
         });
     }
 
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        List<String> completions = new ArrayList<>();
 
-        if (args.length == 1) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                if (player.getName().toLowerCase().startsWith(args[0].toLowerCase())) {
-                    completions.add(player.getName());
-                }
-            }
-        } else if (args.length > 1) {
-            String lastArg = args[args.length - 1];
-
-            if (args.length > 2 && args[args.length - 2].equals("-t")) {
-                templateService.getAllTemplates().forEach(template -> {
-                    if (template.getName().toLowerCase().startsWith(lastArg.toLowerCase())) {
-                        completions.add(template.getName());
-                    }
-                });
-            } else {
-                if (!Arrays.asList(args).contains("-s")) {
-                    completions.add("-s");
-                }
-                if (!Arrays.asList(args).contains("-t")) {
-                    completions.add("-t");
-                }
-                if (!Arrays.asList(args).contains("--ip") && sender.hasPermission("weguardian.ipkick")) {
-                    completions.add("--ip");
-                }
-
-                completions.addAll(Arrays.asList(
-                        "Inappropriate behavior", "Spam", "Disrespect", "AFK", "Lag",
-                        "Rule violation", "Trolling", "Reconnect"
-                ));
-            }
-        }
-
-        return completions.stream()
-                .filter(completion -> completion.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
-                .collect(Collectors.toList());
-    }
 }
