@@ -71,7 +71,7 @@ WeGuardian is a comprehensive, professional-grade Minecraft punishment system pl
 
 | Command | Description | Permission |
 |---------|-------------|------------|
-| `/ipban <ip> <reason>` | Ban IP address | `weguardian.ipban` |
+| `/ipban <player|ip> <reason>` | Ban IP address | `weguardian.ipban` |
 | `/ipmute <ip> <reason>` | Mute IP address | `weguardian.ipmute` |
 | `/unbanip <ip>` | Unban IP address | `weguardian.unbanip` |
 | `/unmuteip <ip>` | Unmute IP address | `weguardian.unmuteip` |
@@ -94,8 +94,7 @@ WeGuardian is a comprehensive, professional-grade Minecraft punishment system pl
 | `/history <player>` | View punishment history | `weguardian.history` |
 | `/checkban <player>` | Check ban/mute status | `weguardian.checkban` |
 | `/notes <player>` | View staff notes | `weguardian.notes` |
-| `/staffstatus <staff>` | View staff statistics | `weguardian.staffstatus` |
-| `/stats` | View global statistics | `weguardian.stats` |
+
 
 ### Admin & Management Commands
 
