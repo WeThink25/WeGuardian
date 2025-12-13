@@ -1,6 +1,6 @@
 # MIT License
 
-**Copyright © 2024 WeThink**
+**Copyright © 2025 WeThink**
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -39,3 +39,4 @@ This software includes the following third-party components:
 | Gson | Apache-2.0 | [GitHub](https://github.com/google/gson) |
 | SQLite JDBC | Apache-2.0 | [GitHub](https://github.com/xerial/sqlite-jdbc) |
 | MySQL Connector/J | GPL-2.0 | [MySQL](https://dev.mysql.com/downloads/connector/j/) |
+
