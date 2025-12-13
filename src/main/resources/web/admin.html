@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - WeGuardian</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Animation styles */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20%,
+            60% {
+                transform: translateX(-5px);
+            }
+
+            40%,
+            80% {
+                transform: translateX(5px);
+            }
+        }
+
+        @keyframes successPop {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideIn 0.3s ease, pulse 2s ease infinite;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            animation: slideIn 0.3s ease, shake 0.5s ease;
+        }
+
+        .btn-loading {
+            position: relative;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .success-icon {
+            display: inline-block;
+            animation: successPop 0.5s ease;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">⚔️</div>
+                    <div class="logo-text">
+                        <h1 id="server-name">WeGuardian</h1>
+                        <span class="subtitle">Admin Panel</span>
+                    </div>
+                </div>
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">← Back to Dashboard</a>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main">
+            <div class="admin-section">
+                <div class="api-key-section" id="auth-section">
+                    <h3>🔐 Admin Authentication</h3>
+                    <p style="color: var(--text-secondary); margin: 1rem 0;">Enter your API key to access admin features
+                    </p>
+                    <div class="api-key-input">
+                        <input type="password" id="api-key-input" placeholder="Enter API Key...">
+                        <button class="btn-primary" id="auth-btn" onclick="authenticate()">Authenticate</button>
+                    </div>
+                    <p id="auth-error" style="color: var(--danger); margin-top: 1rem; display: none;"></p>
+                </div>
+
+                <div id="admin-panel" style="display: none;">
+
+                    <div class="admin-header">
+                        <h2>🛡️ Punishment Management</h2>
+                        <p>Issue and manage player punishments through the web interface</p>
+                    </div>
+
+                    <div class="admin-form">
+                        <h3 style="margin-bottom: 1.5rem;">⚡ Create Punishment</h3>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="target-username">Target Username</label>
+                                <input type="text" id="target-username" placeholder="Enter username...">
+                            </div>
+                            <div class="form-group">
+                                <label for="punishment-type">Punishment Type</label>
+                                <select id="punishment-type">
+                                    <option value="BAN">🚫 Ban</option>
+                                    <option value="MUTE">🔇 Mute</option>
+                                    <option value="KICK">⚡ Kick</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="duration">Duration (leave empty for permanent)</label>
+                                <input type="text" id="duration" placeholder="e.g., 1h, 7d, 30d...">
+                            </div>
+                            <div class="form-group">
+                                <label for="staff-name">Staff Name</label>
+                                <input type="text" id="staff-name" placeholder="Your name...">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reason">Reason</label>
+                            <textarea id="reason" rows="3" placeholder="Enter reason for punishment..."></textarea>
+                        </div>
+
+                        <button class="btn-primary" id="punish-btn" onclick="createPunishment()" style="width: 100%;">
+                            ⚔️ Apply Punishment
+                        </button>
+                    </div>
+
+                    <div class="admin-form">
+                        <h3 style="margin-bottom: 1.5rem;">🔓 Remove Punishment</h3>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="unban-username">Target Username</label>
+                                <input type="text" id="unban-username" placeholder="Enter username...">
+                            </div>
+                            <div class="form-group">
+                                <label for="unban-type">Punishment Type</label>
+                                <select id="unban-type">
+                                    <option value="BAN">🚫 Unban</option>
+                                    <option value="MUTE">🔇 Unmute</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="unban-reason">Reason (optional)</label>
+                            <input type="text" id="unban-reason" placeholder="Reason for removal...">
+                        </div>
+
+                        <button class="btn-secondary" id="unpunish-btn" onclick="removePunishment()"
+                            style="width: 100%;">
+                            ✓ Remove Punishment
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+
+        <footer class="footer">
+            <p id="footer-text">Powered by WeGuardian</p>
+        </footer>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let apiKey = localStorage.getItem('weguardian_api_key') || '';
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `${type === 'success' ? '✅' : '❌'} ${message}`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadConfig();
+
+            if (apiKey) {
+                document.getElementById('api-key-input').value = apiKey;
+                checkAuth();
+            }
+        });
+
+        async function loadConfig() {
+            try {
+                const response = await fetch(`${API_BASE}/api/config`);
+                const config = await response.json();
+
+                if (config.serverName) {
+                    document.getElementById('server-name').textContent = config.serverName;
+                    document.title = `Admin Panel - ${config.serverName}`;
+                }
+
+                if (config.accentColor) {
+                    document.documentElement.style.setProperty('--accent', config.accentColor);
+                }
+
+                if (config.footerText) {
+                    document.getElementById('footer-text').textContent = config.footerText;
+                }
+            } catch (error) {
+                console.error('Failed to load config:', error);
+            }
+        }
+
+        async function authenticate() {
+            const btn = document.getElementById('auth-btn');
+            btn.classList.add('btn-loading');
+
+            apiKey = document.getElementById('api-key-input').value;
+            await checkAuth();
+
+            btn.classList.remove('btn-loading');
+        }
+
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/punishments`, {
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`
+                    }
+                });
+
+                if (response.ok) {
+                    localStorage.setItem('weguardian_api_key', apiKey);
+                    document.getElementById('auth-section').style.display = 'none';
+                    document.getElementById('admin-panel').style.display = 'block';
+                    document.getElementById('auth-error').style.display = 'none';
+                    showToast('Authentication successful!', 'success');
+                } else {
+                    const data = await response.json();
+                    showAuthError(data.message || 'Authentication failed');
+                }
+            } catch (error) {
+                showAuthError('Connection error: ' + error.message);
+            }
+        }
+
+        function showAuthError(message) {
+            const errorEl = document.getElementById('auth-error');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            showToast(message, 'error');
+        }
+
+        async function createPunishment() {
+            const btn = document.getElementById('punish-btn');
+            btn.classList.add('btn-loading');
+
+            const target = document.getElementById('target-username').value;
+            const type = document.getElementById('punishment-type').value;
+            const duration = document.getElementById('duration').value;
+            const reason = document.getElementById('reason').value;
+            const staffName = document.getElementById('staff-name').value;
+
+            if (!target) {
+                showToast('Please enter a target username', 'error');
+                btn.classList.remove('btn-loading');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/punish`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        target,
+                        type,
+                        duration: duration || null,
+                        reason: reason || 'Web Dashboard',
+                        staffName: staffName || 'WebAdmin'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast(`Successfully ${type.toLowerCase()}ned ${target}!`, 'success');
+                    document.getElementById('target-username').value = '';
+                    document.getElementById('duration').value = '';
+                    document.getElementById('reason').value = '';
+                } else {
+                    showToast(data.message || 'Failed to apply punishment', 'error');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+
+            btn.classList.remove('btn-loading');
+        }
+
+        async function removePunishment() {
+            const btn = document.getElementById('unpunish-btn');
+            btn.classList.add('btn-loading');
+
+            const target = document.getElementById('unban-username').value;
+            const type = document.getElementById('unban-type').value;
+            const reason = document.getElementById('unban-reason').value;
+            const staffName = document.getElementById('staff-name').value;
+
+            if (!target) {
+                showToast('Please enter a target username', 'error');
+                btn.classList.remove('btn-loading');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/unpunish`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        target,
+                        type,
+                        reason: reason || 'Removed via Web Dashboard',
+                        staffName: staffName || 'WebAdmin'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const action = type === 'BAN' ? 'unbanned' : 'unmuted';
+                    showToast(`Successfully ${action} ${target}!`, 'success');
+                    document.getElementById('unban-username').value = '';
+                    document.getElementById('unban-reason').value = '';
+                } else {
+                    showToast(data.message || 'No active punishment found', 'error');
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+
+            btn.classList.remove('btn-loading');
+        }
+    </script>
+</body>
+
+</html>

@@ -1,255 +1,180 @@
-database:
-  type: "yaml"
-  
-  yaml:
-    auto_backup: true
-    backup_interval: 300
-    max_backups: 5
-    
-web-dashboard:
-  enabled: false
-  web-header-title: "WeGuardian"
-  host: "127.0.0.1" #change with your ip ipv4
-  port: 8080 #change with extra port
-  auto-detect-port: true
-  credentials:
-    username: "admin" #change username
-    password: "supersecret" #change password
-  session-timeout: 3600
-  ssl:
-    enabled: false
-    keystore-path: ""
-    keystore-password: ""
-  security:
-    require-https: false
-    max-login-attempts: 5
-    lockout-duration: 300
+#  __          __     _____                      _ _
+#  \ \        / /    / ____|                    | (_)
+#   \ \  /\  / /___ | |  __ _   _  __ _ _ __ __| |_  __ _ _ __
+#    \ \/  \/ // _ \| | |_ | | | |/ _` | '__/ _` | |/ _` | '_ \
+#     \  /\  /|  __/| |__| | |_| | (_| | | | (_| | | (_| | | | |
+#      \/  \/  \___| \_____|\__,_|\__,_|_|  \__,_|_|\__,_|_| |_|
+#
+#  Professional Punishment Management System v2.0
+#  by WeThink
+#
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+# Bypass Configuration
+# Players with the weguardian.bypass permission will bypass all punishments
+# Permission: weguardian.bypass - Bypasses bans, mutes, and kicks
+bypass:
+  # Permission to bypass punishments (default: weguardian.bypass)
+  permission: "weguardian.bypass"
+
+# Database Configuration
+database:
+  # Database type: sqlite (default, no setup required) or mysql (for larger servers)
+  type: "sqlite"
+  
+  # SQLite Settings (used when type is "sqlite")
+  sqlite:
+    # Database file name (stored in plugin folder)
+    file: "punishments.db"
+  
+  # MySQL Settings (used when type is "mysql")
   mysql:
-    enabled: false
     host: "localhost"
     port: 3306
     database: "weguardian"
     username: "root"
-    password: ""
+    password: "password"
+    # Optional: Additional connection properties
+    properties:
+      useSSL: false
+      autoReconnect: true
+      characterEncoding: "utf8"
+  
+  # Connection pool size (applies to both SQLite and MySQL)
+  pool-size: 5
 
-performance:
-  thread_pool_size: 4
-  max_concurrent_operations: 50
-  operation_timeout: 30
+# Cache Configuration
+cache:
+  # How long (in minutes) cached data is stored
+  expiry-minutes: 10
+  # Maximum entries in cache
+  max-size: 1000
+  # How often (in seconds) to check for expired punishments
+  expiry-check-interval: 60
 
-  cache:
-    enabled: true
-    cleanup_interval: 300
-    max_cache_size: 10000
-    expire_after_access: 1800
-  
-  async:
-    worker_threads: 2
+# Duration Presets (shown in GUI)
+# Format: <number><unit> where unit = s/m/h/d/w/M/y
+durations:
+  presets:
+    - "1h"
+    - "6h"
+    - "1d"
+    - "3d"
+    - "7d"
+    - "30d"
+    - "90d"
 
-notifications:
-  chat:
-    enabled: true
-    broadcast_permission: "weguardian.notify"
+# Message Configuration
+# Supports color codes (&), hex colors (&#RRGGBB), and MiniMessage format
+messages:
+  # Prefix for all plugin messages
+  prefix: "&8[&c&lWeGuardian&8]&r "
   
-  actionbar_updates: true
-  actionbar_interval: 30
+  # Ban messages
+  ban:
+    # Shown on kick screen when banned
+    screen: |
+      &c&l❌ YOU ARE BANNED ❌
+      
+      &7Reason: &f{reason}
+      &7Expires: &f{expires}
+      
+      &7Appeal at: &ediscord.gg/yourserver
+    
+    # Staff broadcast when a ban is applied
+    broadcast: "&c{staff} &7banned &c{player} &7for: &f{reason} &7({duration})"
+  
+  # Mute messages
+  mute:
+    # Shown when trying to chat while muted
+    blocked: |
+      &c&l⚠ You are muted!
+      &7Reason: &f{reason}
+      &7Expires: &f{expires}
+    
+    # Shown when mute is first applied
+    applied: "&c&l⚠ &cYou have been muted! Reason: &f{reason}"
+    
+    # Staff broadcast
+    broadcast: "&e{staff} &7muted &e{player} &7for: &f{reason} &7({duration})"
+  
+  # Kick messages
+  kick:
+    # Shown on kick screen
+    screen: |
+      &6&l⚡ YOU HAVE BEEN KICKED ⚡
+      
+      &7Reason: &f{reason}
+      
+      &7You may rejoin the server.
+    
+    # Staff broadcast
+    broadcast: "&9{staff} &7kicked &9{player} &7for: &f{reason}"
+  
+  # Unban/Unmute messages
+  unban:
+    broadcast: "&a{staff} &7unbanned &a{player}"
+  
+  unmute:
+    broadcast: "&a{staff} &7unmuted &a{player}"
+    # Shown to player when unmuted
+    notify: "&aYou have been unmuted!"
+  
+  # Error messages
+  errors:
+    player-not-found: "&cPlayer not found!"
+    player-not-online: "&cPlayer is not online!"
+    cannot-punish: "&cYou cannot punish this player!"
+    not-banned: "&c{player} is not banned!"
+    not-muted: "&c{player} is not muted!"
+    invalid-duration: "&cInvalid duration format! Use: 1h, 30m, 7d, etc."
 
-cross_server:
-  enabled: false
-  sync_interval: 30
-  sync_punishments: true
-  sync_player_data: true
-  sync_banwave: true
-  broadcast_punishments: true
-  require_authentication: false
-  authentication_key: "your-secret-key-here"
-  
-  servers:
-    - name: "lobby"
-      host: "localhost"
-      port: 25565
-      enabled: true
-    - name: "survival"
-      host: "localhost"
-      port: 25566
-      enabled: true
+# GUI Configuration
+gui:
+  # Punishment menu title
+  punish-title: "&c&lPunish &8» &e{player}"
+  # Duration selection title
+  duration-title: "&c&lSelect Duration &8» &e{player}"
+  # History menu title
+  history-title: "&d&lHistory &8» &e{player}"
 
-console_commands:
-  enabled: false
-  
-  on_ban:
-    - "broadcast &c{player} has been banned by {staff} for {reason}"
-  
-  on_tempban:
-    - "broadcast &c{player} has been temporarily banned by {staff} for {reason}"
-  
-  on_mute:
-    - "broadcast &6{player} has been muted by {staff} for {reason}"
-  
-  on_tempmute:
-    - "broadcast &6{player} has been temporarily muted by {staff} for {reason}"
-  
-  on_kick:
-    - "broadcast &e{player} has been kicked by {staff} for {reason}"
-  
-  on_warn:
-    - "log punishment warn {player} {staff} {reason}"
-  
-  on_unban:
-    - "broadcast &a{player} has been unbanned by {staff}"
-  
-  on_unmute:
-    - "broadcast &a{player} has been unmuted by {staff}"
-
+# Discord Webhook Configuration
+# Logs all punishments to a Discord channel via webhook
 discord:
-  enabled: true
-  webhook_url: "https://discord.com/api/webhooks/REPLACE_WITH_YOUR_WEBHOOK"
-  username: "WeGuardian"
-  avatar_url: "https://i.imgur.com/your-avatar.png"
-  embed_color: 16711680
-  
-  send_on:
-    ban: true
-    tempban: true
-    mute: true
-    tempmute: true
-    kick: true
-    warn: true
-    unban: true
-    unmute: true
-
-debug:
+  # Enable/disable Discord webhook logging
   enabled: false
-  log_performance_metrics: true
-  log_cache_statistics: true
-
-features:
-  placeholderapi_integration: true
-  metrics: true
-
-appeal_url: "your-server.com/appeals"
-server_name: "Unknown"
-
-
-
-menus:
-  validation:
-    enabled: true
-    check_menu_links: true
-    check_item_materials: true
-    check_action_formats: true
-    auto_fix_issues: false
   
-  performance:
-    cache_menu_configs: true
+  # Your Discord webhook URL
+  # Create one in Discord: Server Settings > Integrations > Webhooks > New Webhook
+  webhook-url: "YOUR_WEBHOOK_URL_HERE"
   
-  available_menus:
-    - "main"
-    - "ban"
-    - "tempban"
-    - "mute"
-    - "tempmute"
-    - "kick"
-    - "warn"
-    - "notes"
-    - "unban"
-    - "unmute"
+  # Batching settings (to avoid rate limits)
+  # Punishments are batched and sent every X seconds
+  # Discord allows 10 embeds per message, batching optimizes this
+  batch-interval-seconds: 5
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Web Dashboard Configuration
+# Embedded web panel for viewing and managing punishments
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+web-dashboard:
+  # Enable/disable the web dashboard
+  enabled: false
   
-  link_validation:
-    valid_actions:
-      - "open_menu"
-      - "execute_punishment"
-      - "custom_reason"
-      - "select_duration"
-      - "template"
-      - "history"
-      - "checkban"
-      - "back"
-      - "close"
-    
-    action_requirements:
-      open_menu:
-        required_params: ["menu_type"]
-        valid_menu_types: ["ban", "tempban", "mute", "tempmute", "kick", "warn", "notes", "unban", "unmute"]
-      
-      execute_punishment:
-        required_params: ["punishment_type", "reason"]
-        valid_punishment_types: ["BAN", "TEMPBAN", "MUTE", "TEMPMUTE", "KICK", "WARN"]
-      
-      custom_reason:
-        required_params: ["punishment_type"]
-        valid_punishment_types: ["BAN", "TEMPBAN", "MUTE", "TEMPMUTE", "KICK", "WARN"]
-      
-      select_duration:
-        required_params: ["duration"]
-        valid_durations: ["1h", "6h", "1d", "3d", "1w", "2w", "1m"]
-      
-      template:
-        required_params: ["template"]
-        valid_templates: ["spam", "toxicity", "hacking", "griefing", "advertising"]
+  # Web server settings
+  host: "0.0.0.0"
+  port: 8080
   
-  item_validation:
-    required_properties:
-      - "material"
-      - "slot"
-      - "name"
-      - "action"
-    
-    optional_properties:
-      - "lore"
-      - "slots"
-      - "skull-owner"
-      - "menu_type"
-      - "template"
-      - "duration"
-      - "punishment_type"
-      - "reason"
-    
-    valid_materials:
-      - "RED_CONCRETE"
-      - "ORANGE_CONCRETE"
-      - "YELLOW_CONCRETE"
-      - "LIME_CONCRETE"
-      - "LIGHT_BLUE_CONCRETE"
-      - "PURPLE_CONCRETE"
-      - "GREEN_CONCRETE"
-      - "CYAN_CONCRETE"
-      - "BLACK_STAINED_GLASS_PANE"
-      - "GRAY_STAINED_GLASS_PANE"
-      - "RED_STAINED_GLASS_PANE"
-      - "YELLOW_STAINED_GLASS_PANE"
-      - "PLAYER_HEAD"
-      - "ARROW"
-      - "BARRIER"
-      - "PAPER"
-      - "WRITABLE_BOOK"
-      - "CLOCK"
-      - "COMPASS"
-      - "MAP"
-      - "SIGN"
-      - "TNT"
-      - "REDSTONE"
-      - "IRON_SWORD"
-      - "WITHER_SKELETON_SKULL"
-      - "ENDER_PEARL"
-      - "NAME_TAG"
-      - "BOOK"
-      - "COBBLESTONE"
-      - "HOPPER"
-      - "SLIME_BALL"
+  # Branding settings (customize the dashboard appearance)
+  branding:
+    # Server name displayed in the header
+    server-name: "My Server"
+    # Header accent color (hex format)
+    accent-color: "#ff5555"
+    # Footer text
+    footer-text: "Powered by WeGuardian"
   
-  size_validation:
-    valid_sizes: [9, 18, 27, 36, 45, 54]
-    
-    default_sizes:
-      main: 54
-      ban: 45
-      tempban: 45
-      mute: 45
-      tempmute: 45
-      kick: 45
-      warn: 45
-      notes: 45
-      unban: 45
-      unmute: 45
+  # Admin authentication
+  # Use this API key in the Authorization header to access admin endpoints
+  # IMPORTANT: Change this to a secure random string!
+  admin-api-key: "CHANGE-ME-TO-A-SECURE-KEY"

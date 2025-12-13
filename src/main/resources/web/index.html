@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeGuardian - Punishment Panel</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">⚔️</div>
+                    <div class="logo-text">
+                        <h1 id="server-name">WeGuardian</h1>
+                        <span class="subtitle">Punishment Panel</span>
+                    </div>
+                </div>
+                <nav class="nav">
+                    <a href="admin.html" class="nav-link admin-link">🔐 Admin Panel</a>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main">
+            <section class="hero">
+                <div class="hero-bg"></div>
+                <div class="hero-content">
+                    <h2>Check Your Punishment Status</h2>
+                    <p>Enter your Minecraft username to view any active punishments</p>
+
+                    <div class="search-container">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="username-input" placeholder="Enter username..." autocomplete="off">
+                            <button id="search-btn" class="btn-primary">Search</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="recent-section" id="recent-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h3>📋 Recent Punishments</h3>
+                    </div>
+                    <div class="punishments-grid" id="recent-punishments">
+                        <div class="loading-inline">
+                            <div class="loader-small"></div>
+                            <span>Loading recent punishments...</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="results" id="results-section" style="display: none;">
+                <div class="container">
+                    <div class="player-card" id="player-card">
+                        <div class="player-avatar">
+                            <img id="player-avatar" src="" alt="Player Avatar">
+                        </div>
+                        <div class="player-info">
+                            <h3 id="player-name">Username</h3>
+                            <span class="player-uuid" id="player-uuid">UUID</span>
+                        </div>
+                        <div class="player-status" id="player-status">
+                            <span class="status-badge clean">✓ Clean Record</span>
+                        </div>
+                    </div>
+
+                    <div class="section-header">
+                        <h3>🚫 Active Punishments</h3>
+                    </div>
+                    <div class="punishments-grid" id="active-punishments">
+                        <div class="empty-state">
+                            <span class="empty-icon">✨</span>
+                            <p>No active punishments</p>
+                        </div>
+                    </div>
+
+                    <div class="section-header">
+                        <h3>📜 Punishment History</h3>
+                    </div>
+                    <div class="punishments-list" id="punishment-history">
+                        <div class="empty-state">
+                            <span class="empty-icon">📭</span>
+                            <p>No punishment history</p>
+                        </div>
+                    </div>
+
+                    <button class="btn-secondary" onclick="backToHome()" style="margin-top: 2rem;">
+                        ← Back to Recent Punishments
+                    </button>
+                </div>
+            </section>
+
+            <section class="loading" id="loading-section" style="display: none;">
+                <div class="loader"></div>
+                <p>Loading punishments...</p>
+            </section>
+
+            <section class="error-section" id="error-section" style="display: none;">
+                <div class="error-content">
+                    <span class="error-icon">❌</span>
+                    <h3 id="error-title">Error</h3>
+                    <p id="error-message">Something went wrong</p>
+                    <button class="btn-secondary" onclick="hideError()">Try Again</button>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p id="footer-text">Powered by WeGuardian</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
