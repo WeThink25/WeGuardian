@@ -12,7 +12,6 @@ import java.sql.SQLException;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
-
 public class DatabaseManager {
 
     private final WeGuardian plugin;
@@ -22,7 +21,6 @@ public class DatabaseManager {
     public DatabaseManager(WeGuardian plugin) {
         this.plugin = plugin;
     }
-
 
     public void initialize() {
         databaseType = plugin.getConfig().getString("database.type", "sqlite").toLowerCase();
@@ -51,7 +49,6 @@ public class DatabaseManager {
         }
     }
 
-
     private HikariConfig initializeSQLite() {
         String dbFileName = plugin.getConfig().getString("database.sqlite.file", "punishments.db");
         File dbFile = new File(plugin.getDataFolder(), dbFileName);
@@ -79,7 +76,6 @@ public class DatabaseManager {
 
         return config;
     }
-
 
     private HikariConfig initializeMySQL() {
         String host = plugin.getConfig().getString("database.mysql.host", "localhost");
@@ -125,7 +121,6 @@ public class DatabaseManager {
 
         return config;
     }
-
 
     private void initializeTables() {
         String autoIncrement = databaseType.equals("mysql") ? "AUTO_INCREMENT" : "AUTOINCREMENT";
@@ -189,17 +184,26 @@ public class DatabaseManager {
                     """;
         }
 
+        String createPlayerIpsTable = String.format("""
+                    CREATE TABLE IF NOT EXISTS player_ips (
+                        uuid %s PRIMARY KEY,
+                        name %s NOT NULL,
+                        ip_address %s NOT NULL,
+                        last_seen %s NOT NULL
+                    )
+                """, textType, textType, textType, bigintType);
+
         executeAsync(createPunishmentsTable)
                 .thenCompose(v -> executeAsync(createIndexTargetUuid))
                 .thenCompose(v -> executeAsync(createIndexActive))
                 .thenCompose(v -> executeAsync(createIndexExpires))
                 .thenCompose(v -> executeAsync(createIndexTargetIp))
+                .thenCompose(v -> executeAsync(createPlayerIpsTable))
                 .exceptionally(e -> {
                     plugin.getLogger().log(Level.SEVERE, "Failed to initialize database tables", e);
                     return null;
                 });
     }
-
 
     public Connection getConnection() throws SQLException {
         if (dataSource == null) {
@@ -207,7 +211,6 @@ public class DatabaseManager {
         }
         return dataSource.getConnection();
     }
-
 
     public CompletableFuture<Void> executeAsync(String sql) {
         return CompletableFuture.runAsync(() -> {
@@ -220,16 +223,13 @@ public class DatabaseManager {
         });
     }
 
-
     public boolean isConnected() {
         return dataSource != null && !dataSource.isClosed();
     }
 
-
     public String getDatabaseType() {
         return databaseType;
     }
-
 
     public void shutdown() {
         if (dataSource != null && !dataSource.isClosed()) {

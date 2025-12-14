@@ -14,7 +14,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-
 public class PlayerLoginListener implements Listener {
 
     private final WeGuardian plugin;
@@ -28,7 +27,6 @@ public class PlayerLoginListener implements Listener {
         UUID uuid = event.getUniqueId();
         String name = event.getName();
         String ipAddress = event.getAddress().getHostAddress();
-
 
         try {
             Optional<Punishment> activeBan = plugin.getPunishmentManager()
@@ -74,6 +72,8 @@ public class PlayerLoginListener implements Listener {
                     plugin.getCacheManager().invalidateIpBan(ipAddress);
                 }
             }
+
+            plugin.getPunishmentDAO().savePlayerIp(uuid, name, ipAddress);
 
         } catch (InterruptedException | ExecutionException e) {
             plugin.getLogger().warning("Failed to check ban status for " + name + ": " + e.getMessage());

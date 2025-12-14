@@ -17,10 +17,8 @@ import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.UUID;
 
-
 @CommandAlias("weguardian|wg")
 public class PunishmentCommands extends BaseCommand {
-
 
     private static final String PREFIX = "&8[&cWeGuardian&8] ";
     private static final String MSG_PLAYER_NOT_FOUND = "&cPlayer not found!";
@@ -35,7 +33,6 @@ public class PunishmentCommands extends BaseCommand {
     public PunishmentCommands(WeGuardian plugin) {
         this.plugin = plugin;
     }
-
 
     @CommandAlias("ban")
     @CommandPermission("weguardian.ban")
@@ -85,8 +82,6 @@ public class PunishmentCommands extends BaseCommand {
                     }
                 });
     }
-
-
 
     @CommandAlias("mute")
     @CommandPermission("weguardian.mute")
@@ -143,7 +138,6 @@ public class PunishmentCommands extends BaseCommand {
                 });
     }
 
-
     @CommandAlias("banip")
     @CommandPermission("weguardian.banip")
     @CommandCompletion("@players")
@@ -173,22 +167,38 @@ public class PunishmentCommands extends BaseCommand {
     @Description("Remove an IP ban for a player (auto-resolves IP)")
     @Syntax("<player>")
     public void onUnbanIp(CommandSender sender, String targetName) {
-        Player target = Bukkit.getPlayer(targetName);
-        if (target == null) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_MUST_BE_ONLINE_IP));
-            return;
-        }
-
-        String ipAddress = getPlayerIp(target);
-        if (ipAddress == null) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_COULD_NOT_RESOLVE_IP));
-            return;
-        }
-
+        Player onlineTarget = Bukkit.getPlayer(targetName);
         UUID staffUUID = sender instanceof Player p ? p.getUniqueId() : null;
         String staffName = sender.getName();
 
-        plugin.getPunishmentManager().unbanIp(ipAddress, staffUUID, staffName, "Unbanned")
+        if (onlineTarget != null) {
+            String ipAddress = getPlayerIp(onlineTarget);
+            if (ipAddress == null) {
+                sender.sendMessage(MessageUtil.toComponent(MSG_COULD_NOT_RESOLVE_IP));
+                return;
+            }
+            executeUnbanIp(sender, onlineTarget.getUniqueId(), targetName, ipAddress, staffUUID, staffName);
+        } else {
+            OfflinePlayer offlineTarget = Bukkit.getOfflinePlayer(targetName);
+            if (!offlineTarget.hasPlayedBefore()) {
+                sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_NOT_FOUND));
+                return;
+            }
+
+            plugin.getPunishmentDAO().getPlayerIp(offlineTarget.getUniqueId()).thenAccept(optionalIp -> {
+                if (optionalIp.isEmpty()) {
+                    sender.sendMessage(MessageUtil.toComponent("&cNo stored IP found for " + targetName + "!"));
+                    return;
+                }
+                executeUnbanIp(sender, offlineTarget.getUniqueId(), targetName, optionalIp.get(), staffUUID, staffName);
+            });
+        }
+    }
+
+    private void executeUnbanIp(CommandSender sender, UUID targetUUID, String targetName, String ipAddress,
+            UUID staffUUID,
+            String staffName) {
+        plugin.getPunishmentManager().unbanIp(targetUUID, ipAddress, staffUUID, staffName, "Unbanned")
                 .thenAccept(success -> {
                     if (success) {
                         broadcastStaff(
@@ -199,8 +209,6 @@ public class PunishmentCommands extends BaseCommand {
                     }
                 });
     }
-
-
 
     @CommandAlias("muteip")
     @CommandPermission("weguardian.muteip")
@@ -231,22 +239,39 @@ public class PunishmentCommands extends BaseCommand {
     @Description("Remove an IP mute for a player (auto-resolves IP)")
     @Syntax("<player>")
     public void onUnmuteIp(CommandSender sender, String targetName) {
-        Player target = Bukkit.getPlayer(targetName);
-        if (target == null) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_MUST_BE_ONLINE_IP));
-            return;
-        }
-
-        String ipAddress = getPlayerIp(target);
-        if (ipAddress == null) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_COULD_NOT_RESOLVE_IP));
-            return;
-        }
-
+        Player onlineTarget = Bukkit.getPlayer(targetName);
         UUID staffUUID = sender instanceof Player p ? p.getUniqueId() : null;
         String staffName = sender.getName();
 
-        plugin.getPunishmentManager().unmuteIp(ipAddress, staffUUID, staffName, "Unmuted")
+        if (onlineTarget != null) {
+            String ipAddress = getPlayerIp(onlineTarget);
+            if (ipAddress == null) {
+                sender.sendMessage(MessageUtil.toComponent(MSG_COULD_NOT_RESOLVE_IP));
+                return;
+            }
+            executeUnmuteIp(sender, onlineTarget.getUniqueId(), targetName, ipAddress, staffUUID, staffName);
+        } else {
+            OfflinePlayer offlineTarget = Bukkit.getOfflinePlayer(targetName);
+            if (!offlineTarget.hasPlayedBefore()) {
+                sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_NOT_FOUND));
+                return;
+            }
+
+            plugin.getPunishmentDAO().getPlayerIp(offlineTarget.getUniqueId()).thenAccept(optionalIp -> {
+                if (optionalIp.isEmpty()) {
+                    sender.sendMessage(MessageUtil.toComponent("&cNo stored IP found for " + targetName + "!"));
+                    return;
+                }
+                executeUnmuteIp(sender, offlineTarget.getUniqueId(), targetName, optionalIp.get(), staffUUID,
+                        staffName);
+            });
+        }
+    }
+
+    private void executeUnmuteIp(CommandSender sender, UUID targetUUID, String targetName, String ipAddress,
+            UUID staffUUID,
+            String staffName) {
+        plugin.getPunishmentManager().unmuteIp(targetUUID, ipAddress, staffUUID, staffName, "Unmuted")
                 .thenAccept(success -> {
                     if (success) {
                         broadcastStaff(
@@ -257,8 +282,6 @@ public class PunishmentCommands extends BaseCommand {
                     }
                 });
     }
-
-
 
     @CommandAlias("kick")
     @CommandPermission("weguardian.kick")
@@ -293,8 +316,6 @@ public class PunishmentCommands extends BaseCommand {
                 });
     }
 
-
-
     @CommandAlias("punish")
     @CommandPermission("weguardian.punish")
     @CommandCompletion("@players")
@@ -324,7 +345,6 @@ public class PunishmentCommands extends BaseCommand {
 
         HistoryGUI.openAsync(plugin, sender, target);
     }
-
 
     @Subcommand("reload")
     @CommandPermission("weguardian.admin")
@@ -377,8 +397,6 @@ public class PunishmentCommands extends BaseCommand {
         }
     }
 
-
-
     private void executePunishment(CommandSender sender, String targetName, PunishmentType type,
             long durationMs, String reason) {
         OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
@@ -427,7 +445,6 @@ public class PunishmentCommands extends BaseCommand {
         });
     }
 
-
     private void broadcastStaff(String message) {
         String formattedMessage = PREFIX + message;
         Collection<? extends Player> players = Bukkit.getOnlinePlayers();
@@ -440,40 +457,58 @@ public class PunishmentCommands extends BaseCommand {
         Bukkit.getConsoleSender().sendMessage(MessageUtil.toComponent(formattedMessage));
     }
 
-
     private void executeIpPunishment(CommandSender sender, String targetName, PunishmentType type,
             long durationMs, String reason) {
-        Player target = Bukkit.getPlayer(targetName);
-        if (target == null) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_MUST_BE_ONLINE_IP));
-            return;
-        }
+        Player onlineTarget = Bukkit.getPlayer(targetName);
 
-        String bypassPerm = plugin.getConfig().getString("bypass.permission", "weguardian.bypass");
-        if (target.hasPermission(bypassPerm)) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_BYPASS));
-            return;
-        }
+        if (onlineTarget != null) {
+            String bypassPerm = plugin.getConfig().getString("bypass.permission", "weguardian.bypass");
+            if (onlineTarget.hasPermission(bypassPerm)) {
+                sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_BYPASS));
+                return;
+            }
 
-        String ipAddress = getPlayerIp(target);
-        if (ipAddress == null) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_COULD_NOT_RESOLVE_IP));
-            return;
-        }
+            String ipAddress = getPlayerIp(onlineTarget);
+            if (ipAddress == null) {
+                sender.sendMessage(MessageUtil.toComponent(MSG_COULD_NOT_RESOLVE_IP));
+                return;
+            }
 
+            applyIpPunishment(sender, onlineTarget.getUniqueId(), targetName, ipAddress, type, durationMs, reason);
+        } else {
+            OfflinePlayer offlineTarget = Bukkit.getOfflinePlayer(targetName);
+            if (!offlineTarget.hasPlayedBefore()) {
+                sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_NOT_FOUND));
+                return;
+            }
+
+            plugin.getPunishmentDAO().getPlayerIp(offlineTarget.getUniqueId()).thenAccept(optionalIp -> {
+                if (optionalIp.isEmpty()) {
+                    sender.sendMessage(MessageUtil.toComponent("&cNo stored IP found for " + targetName + "!"));
+                    return;
+                }
+
+                String ipAddress = optionalIp.get();
+                applyIpPunishment(sender, offlineTarget.getUniqueId(), targetName, ipAddress, type, durationMs, reason);
+            });
+        }
+    }
+
+    private void applyIpPunishment(CommandSender sender, UUID targetUUID, String targetName, String ipAddress,
+            PunishmentType type, long durationMs, String reason) {
         UUID staffUUID = sender instanceof Player p ? p.getUniqueId() : null;
         String staffName = sender.getName();
         String finalReason = reason != null ? reason : "No reason specified";
 
         var future = switch (type) {
             case BANIP -> plugin.getPunishmentManager().banIp(
-                    target.getUniqueId(), target.getName(), ipAddress, staffUUID, staffName, finalReason);
+                    targetUUID, targetName, ipAddress, staffUUID, staffName, finalReason);
             case TEMPBANIP -> plugin.getPunishmentManager().tempbanIp(
-                    target.getUniqueId(), target.getName(), ipAddress, staffUUID, staffName, durationMs, finalReason);
+                    targetUUID, targetName, ipAddress, staffUUID, staffName, durationMs, finalReason);
             case MUTEIP -> plugin.getPunishmentManager().muteIp(
-                    target.getUniqueId(), target.getName(), ipAddress, staffUUID, staffName, finalReason);
+                    targetUUID, targetName, ipAddress, staffUUID, staffName, finalReason);
             case TEMPMUTEIP -> plugin.getPunishmentManager().tempmuteIp(
-                    target.getUniqueId(), target.getName(), ipAddress, staffUUID, staffName, durationMs, finalReason);
+                    targetUUID, targetName, ipAddress, staffUUID, staffName, durationMs, finalReason);
             default -> null;
         };
 
@@ -493,7 +528,6 @@ public class PunishmentCommands extends BaseCommand {
             return null;
         });
     }
-
 
     private static String getPlayerIp(Player player) {
         InetSocketAddress address = player.getAddress();

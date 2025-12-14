@@ -17,7 +17,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-
 public class PunishmentManager {
 
     private final WeGuardian plugin;
@@ -32,7 +31,6 @@ public class PunishmentManager {
         startExpiryTask();
     }
 
-
     private void startExpiryTask() {
         int interval = plugin.getConfig().getInt("cache.expiry-check-interval", 60);
 
@@ -46,14 +44,11 @@ public class PunishmentManager {
         }, interval, interval, TimeUnit.SECONDS);
     }
 
-
-
     public CompletableFuture<Punishment> ban(UUID targetUUID, String targetName, UUID staffUUID,
             String staffName, String reason) {
         return createPunishment(targetUUID, targetName, staffUUID, staffName,
                 PunishmentType.BAN, reason, null);
     }
-
 
     public CompletableFuture<Punishment> tempban(UUID targetUUID, String targetName, UUID staffUUID,
             String staffName, long durationMillis, String reason) {
@@ -61,7 +56,6 @@ public class PunishmentManager {
         return createPunishment(targetUUID, targetName, staffUUID, staffName,
                 PunishmentType.TEMPBAN, reason, expiresAt);
     }
-
 
     public CompletableFuture<Boolean> unban(UUID targetUUID, UUID staffUUID, String staffName, String reason) {
         String targetName = Bukkit.getOfflinePlayer(targetUUID).getName();
@@ -80,67 +74,125 @@ public class PunishmentManager {
                 });
     }
 
-
-
     public CompletableFuture<Punishment> banIp(UUID targetUUID, String targetName, String ipAddress,
             UUID staffUUID, String staffName, String reason) {
-        return createIpPunishment(targetUUID, targetName, ipAddress, staffUUID, staffName,
-                PunishmentType.BANIP, reason, null);
+        Instant expiresAt = null;
+        return createBothBans(targetUUID, targetName, ipAddress, staffUUID, staffName,
+                PunishmentType.BAN, PunishmentType.BANIP, reason, expiresAt);
     }
-
 
     public CompletableFuture<Punishment> tempbanIp(UUID targetUUID, String targetName, String ipAddress,
             UUID staffUUID, String staffName, long durationMillis, String reason) {
         Instant expiresAt = TimeUtil.getExpiryInstant(durationMillis);
-        return createIpPunishment(targetUUID, targetName, ipAddress, staffUUID, staffName,
-                PunishmentType.TEMPBANIP, reason, expiresAt);
+        return createBothBans(targetUUID, targetName, ipAddress, staffUUID, staffName,
+                PunishmentType.TEMPBAN, PunishmentType.TEMPBANIP, reason, expiresAt);
     }
 
+    public CompletableFuture<Boolean> unbanIp(UUID targetUUID, String ipAddress, UUID staffUUID, String staffName,
+            String reason) {
+        String finalReason = reason != null ? reason : "Unbanned";
+        String targetName = Bukkit.getOfflinePlayer(targetUUID).getName();
 
-    public CompletableFuture<Boolean> unbanIp(String ipAddress, UUID staffUUID, String staffName, String reason) {
-        return punishmentDAO.deactivateIp(ipAddress, staffUUID, staffName, reason != null ? reason : "Unbanned",
-                PunishmentType.BANIP, PunishmentType.TEMPBANIP)
-                .thenApply(count -> {
-                    if (count > 0) {
-                        cacheManager.invalidateIpBan(ipAddress);
-                        // Log to Discord
-                        plugin.getWebhookManager().logUnbanIp(ipAddress, "Unknown", staffName);
-                        return true;
-                    }
-                    return false;
+        CompletableFuture<Integer> uuidUnban = punishmentDAO.deactivate(targetUUID, staffUUID, staffName, finalReason,
+                PunishmentType.BAN, PunishmentType.TEMPBAN);
+        CompletableFuture<Integer> ipUnban = punishmentDAO.deactivateIp(ipAddress, staffUUID, staffName, finalReason,
+                PunishmentType.BANIP, PunishmentType.TEMPBANIP);
+
+        return uuidUnban.thenCombine(ipUnban, (uuidCount, ipCount) -> {
+            if (uuidCount > 0 || ipCount > 0) {
+                cacheManager.invalidateBan(targetUUID);
+                cacheManager.invalidateIpBan(ipAddress);
+                plugin.getWebhookManager().logUnbanIp(ipAddress,
+                        targetName != null ? targetName : targetUUID.toString(), staffName);
+                return true;
+            }
+            return false;
+        });
+    }
+
+    private CompletableFuture<Punishment> createBothBans(UUID targetUUID, String targetName, String ipAddress,
+            UUID staffUUID, String staffName,
+            PunishmentType uuidType, PunishmentType ipType, String reason,
+            Instant expiresAt) {
+        Punishment uuidPunishment = new Punishment(targetUUID, targetName, staffUUID, staffName,
+                uuidType, reason, Instant.now(), expiresAt);
+        Punishment ipPunishment = new Punishment(targetUUID, targetName, ipAddress, staffUUID, staffName,
+                ipType, reason, Instant.now(), expiresAt);
+
+        return punishmentDAO.insert(uuidPunishment)
+                .thenCompose(uuidId -> {
+                    uuidPunishment.setId(uuidId);
+                    cacheManager.cacheBan(targetUUID, Optional.of(uuidPunishment));
+                    return punishmentDAO.insert(ipPunishment);
+                })
+                .thenApply(ipId -> {
+                    ipPunishment.setId(ipId);
+                    cacheManager.cacheIpBan(ipAddress, Optional.of(ipPunishment));
+                    kickIfOnline(targetUUID, ipType, reason, expiresAt);
+                    plugin.getWebhookManager().logPunishment(ipPunishment);
+                    return ipPunishment;
                 });
     }
 
-
     public CompletableFuture<Punishment> muteIp(UUID targetUUID, String targetName, String ipAddress,
             UUID staffUUID, String staffName, String reason) {
-        return createIpPunishment(targetUUID, targetName, ipAddress, staffUUID, staffName,
-                PunishmentType.MUTEIP, reason, null);
+        Instant expiresAt = null;
+        return createBothMutes(targetUUID, targetName, ipAddress, staffUUID, staffName,
+                PunishmentType.MUTE, PunishmentType.MUTEIP, reason, expiresAt);
     }
-
 
     public CompletableFuture<Punishment> tempmuteIp(UUID targetUUID, String targetName, String ipAddress,
             UUID staffUUID, String staffName, long durationMillis, String reason) {
         Instant expiresAt = TimeUtil.getExpiryInstant(durationMillis);
-        return createIpPunishment(targetUUID, targetName, ipAddress, staffUUID, staffName,
-                PunishmentType.TEMPMUTEIP, reason, expiresAt);
+        return createBothMutes(targetUUID, targetName, ipAddress, staffUUID, staffName,
+                PunishmentType.TEMPMUTE, PunishmentType.TEMPMUTEIP, reason, expiresAt);
     }
 
+    private CompletableFuture<Punishment> createBothMutes(UUID targetUUID, String targetName, String ipAddress,
+            UUID staffUUID, String staffName,
+            PunishmentType uuidType, PunishmentType ipType, String reason,
+            Instant expiresAt) {
+        Punishment uuidPunishment = new Punishment(targetUUID, targetName, staffUUID, staffName,
+                uuidType, reason, Instant.now(), expiresAt);
+        Punishment ipPunishment = new Punishment(targetUUID, targetName, ipAddress, staffUUID, staffName,
+                ipType, reason, Instant.now(), expiresAt);
 
-    public CompletableFuture<Boolean> unmuteIp(String ipAddress, UUID staffUUID, String staffName, String reason) {
-        return punishmentDAO.deactivateIp(ipAddress, staffUUID, staffName, reason != null ? reason : "Unmuted",
-                PunishmentType.MUTEIP, PunishmentType.TEMPMUTEIP)
-                .thenApply(count -> {
-                    if (count > 0) {
-                        cacheManager.invalidateIpMute(ipAddress);
-                        plugin.getWebhookManager().logUnmuteIp(ipAddress, "Unknown", staffName);
-                        return true;
-                    }
-                    return false;
+        return punishmentDAO.insert(uuidPunishment)
+                .thenCompose(uuidId -> {
+                    uuidPunishment.setId(uuidId);
+                    cacheManager.cacheMute(targetUUID, Optional.of(uuidPunishment));
+                    return punishmentDAO.insert(ipPunishment);
+                })
+                .thenApply(ipId -> {
+                    ipPunishment.setId(ipId);
+                    cacheManager.cacheIpMute(ipAddress, Optional.of(ipPunishment));
+                    notifyMute(targetUUID, reason, expiresAt);
+                    plugin.getWebhookManager().logPunishment(ipPunishment);
+                    return ipPunishment;
                 });
     }
 
+    public CompletableFuture<Boolean> unmuteIp(UUID targetUUID, String ipAddress, UUID staffUUID, String staffName,
+            String reason) {
+        String finalReason = reason != null ? reason : "Unmuted";
+        String targetName = Bukkit.getOfflinePlayer(targetUUID).getName();
 
+        CompletableFuture<Integer> uuidUnmute = punishmentDAO.deactivate(targetUUID, staffUUID, staffName, finalReason,
+                PunishmentType.MUTE, PunishmentType.TEMPMUTE);
+        CompletableFuture<Integer> ipUnmute = punishmentDAO.deactivateIp(ipAddress, staffUUID, staffName, finalReason,
+                PunishmentType.MUTEIP, PunishmentType.TEMPMUTEIP);
+
+        return uuidUnmute.thenCombine(ipUnmute, (uuidCount, ipCount) -> {
+            if (uuidCount > 0 || ipCount > 0) {
+                cacheManager.invalidateMute(targetUUID);
+                cacheManager.invalidateIpMute(ipAddress);
+                plugin.getWebhookManager().logUnmuteIp(ipAddress,
+                        targetName != null ? targetName : targetUUID.toString(), staffName);
+                return true;
+            }
+            return false;
+        });
+    }
 
     public CompletableFuture<Punishment> mute(UUID targetUUID, String targetName, UUID staffUUID,
             String staffName, String reason) {
@@ -148,14 +200,12 @@ public class PunishmentManager {
                 PunishmentType.MUTE, reason, null);
     }
 
-
     public CompletableFuture<Punishment> tempmute(UUID targetUUID, String targetName, UUID staffUUID,
             String staffName, long durationMillis, String reason) {
         Instant expiresAt = TimeUtil.getExpiryInstant(durationMillis);
         return createPunishment(targetUUID, targetName, staffUUID, staffName,
                 PunishmentType.TEMPMUTE, reason, expiresAt);
     }
-
 
     public CompletableFuture<Boolean> unmute(UUID targetUUID, UUID staffUUID, String staffName, String reason) {
         String targetName = Bukkit.getOfflinePlayer(targetUUID).getName();
@@ -173,7 +223,6 @@ public class PunishmentManager {
                 });
     }
 
-
     public CompletableFuture<Boolean> kick(UUID targetUUID, String targetName, UUID staffUUID,
             String staffName, String reason) {
         return CompletableFuture.supplyAsync(() -> {
@@ -184,7 +233,7 @@ public class PunishmentManager {
 
             Punishment punishment = new Punishment(targetUUID, targetName, staffUUID, staffName,
                     PunishmentType.KICK, reason, Instant.now(), Instant.now());
-            punishment.setActive(false); // Kicks are instant, not ongoing
+            punishment.setActive(false);
 
             punishmentDAO.insert(punishment);
 
@@ -199,7 +248,6 @@ public class PunishmentManager {
         });
     }
 
-
     public CompletableFuture<Optional<Punishment>> getActiveBan(UUID targetUUID) {
         Optional<Punishment> cached = cacheManager.getActiveBan(targetUUID);
         if (cached != null) {
@@ -212,7 +260,6 @@ public class PunishmentManager {
                     return opt;
                 });
     }
-
 
     public CompletableFuture<Optional<Punishment>> getActiveMute(UUID targetUUID) {
         Optional<Punishment> cached = cacheManager.getActiveMute(targetUUID);
@@ -227,11 +274,9 @@ public class PunishmentManager {
                 });
     }
 
-
     public CompletableFuture<List<Punishment>> getHistory(UUID targetUUID) {
         return punishmentDAO.getHistory(targetUUID);
     }
-
 
     public CompletableFuture<Optional<Punishment>> getActiveIpBan(String ipAddress) {
         Optional<Punishment> cached = cacheManager.getActiveIpBan(ipAddress);
@@ -246,7 +291,6 @@ public class PunishmentManager {
                 });
     }
 
-
     public CompletableFuture<Optional<Punishment>> getActiveIpMute(String ipAddress) {
         Optional<Punishment> cached = cacheManager.getActiveIpMute(ipAddress);
         if (cached != null) {
@@ -259,7 +303,6 @@ public class PunishmentManager {
                     return opt;
                 });
     }
-
 
     private CompletableFuture<Punishment> createIpPunishment(UUID targetUUID, String targetName, String ipAddress,
             UUID staffUUID, String staffName,
@@ -286,7 +329,6 @@ public class PunishmentManager {
                 });
     }
 
-
     private CompletableFuture<Punishment> createPunishment(UUID targetUUID, String targetName,
             UUID staffUUID, String staffName,
             PunishmentType type, String reason,
@@ -312,7 +354,6 @@ public class PunishmentManager {
                 });
     }
 
-
     private void kickIfOnline(UUID targetUUID, PunishmentType type, String reason, Instant expiresAt) {
         Player target = Bukkit.getPlayer(targetUUID);
         if (target != null && target.isOnline()) {
@@ -322,7 +363,6 @@ public class PunishmentManager {
             });
         }
     }
-
 
     private void notifyMute(UUID targetUUID, String reason, Instant expiresAt) {
         Player target = Bukkit.getPlayer(targetUUID);
@@ -335,7 +375,6 @@ public class PunishmentManager {
             target.sendMessage(MessageUtil.toComponent(muteMsg));
         }
     }
-
 
     public String buildKickMessage(PunishmentType type, String reason, Instant expiresAt) {
         String template;

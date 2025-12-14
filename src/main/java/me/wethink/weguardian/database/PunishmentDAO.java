@@ -13,7 +13,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
-
 public class PunishmentDAO {
 
     private final WeGuardian plugin;
@@ -23,7 +22,6 @@ public class PunishmentDAO {
         this.plugin = plugin;
         this.databaseManager = databaseManager;
     }
-
 
     public CompletableFuture<Integer> insert(Punishment punishment) {
         return CompletableFuture.supplyAsync(() -> {
@@ -62,21 +60,17 @@ public class PunishmentDAO {
         });
     }
 
-
     public CompletableFuture<Optional<Punishment>> getActiveBan(UUID targetUUID) {
         return getActivePunishment(targetUUID, PunishmentType.BAN, PunishmentType.TEMPBAN);
     }
-
 
     public CompletableFuture<Optional<Punishment>> getActiveMute(UUID targetUUID) {
         return getActivePunishment(targetUUID, PunishmentType.MUTE, PunishmentType.TEMPMUTE);
     }
 
-
     public CompletableFuture<Optional<Punishment>> getActiveIpBan(String ipAddress) {
         return getActiveIpPunishment(ipAddress, PunishmentType.BANIP, PunishmentType.TEMPBANIP);
     }
-
 
     public CompletableFuture<Optional<Punishment>> getActiveIpMute(String ipAddress) {
         return getActiveIpPunishment(ipAddress, PunishmentType.MUTEIP, PunishmentType.TEMPMUTEIP);
@@ -120,7 +114,6 @@ public class PunishmentDAO {
         });
     }
 
-
     private CompletableFuture<Optional<Punishment>> getActivePunishment(UUID targetUUID, PunishmentType... types) {
         return CompletableFuture.supplyAsync(() -> {
             StringBuilder sql = new StringBuilder("""
@@ -159,7 +152,6 @@ public class PunishmentDAO {
         });
     }
 
-
     public CompletableFuture<List<Punishment>> getHistory(UUID targetUUID) {
         return CompletableFuture.supplyAsync(() -> {
             String sql = """
@@ -188,7 +180,6 @@ public class PunishmentDAO {
         });
     }
 
-
     public CompletableFuture<List<Punishment>> getRecentPunishments(int limit) {
         return CompletableFuture.supplyAsync(() -> {
             String sql = """
@@ -215,7 +206,6 @@ public class PunishmentDAO {
             return punishments;
         });
     }
-
 
     public CompletableFuture<Integer> deactivate(UUID targetUUID, UUID removedByUUID, String removedByName,
             String reason, PunishmentType... types) {
@@ -254,7 +244,6 @@ public class PunishmentDAO {
         });
     }
 
-
     public CompletableFuture<Integer> deactivateIp(String ipAddress, UUID removedByUUID, String removedByName,
             String reason, PunishmentType... types) {
         return CompletableFuture.supplyAsync(() -> {
@@ -292,7 +281,6 @@ public class PunishmentDAO {
         });
     }
 
-
     public CompletableFuture<List<Punishment>> getExpiredPunishments() {
         return CompletableFuture.supplyAsync(() -> {
             String sql = """
@@ -319,7 +307,6 @@ public class PunishmentDAO {
         });
     }
 
-
     public CompletableFuture<Integer> cleanupExpired() {
         return CompletableFuture.supplyAsync(() -> {
             String sql = """
@@ -343,6 +330,59 @@ public class PunishmentDAO {
         });
     }
 
+    public CompletableFuture<Void> savePlayerIp(UUID uuid, String name, String ipAddress) {
+        return CompletableFuture.runAsync(() -> {
+            String sql = """
+                        INSERT OR REPLACE INTO player_ips (uuid, name, ip_address, last_seen)
+                        VALUES (?, ?, ?, ?)
+                    """;
+
+            if (databaseManager.getDatabaseType().equals("mysql")) {
+                sql = """
+                            INSERT INTO player_ips (uuid, name, ip_address, last_seen)
+                            VALUES (?, ?, ?, ?)
+                            ON DUPLICATE KEY UPDATE name = VALUES(name), ip_address = VALUES(ip_address), last_seen = VALUES(last_seen)
+                        """;
+            }
+
+            try (Connection conn = databaseManager.getConnection();
+                    PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+                stmt.setString(1, uuid.toString());
+                stmt.setString(2, name);
+                stmt.setString(3, ipAddress);
+                stmt.setLong(4, Instant.now().toEpochMilli());
+
+                stmt.executeUpdate();
+            } catch (SQLException e) {
+                plugin.getLogger().log(Level.SEVERE, "Failed to save player IP", e);
+            }
+        });
+    }
+
+    public CompletableFuture<Optional<String>> getPlayerIp(UUID uuid) {
+        return CompletableFuture.supplyAsync(() -> {
+            String sql = """
+                        SELECT ip_address FROM player_ips WHERE uuid = ?
+                    """;
+
+            try (Connection conn = databaseManager.getConnection();
+                    PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+                stmt.setString(1, uuid.toString());
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return Optional.of(rs.getString("ip_address"));
+                    }
+                }
+                return Optional.empty();
+            } catch (SQLException e) {
+                plugin.getLogger().log(Level.SEVERE, "Failed to get player IP", e);
+                throw new RuntimeException(e);
+            }
+        });
+    }
 
     private Punishment mapResultSet(ResultSet rs) throws SQLException {
         Punishment p = new Punishment();

@@ -142,7 +142,7 @@ public class HistoryGUI extends FastInv {
         String statusColor = punishment.isActive() ? "&a" : "&c";
         String status = punishment.isActive() ? (punishment.isExpired() ? "Expired" : "Active") : "Removed";
 
-        List<String> lore = new ArrayList<>(12); // Pre-size to avoid resizing
+        List<String> lore = new ArrayList<>(12);
         lore.add("");
         lore.add(MessageUtil
                 .colorize("&7Type: " + punishment.getType().getColor() + punishment.getType().getDisplayName()));
