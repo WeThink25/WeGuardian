@@ -11,9 +11,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-
 public class DurationGUI extends FastInv {
-
 
     private static ItemStack GLASS_PANE;
     private static ItemStack BACK_BUTTON;
@@ -35,7 +33,6 @@ public class DurationGUI extends FastInv {
     private static long DURATION_7D;
     private static long DURATION_30D;
     private static long DURATION_90D;
-
 
     public static void initializeIcons() {
         DURATION_1H = TimeUtil.parseDuration("1h");
@@ -84,7 +81,6 @@ public class DurationGUI extends FastInv {
         DAYS_90 = createDurationItem(Material.BLUE_DYE, "&990 Days", DURATION_90D);
     }
 
-
     private static ItemStack createDurationItem(Material material, String name, long durationMs) {
         return new ItemBuilder(material)
                 .name(MessageUtil.colorize(name))
@@ -95,7 +91,6 @@ public class DurationGUI extends FastInv {
                         MessageUtil.colorize("&e▶ Click to apply"))
                 .build();
     }
-
 
     private final WeGuardian plugin;
     private final Player staff;
@@ -110,7 +105,6 @@ public class DurationGUI extends FastInv {
         this.target = target;
         this.type = type;
     }
-
 
     public void build() {
         for (int i = 0; i < 9; i++) {
@@ -129,6 +123,10 @@ public class DurationGUI extends FastInv {
         setItem(22, PERM_ITEM, e -> {
             staff.closeInventory();
             PunishmentType permType = type == PunishmentType.TEMPBAN ? PunishmentType.BAN : PunishmentType.MUTE;
+            if (!staff.hasPermission(permType.getPermission())) {
+                staff.sendMessage(MessageUtil.toComponent("&cYou don't have permission to use permanent punishments!"));
+                return;
+            }
             new ReasonInputHandler(plugin, staff, target, permType, -1).start();
         });
 
@@ -140,8 +138,6 @@ public class DurationGUI extends FastInv {
         setItem(27, BACK_BUTTON, e -> PunishmentGUI.openAsync(plugin, staff, target));
     }
 
-
-
     private void selectDuration(long durationMs) {
         staff.closeInventory();
         new ReasonInputHandler(plugin, staff, target, type, durationMs).start();
@@ -150,7 +146,6 @@ public class DurationGUI extends FastInv {
     public void open() {
         open(staff);
     }
-
 
     public static void openAsync(WeGuardian plugin, Player staff, OfflinePlayer target, PunishmentType type) {
         plugin.getSchedulerManager().runAsync(() -> {

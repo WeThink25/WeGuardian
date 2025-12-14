@@ -12,9 +12,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.function.Consumer;
 
-
 public class PunishmentGUI extends FastInv {
-
 
         private static ItemStack GLASS_PANE;
         private static ItemStack BAN_ITEM;
@@ -24,7 +22,6 @@ public class PunishmentGUI extends FastInv {
         private static ItemStack TEMP_MUTE_ITEM;
         private static ItemStack HISTORY_ITEM;
         private static ItemStack CLOSE_ITEM;
-
 
         public static void initializeIcons() {
                 GLASS_PANE = new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE)
@@ -99,15 +96,12 @@ public class PunishmentGUI extends FastInv {
                                 .build();
         }
 
-
         private static final Consumer<org.bukkit.event.inventory.InventoryClickEvent> CLOSE_HANDLER = e -> e
                         .getWhoClicked().closeInventory();
-
 
         private final WeGuardian plugin;
         private final Player staff;
         private final OfflinePlayer target;
-
 
         public PunishmentGUI(WeGuardian plugin, Player staff, OfflinePlayer target) {
                 super(45, MessageUtil.colorize("&c&lPunish &8» &e" + target.getName()));
@@ -116,7 +110,6 @@ public class PunishmentGUI extends FastInv {
                 this.staff = staff;
                 this.target = target;
         }
-
 
         public void build() {
                 for (int i = 0; i < 9; i++) {
@@ -130,11 +123,21 @@ public class PunishmentGUI extends FastInv {
                 setItem(27, GLASS_PANE);
                 setItem(35, GLASS_PANE);
 
-                setItem(11, BAN_ITEM, e -> openReasonInput(PunishmentType.BAN, -1));
-                setItem(12, TEMP_BAN_ITEM, e -> openDurationGUIAsync(PunishmentType.TEMPBAN));
-                setItem(13, KICK_ITEM, e -> openReasonInput(PunishmentType.KICK, -1));
-                setItem(14, MUTE_ITEM, e -> openReasonInput(PunishmentType.MUTE, -1));
-                setItem(15, TEMP_MUTE_ITEM, e -> openDurationGUIAsync(PunishmentType.TEMPMUTE));
+                if (staff.hasPermission(PunishmentType.BAN.getPermission())) {
+                        setItem(11, BAN_ITEM, e -> openReasonInput(PunishmentType.BAN, -1));
+                }
+                if (staff.hasPermission(PunishmentType.TEMPBAN.getPermission())) {
+                        setItem(12, TEMP_BAN_ITEM, e -> openDurationGUIAsync(PunishmentType.TEMPBAN));
+                }
+                if (staff.hasPermission(PunishmentType.KICK.getPermission())) {
+                        setItem(13, KICK_ITEM, e -> openReasonInput(PunishmentType.KICK, -1));
+                }
+                if (staff.hasPermission(PunishmentType.MUTE.getPermission())) {
+                        setItem(14, MUTE_ITEM, e -> openReasonInput(PunishmentType.MUTE, -1));
+                }
+                if (staff.hasPermission(PunishmentType.TEMPMUTE.getPermission())) {
+                        setItem(15, TEMP_MUTE_ITEM, e -> openDurationGUIAsync(PunishmentType.TEMPMUTE));
+                }
 
                 setItem(31, HISTORY_ITEM, e -> {
                         staff.closeInventory();
@@ -165,8 +168,13 @@ public class PunishmentGUI extends FastInv {
                 setItem(4, headItem);
         }
 
-
         private void openDurationGUIAsync(PunishmentType type) {
+                if (!staff.hasPermission(type.getPermission())) {
+                        staff.closeInventory();
+                        staff.sendMessage(
+                                        MessageUtil.toComponent("&cYou don't have permission to use this punishment!"));
+                        return;
+                }
                 staff.closeInventory();
                 plugin.getSchedulerManager().runAsync(() -> {
                         DurationGUI gui = new DurationGUI(plugin, staff, target, type);
@@ -176,6 +184,12 @@ public class PunishmentGUI extends FastInv {
         }
 
         private void openReasonInput(PunishmentType type, long durationMs) {
+                if (!staff.hasPermission(type.getPermission())) {
+                        staff.closeInventory();
+                        staff.sendMessage(
+                                        MessageUtil.toComponent("&cYou don't have permission to use this punishment!"));
+                        return;
+                }
                 staff.closeInventory();
                 new ReasonInputHandler(plugin, staff, target, type, durationMs).start();
         }
@@ -183,7 +197,6 @@ public class PunishmentGUI extends FastInv {
         public void open() {
                 open(staff);
         }
-
 
         public static void openAsync(WeGuardian plugin, Player staff, OfflinePlayer target) {
                 plugin.getSchedulerManager().runAsync(() -> {

@@ -1,6 +1,5 @@
 package me.wethink.weguardian.model;
 
-
 public enum PunishmentType {
     BAN("Ban", "§c", true),
     TEMPBAN("Temporary Ban", "§6", true),
@@ -56,5 +55,19 @@ public enum PunishmentType {
 
     public boolean isIpBased() {
         return isIpBan() || isIpMute();
+    }
+
+    public String getPermission() {
+        return switch (this) {
+            case BAN -> "weguardian.ban";
+            case TEMPBAN -> "weguardian.tempban";
+            case BANIP -> "weguardian.banip";
+            case TEMPBANIP -> "weguardian.tempbanip";
+            case MUTE -> "weguardian.mute";
+            case TEMPMUTE -> "weguardian.tempmute";
+            case MUTEIP -> "weguardian.muteip";
+            case TEMPMUTEIP -> "weguardian.tempmuteip";
+            case KICK -> "weguardian.kick";
+        };
     }
 }

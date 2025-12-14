@@ -18,7 +18,6 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-
 public class ReasonInputHandler implements Listener {
 
     private static final String STAFF_PREFIX = "&8[&cWeGuardian&8] ";
@@ -42,6 +41,11 @@ public class ReasonInputHandler implements Listener {
     }
 
     public void start() {
+        if (!staff.hasPermission(type.getPermission())) {
+            staff.sendMessage(MessageUtil.toComponent("&cYou don't have permission to use this punishment!"));
+            return;
+        }
+
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
 
         String typeDisplay = type.getColor() + type.getDisplayName();
@@ -60,7 +64,6 @@ public class ReasonInputHandler implements Listener {
 
         plugin.getSchedulerManager().runAsyncLater(this::handleTimeout, 60, TimeUnit.SECONDS);
     }
-
 
     private void handleTimeout() {
         if (!completed) {
@@ -99,6 +102,12 @@ public class ReasonInputHandler implements Listener {
     }
 
     private void executePunishment(String reason) {
+        if (!staff.hasPermission(type.getPermission())) {
+            plugin.getSchedulerManager().runForEntity(staff, () -> staff
+                    .sendMessage(MessageUtil.toComponent("&cYou don't have permission to use this punishment!")));
+            return;
+        }
+
         UUID staffUUID = staff.getUniqueId();
         String staffName = staff.getName();
 
@@ -137,7 +146,6 @@ public class ReasonInputHandler implements Listener {
             return null;
         });
     }
-
 
     private void broadcastToStaff(String message) {
         Collection<? extends Player> players = plugin.getServer().getOnlinePlayers();
