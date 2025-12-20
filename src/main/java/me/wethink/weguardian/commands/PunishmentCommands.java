@@ -20,7 +20,6 @@ import java.util.UUID;
 @CommandAlias("weguardian|wg")
 public class PunishmentCommands extends BaseCommand {
 
-    private static final String PREFIX = "&8[&cWeGuardian&8] ";
     private static final String MSG_PLAYER_NOT_FOUND = "&cPlayer not found!";
     private static final String MSG_PLAYER_NOT_ONLINE = "&cPlayer is not online!";
     private static final String MSG_PLAYER_BYPASS = "&cYou cannot punish this player!";
@@ -446,7 +445,8 @@ public class PunishmentCommands extends BaseCommand {
     }
 
     private void broadcastStaff(String message) {
-        String formattedMessage = PREFIX + message;
+        String prefix = plugin.getConfig().getString("messages.prefix", "&8[&c&lWeGuardian&8]&r ");
+        String formattedMessage = prefix + message;
         Collection<? extends Player> players = Bukkit.getOnlinePlayers();
 
         for (Player player : players) {
@@ -531,6 +531,13 @@ public class PunishmentCommands extends BaseCommand {
 
     private static String getPlayerIp(Player player) {
         InetSocketAddress address = player.getAddress();
-        return address != null ? address.getAddress().getHostAddress() : null;
+        if (address == null) {
+            return null;
+        }
+        String ip = address.getAddress().getHostAddress();
+        if (ip != null && ip.startsWith("::ffff:")) {
+            return ip.substring(7);
+        }
+        return ip;
     }
 }

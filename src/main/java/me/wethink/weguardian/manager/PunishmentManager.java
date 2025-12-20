@@ -114,9 +114,10 @@ public class PunishmentManager {
             UUID staffUUID, String staffName,
             PunishmentType uuidType, PunishmentType ipType, String reason,
             Instant expiresAt) {
+        String normalizedIp = normalizeIp(ipAddress);
         Punishment uuidPunishment = new Punishment(targetUUID, targetName, staffUUID, staffName,
                 uuidType, reason, Instant.now(), expiresAt);
-        Punishment ipPunishment = new Punishment(targetUUID, targetName, ipAddress, staffUUID, staffName,
+        Punishment ipPunishment = new Punishment(targetUUID, targetName, normalizedIp, staffUUID, staffName,
                 ipType, reason, Instant.now(), expiresAt);
 
         return punishmentDAO.insert(uuidPunishment)
@@ -127,7 +128,7 @@ public class PunishmentManager {
                 })
                 .thenApply(ipId -> {
                     ipPunishment.setId(ipId);
-                    cacheManager.cacheIpBan(ipAddress, Optional.of(ipPunishment));
+                    cacheManager.cacheIpBan(normalizedIp, Optional.of(ipPunishment));
                     kickIfOnline(targetUUID, ipType, reason, expiresAt);
                     plugin.getWebhookManager().logPunishment(ipPunishment);
                     return ipPunishment;
@@ -152,9 +153,10 @@ public class PunishmentManager {
             UUID staffUUID, String staffName,
             PunishmentType uuidType, PunishmentType ipType, String reason,
             Instant expiresAt) {
+        String normalizedIp = normalizeIp(ipAddress);
         Punishment uuidPunishment = new Punishment(targetUUID, targetName, staffUUID, staffName,
                 uuidType, reason, Instant.now(), expiresAt);
-        Punishment ipPunishment = new Punishment(targetUUID, targetName, ipAddress, staffUUID, staffName,
+        Punishment ipPunishment = new Punishment(targetUUID, targetName, normalizedIp, staffUUID, staffName,
                 ipType, reason, Instant.now(), expiresAt);
 
         return punishmentDAO.insert(uuidPunishment)
@@ -165,7 +167,7 @@ public class PunishmentManager {
                 })
                 .thenApply(ipId -> {
                     ipPunishment.setId(ipId);
-                    cacheManager.cacheIpMute(ipAddress, Optional.of(ipPunishment));
+                    cacheManager.cacheIpMute(normalizedIp, Optional.of(ipPunishment));
                     notifyMute(targetUUID, reason, expiresAt);
                     plugin.getWebhookManager().logPunishment(ipPunishment);
                     return ipPunishment;
@@ -279,29 +281,45 @@ public class PunishmentManager {
     }
 
     public CompletableFuture<Optional<Punishment>> getActiveIpBan(String ipAddress) {
-        Optional<Punishment> cached = cacheManager.getActiveIpBan(ipAddress);
-        if (cached != null) {
+        String normalizedIp = normalizeIp(ipAddress);
+        Optional<Punishment> cached = cacheManager.getActiveIpBan(normalizedIp);
+        if (cached != null && cached.isPresent()) {
             return CompletableFuture.completedFuture(cached);
         }
 
-        return punishmentDAO.getActiveIpBan(ipAddress)
+        return punishmentDAO.getActiveIpBan(normalizedIp)
                 .thenApply(opt -> {
-                    cacheManager.cacheIpBan(ipAddress, opt);
+                    if (opt.isPresent()) {
+                        cacheManager.cacheIpBan(normalizedIp, opt);
+                    }
                     return opt;
                 });
     }
 
     public CompletableFuture<Optional<Punishment>> getActiveIpMute(String ipAddress) {
-        Optional<Punishment> cached = cacheManager.getActiveIpMute(ipAddress);
-        if (cached != null) {
+        String normalizedIp = normalizeIp(ipAddress);
+        Optional<Punishment> cached = cacheManager.getActiveIpMute(normalizedIp);
+        if (cached != null && cached.isPresent()) {
             return CompletableFuture.completedFuture(cached);
         }
 
-        return punishmentDAO.getActiveIpMute(ipAddress)
+        return punishmentDAO.getActiveIpMute(normalizedIp)
                 .thenApply(opt -> {
-                    cacheManager.cacheIpMute(ipAddress, opt);
+                    if (opt.isPresent()) {
+                        cacheManager.cacheIpMute(normalizedIp, opt);
+                    }
                     return opt;
                 });
+    }
+
+    private String normalizeIp(String ip) {
+        if (ip == null) {
+            return null;
+        }
+        if (ip.startsWith("::ffff:")) {
+            return ip.substring(7);
+        }
+        return ip;
     }
 
     private CompletableFuture<Punishment> createIpPunishment(UUID targetUUID, String targetName, String ipAddress,

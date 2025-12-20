@@ -148,42 +148,6 @@ public class DatabaseManager {
                 """, autoIncrement, textType, textType, textType, textType, textType,
                 textType, bigintType, bigintType, textType, textType, bigintType);
 
-        String createIndexTargetUuid = """
-                    CREATE INDEX IF NOT EXISTS idx_punishments_target_uuid
-                    ON punishments(target_uuid)
-                """;
-
-        String createIndexActive = """
-                    CREATE INDEX IF NOT EXISTS idx_punishments_active
-                    ON punishments(active, type)
-                """;
-
-        String createIndexExpires;
-        if (databaseType.equals("mysql")) {
-            createIndexExpires = """
-                        CREATE INDEX IF NOT EXISTS idx_punishments_expires
-                        ON punishments(expires_at)
-                    """;
-        } else {
-            createIndexExpires = """
-                        CREATE INDEX IF NOT EXISTS idx_punishments_expires
-                        ON punishments(expires_at) WHERE active = 1 AND expires_at IS NOT NULL
-                    """;
-        }
-
-        String createIndexTargetIp;
-        if (databaseType.equals("mysql")) {
-            createIndexTargetIp = """
-                        CREATE INDEX IF NOT EXISTS idx_punishments_target_ip
-                        ON punishments(target_ip)
-                    """;
-        } else {
-            createIndexTargetIp = """
-                        CREATE INDEX IF NOT EXISTS idx_punishments_target_ip
-                        ON punishments(target_ip) WHERE target_ip IS NOT NULL
-                    """;
-        }
-
         String createPlayerIpsTable = String.format("""
                     CREATE TABLE IF NOT EXISTS player_ips (
                         uuid %s PRIMARY KEY,
@@ -194,15 +158,37 @@ public class DatabaseManager {
                 """, textType, textType, textType, bigintType);
 
         executeAsync(createPunishmentsTable)
-                .thenCompose(v -> executeAsync(createIndexTargetUuid))
-                .thenCompose(v -> executeAsync(createIndexActive))
-                .thenCompose(v -> executeAsync(createIndexExpires))
-                .thenCompose(v -> executeAsync(createIndexTargetIp))
                 .thenCompose(v -> executeAsync(createPlayerIpsTable))
+                .thenAccept(v -> {
+                    createIndexSafe("idx_punishments_target_uuid", "punishments", "target_uuid");
+                    createIndexSafe("idx_punishments_active", "punishments", "active, type");
+                    createIndexSafe("idx_punishments_expires", "punishments", "expires_at");
+                    createIndexSafe("idx_punishments_target_ip", "punishments", "target_ip");
+                })
                 .exceptionally(e -> {
                     plugin.getLogger().log(Level.SEVERE, "Failed to initialize database tables", e);
                     return null;
                 });
+    }
+
+    private void createIndexSafe(String indexName, String tableName, String columns) {
+        String sql;
+        if (databaseType.equals("mysql")) {
+            sql = String.format("CREATE INDEX %s ON %s(%s)", indexName, tableName, columns);
+        } else {
+            sql = String.format("CREATE INDEX IF NOT EXISTS %s ON %s(%s)", indexName, tableName, columns);
+        }
+
+        try (Connection conn = getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.execute();
+        } catch (SQLException e) {
+            if (databaseType.equals("mysql") && e.getMessage() != null
+                    && e.getMessage().contains("Duplicate key name")) {
+                return;
+            }
+            plugin.getLogger().log(Level.WARNING, "Failed to create index " + indexName + ": " + e.getMessage());
+        }
     }
 
     public Connection getConnection() throws SQLException {

@@ -14,7 +14,6 @@ import java.net.InetSocketAddress;
 import java.util.Optional;
 import java.util.UUID;
 
-
 public class PlayerChatListener implements Listener {
 
     private final WeGuardian plugin;
@@ -34,7 +33,6 @@ public class PlayerChatListener implements Listener {
         }
 
         String ipAddress = getPlayerIp(player);
-
 
         Optional<Punishment> activeMute = plugin.getCacheManager().getActiveMute(uuid);
 
@@ -86,6 +84,10 @@ public class PlayerChatListener implements Listener {
         if (address == null) {
             return null;
         }
-        return address.getAddress().getHostAddress();
+        String ip = address.getAddress().getHostAddress();
+        if (ip != null && ip.startsWith("::ffff:")) {
+            return ip.substring(7);
+        }
+        return ip;
     }
 }

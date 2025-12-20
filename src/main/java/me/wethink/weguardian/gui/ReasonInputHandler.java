@@ -20,8 +20,6 @@ import java.util.concurrent.TimeUnit;
 
 public class ReasonInputHandler implements Listener {
 
-    private static final String STAFF_PREFIX = "&8[&cWeGuardian&8] ";
-
     private static final PlainTextComponentSerializer PLAIN_SERIALIZER = PlainTextComponentSerializer.plainText();
 
     private final WeGuardian plugin;
@@ -131,7 +129,8 @@ public class ReasonInputHandler implements Listener {
             String actionVerb = type.getDisplayName().toLowerCase() + (type == PunishmentType.KICK ? "ed " : "ned ");
 
             String successMessage = "&aSuccessfully " + actionVerb + target.getName() + " (" + durationStr + ")";
-            String broadcastMessage = STAFF_PREFIX + "&c" + staffName + " &7" + actionVerb + "&c" + target.getName()
+            String prefix = plugin.getConfig().getString("messages.prefix", "&8[&c&lWeGuardian&8]&r ");
+            String broadcastMessage = prefix + "&c" + staffName + " &7" + actionVerb + "&c" + target.getName()
                     + " &7for: &f" + reason;
 
             plugin.getSchedulerManager().runSync(() -> {
@@ -154,6 +153,7 @@ public class ReasonInputHandler implements Listener {
                 p.sendMessage(MessageUtil.toComponent(message));
             }
         }
+        plugin.getServer().getConsoleSender().sendMessage(MessageUtil.toComponent(message));
     }
 
     private void cleanup() {

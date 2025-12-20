@@ -26,7 +26,8 @@ public class PlayerLoginListener implements Listener {
     public void onAsyncPreLogin(AsyncPlayerPreLoginEvent event) {
         UUID uuid = event.getUniqueId();
         String name = event.getName();
-        String ipAddress = event.getAddress().getHostAddress();
+        String rawIp = event.getAddress().getHostAddress();
+        String ipAddress = normalizeIp(rawIp);
 
         try {
             Optional<Punishment> activeBan = plugin.getPunishmentManager()
@@ -80,5 +81,15 @@ public class PlayerLoginListener implements Listener {
         } catch (TimeoutException e) {
             plugin.getLogger().warning("Ban check timed out for " + name + ", allowing login.");
         }
+    }
+
+    private String normalizeIp(String ip) {
+        if (ip == null) {
+            return null;
+        }
+        if (ip.startsWith("::ffff:")) {
+            return ip.substring(7);
+        }
+        return ip;
     }
 }
