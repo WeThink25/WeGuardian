@@ -74,7 +74,13 @@ public class PunishmentCommands extends BaseCommand {
         plugin.getPunishmentManager().unban(target.getUniqueId(), staffUUID, staffName, "Unbanned")
                 .thenAccept(success -> {
                     if (success) {
-                        broadcastStaff("&a" + staffName + " &7unbanned &a" + targetName);
+                        if (plugin.getConfig().getBoolean("messages.unban.broadcast.enabled", true)) {
+                            String broadcastMsg = plugin.getConfig().getString("messages.unban.broadcast.message",
+                                    "&a{staff} &7unbanned &a{player}")
+                                    .replace("{staff}", staffName)
+                                    .replace("{player}", targetName);
+                            broadcastStaff(broadcastMsg);
+                        }
                         sender.sendMessage(MessageUtil.toComponent("&aSuccessfully unbanned " + targetName));
                     } else {
                         sender.sendMessage(MessageUtil.toComponent("&c" + targetName + " is not banned!"));
@@ -123,13 +129,21 @@ public class PunishmentCommands extends BaseCommand {
         plugin.getPunishmentManager().unmute(target.getUniqueId(), staffUUID, staffName, "Unmuted")
                 .thenAccept(success -> {
                     if (success) {
-                        broadcastStaff("&a" + staffName + " &7unmuted &a" + targetName);
+                        if (plugin.getConfig().getBoolean("messages.unmute.broadcast.enabled", true)) {
+                            String broadcastMsg = plugin.getConfig().getString("messages.unmute.broadcast.message",
+                                    "&a{staff} &7unmuted &a{player}")
+                                    .replace("{staff}", staffName)
+                                    .replace("{player}", targetName);
+                            broadcastStaff(broadcastMsg);
+                        }
                         sender.sendMessage(MessageUtil.toComponent("&aSuccessfully unmuted " + targetName));
 
                         Player onlineTarget = Bukkit.getPlayer(target.getUniqueId());
                         if (onlineTarget != null) {
+                            String notifyMsg = plugin.getConfig().getString("messages.unmute.notify",
+                                    "&aYou have been unmuted!");
                             plugin.getSchedulerManager().runForEntity(onlineTarget, () -> onlineTarget
-                                    .sendMessage(MessageUtil.toComponent("&aYou have been unmuted!")));
+                                    .sendMessage(MessageUtil.toComponent(notifyMsg)));
                         }
                     } else {
                         sender.sendMessage(MessageUtil.toComponent("&c" + targetName + " is not muted!"));
@@ -199,8 +213,14 @@ public class PunishmentCommands extends BaseCommand {
         plugin.getPunishmentManager().unbanIp(targetUUID, ipAddress, staffUUID, staffName, "Unbanned")
                 .thenAccept(success -> {
                     if (success) {
-                        broadcastStaff(
-                                "&a" + staffName + " &7removed IP ban for &a" + targetName + " &7(" + ipAddress + ")");
+                        if (plugin.getConfig().getBoolean("messages.unbanip.broadcast.enabled", true)) {
+                            String broadcastMsg = plugin.getConfig().getString("messages.unbanip.broadcast.message",
+                                    "&a{staff} &7removed IP ban for &a{player} &7({ip})")
+                                    .replace("{staff}", staffName)
+                                    .replace("{player}", targetName)
+                                    .replace("{ip}", ipAddress);
+                            broadcastStaff(broadcastMsg);
+                        }
                         sender.sendMessage(MessageUtil.toComponent("&aSuccessfully removed IP ban for " + targetName));
                     } else {
                         sender.sendMessage(MessageUtil.toComponent("&c" + targetName + "'s IP is not banned!"));
@@ -270,8 +290,14 @@ public class PunishmentCommands extends BaseCommand {
         plugin.getPunishmentManager().unmuteIp(targetUUID, ipAddress, staffUUID, staffName, "Unmuted")
                 .thenAccept(success -> {
                     if (success) {
-                        broadcastStaff(
-                                "&a" + staffName + " &7removed IP mute for &a" + targetName + " &7(" + ipAddress + ")");
+                        if (plugin.getConfig().getBoolean("messages.unmuteip.broadcast.enabled", true)) {
+                            String broadcastMsg = plugin.getConfig().getString("messages.unmuteip.broadcast.message",
+                                    "&a{staff} &7removed IP mute for &a{player} &7({ip})")
+                                    .replace("{staff}", staffName)
+                                    .replace("{player}", targetName)
+                                    .replace("{ip}", ipAddress);
+                            broadcastStaff(broadcastMsg);
+                        }
                         sender.sendMessage(MessageUtil.toComponent("&aSuccessfully removed IP mute for " + targetName));
                     } else {
                         sender.sendMessage(MessageUtil.toComponent("&c" + targetName + "'s IP is not muted!"));
@@ -304,7 +330,14 @@ public class PunishmentCommands extends BaseCommand {
         plugin.getPunishmentManager().kick(target.getUniqueId(), target.getName(), staffUUID, staffName, finalReason)
                 .thenAccept(success -> {
                     if (success) {
-                        broadcastStaff("&c" + staffName + " &7kicked &c" + targetName + " &7for: &f" + finalReason);
+                        if (plugin.getConfig().getBoolean("messages.kick.broadcast.enabled", true)) {
+                            String broadcastMsg = plugin.getConfig().getString("messages.kick.broadcast.message",
+                                    "&9{staff} &7kicked &9{player} &7for: &f{reason}")
+                                    .replace("{staff}", staffName)
+                                    .replace("{player}", targetName)
+                                    .replace("{reason}", finalReason);
+                            broadcastStaff(broadcastMsg);
+                        }
                         sender.sendMessage(MessageUtil.toComponent("&aSuccessfully kicked " + targetName));
                     } else {
                         sender.sendMessage(MessageUtil.toComponent("&cFailed to kick " + targetName));
@@ -429,9 +462,22 @@ public class PunishmentCommands extends BaseCommand {
 
         future.thenAccept(punishment -> {
             String durationStr = durationMs > 0 ? TimeUtil.formatDuration(durationMs) : "permanent";
+
+            String configPath = (type == PunishmentType.BAN || type == PunishmentType.TEMPBAN)
+                    ? "messages.ban.broadcast"
+                    : "messages.mute.broadcast";
+            if (plugin.getConfig().getBoolean(configPath + ".enabled", true)) {
+                String broadcastMsg = plugin.getConfig().getString(configPath + ".message",
+                        "&c{staff} &7" + type.getDisplayName().toLowerCase()
+                                + "ned &c{player} &7for: &f{reason} &7({duration})")
+                        .replace("{staff}", staffName)
+                        .replace("{player}", targetName)
+                        .replace("{reason}", finalReason)
+                        .replace("{duration}", durationStr);
+                broadcastStaff(broadcastMsg);
+            }
+
             String actionVerb = type.getDisplayName().toLowerCase() + "ned";
-            broadcastStaff("&c" + staffName + " &7" + actionVerb + " &c" + targetName + " &7for &f" + finalReason
-                    + " &7(" + durationStr + ")");
             sender.sendMessage(MessageUtil
                     .toComponent("&aSuccessfully " + actionVerb + " " + targetName + " (" + durationStr + ")"));
         }).exceptionally(e -> {
@@ -514,9 +560,23 @@ public class PunishmentCommands extends BaseCommand {
 
         future.thenAccept(punishment -> {
             String durationStr = durationMs > 0 ? TimeUtil.formatDuration(durationMs) : "permanent";
+
+            String configPath = (type == PunishmentType.BANIP || type == PunishmentType.TEMPBANIP)
+                    ? "messages.banip.broadcast"
+                    : "messages.muteip.broadcast";
+            if (plugin.getConfig().getBoolean(configPath + ".enabled", true)) {
+                String broadcastMsg = plugin.getConfig().getString(configPath + ".message",
+                        "&c{staff} &7IP " + type.getDisplayName().toLowerCase()
+                                + "ned &c{player} &7(&f{ip}&7) for: &f{reason} &7({duration})")
+                        .replace("{staff}", staffName)
+                        .replace("{player}", targetName)
+                        .replace("{ip}", ipAddress)
+                        .replace("{reason}", finalReason)
+                        .replace("{duration}", durationStr);
+                broadcastStaff(broadcastMsg);
+            }
+
             String actionVerb = type.getDisplayName().toLowerCase() + "ned";
-            broadcastStaff("&c" + staffName + " &7" + actionVerb + " &c" + targetName + " &7(&f" + ipAddress
-                    + "&7) for &f" + finalReason + " &7(" + durationStr + ")");
             sender.sendMessage(MessageUtil.toComponent(
                     "&aSuccessfully " + actionVerb + " " + targetName + " (" + ipAddress + ") (" + durationStr + ")"));
         }).exceptionally(e -> {

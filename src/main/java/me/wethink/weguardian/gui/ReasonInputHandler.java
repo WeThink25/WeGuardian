@@ -129,14 +129,28 @@ public class ReasonInputHandler implements Listener {
             String actionVerb = type.getDisplayName().toLowerCase() + (type == PunishmentType.KICK ? "ed " : "ned ");
 
             String successMessage = "&aSuccessfully " + actionVerb + target.getName() + " (" + durationStr + ")";
-            String prefix = plugin.getConfig().getString("messages.prefix", "&8[&c&lWeGuardian&8]&r ");
-            String broadcastMessage = prefix + "&c" + staffName + " &7" + actionVerb + "&c" + target.getName()
-                    + " &7for: &f" + reason;
+
+            String configPath;
+            switch (type) {
+                case BAN, TEMPBAN -> configPath = "messages.ban.broadcast";
+                case MUTE, TEMPMUTE -> configPath = "messages.mute.broadcast";
+                case KICK -> configPath = "messages.kick.broadcast";
+                default -> configPath = null;
+            }
 
             plugin.getSchedulerManager().runSync(() -> {
                 staff.sendMessage(MessageUtil.toComponent(successMessage));
 
-                broadcastToStaff(broadcastMessage);
+                if (configPath != null && plugin.getConfig().getBoolean(configPath + ".enabled", true)) {
+                    String broadcastMsg = plugin.getConfig().getString(configPath + ".message",
+                            "&c{staff} &7" + actionVerb + "&c{player} &7for: &f{reason}")
+                            .replace("{staff}", staffName)
+                            .replace("{player}", target.getName())
+                            .replace("{reason}", reason)
+                            .replace("{duration}", durationStr);
+                    String prefix = plugin.getConfig().getString("messages.prefix", "&8[&c&lWeGuardian&8]&r ");
+                    broadcastToStaff(prefix + broadcastMsg);
+                }
             });
         }).exceptionally(e -> {
             plugin.getSchedulerManager().runForEntity(staff, () -> staff

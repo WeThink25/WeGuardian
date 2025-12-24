@@ -82,7 +82,9 @@ messages:
       
       &7Appeal at: &ediscord.gg/yourserver
     
-    broadcast: "&c{staff} &7banned &c{player} &7for: &f{reason} &7({duration})"
+    broadcast:
+      enabled: true
+      message: "&c{staff} &7banned &c{player} &7for: &f{reason} &7({duration})"
   
   # Mute messages
   mute:
@@ -94,7 +96,9 @@ messages:
     
     applied: "&c&l⚠ &cYou have been muted by {staff}! Reason: &f{reason}"
     
-    broadcast: "&e{staff} &7muted &e{player} &7for: &f{reason} &7({duration})"
+    broadcast:
+      enabled: true
+      message: "&e{staff} &7muted &e{player} &7for: &f{reason} &7({duration})"
   
   kick:
     screen: |
@@ -105,16 +109,42 @@ messages:
       
       &7You may rejoin the server.
     
-    broadcast: "&9{staff} &7kicked &9{player} &7for: &f{reason}"
+    broadcast:
+      enabled: true
+      message: "&9{staff} &7kicked &9{player} &7for: &f{reason}"
   
   # Unban/Unmute messages
   unban:
-    broadcast: "&a{staff} &7unbanned &a{player}"
+    broadcast:
+      enabled: true
+      message: "&a{staff} &7unbanned &a{player}"
   
   unmute:
-    broadcast: "&a{staff} &7unmuted &a{player}"
-    # Shown to player when unmuted
+    broadcast:
+      enabled: true
+      message: "&a{staff} &7unmuted &a{player}"
     notify: "&aYou have been unmuted!"
+  
+  # IP punishment messages
+  banip:
+    broadcast:
+      enabled: true
+      message: "&c{staff} &7IP banned &c{player} &7(&f{ip}&7) for: &f{reason} &7({duration})"
+  
+  unbanip:
+    broadcast:
+      enabled: true
+      message: "&a{staff} &7removed IP ban for &a{player} &7({ip})"
+  
+  muteip:
+    broadcast:
+      enabled: true
+      message: "&e{staff} &7IP muted &e{player} &7(&f{ip}&7) for: &f{reason} &7({duration})"
+  
+  unmuteip:
+    broadcast:
+      enabled: true
+      message: "&a{staff} &7removed IP mute for &a{player} &7({ip})"
   
   # Error messages
   errors:
