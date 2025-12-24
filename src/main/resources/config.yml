@@ -72,43 +72,39 @@ messages:
   
   # Ban messages
   ban:
-    # Shown on kick screen when banned
     screen: |
       &c&l❌ YOU ARE BANNED ❌
       
+      &7Player: &f{player}
+      &7Banned by: &f{staff}
       &7Reason: &f{reason}
       &7Expires: &f{expires}
       
       &7Appeal at: &ediscord.gg/yourserver
     
-    # Staff broadcast when a ban is applied
     broadcast: "&c{staff} &7banned &c{player} &7for: &f{reason} &7({duration})"
   
   # Mute messages
   mute:
-    # Shown when trying to chat while muted
     blocked: |
       &c&l⚠ You are muted!
+      &7Muted by: &f{staff}
       &7Reason: &f{reason}
       &7Expires: &f{expires}
     
-    # Shown when mute is first applied
-    applied: "&c&l⚠ &cYou have been muted! Reason: &f{reason}"
+    applied: "&c&l⚠ &cYou have been muted by {staff}! Reason: &f{reason}"
     
-    # Staff broadcast
     broadcast: "&e{staff} &7muted &e{player} &7for: &f{reason} &7({duration})"
   
-  # Kick messages
   kick:
-    # Shown on kick screen
     screen: |
       &6&l⚡ YOU HAVE BEEN KICKED ⚡
       
+      &7Kicked by: &f{staff}
       &7Reason: &f{reason}
       
       &7You may rejoin the server.
     
-    # Staff broadcast
     broadcast: "&9{staff} &7kicked &9{player} &7for: &f{reason}"
   
   # Unban/Unmute messages

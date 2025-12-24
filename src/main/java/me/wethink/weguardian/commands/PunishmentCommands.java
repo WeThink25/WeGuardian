@@ -166,32 +166,31 @@ public class PunishmentCommands extends BaseCommand {
     @Description("Remove an IP ban for a player (auto-resolves IP)")
     @Syntax("<player>")
     public void onUnbanIp(CommandSender sender, String targetName) {
-        Player onlineTarget = Bukkit.getPlayer(targetName);
+        OfflinePlayer offlineTarget = Bukkit.getOfflinePlayer(targetName);
+        if (!offlineTarget.hasPlayedBefore() && !offlineTarget.isOnline()) {
+            sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_NOT_FOUND));
+            return;
+        }
+
+        UUID targetUUID = offlineTarget.getUniqueId();
         UUID staffUUID = sender instanceof Player p ? p.getUniqueId() : null;
         String staffName = sender.getName();
 
-        if (onlineTarget != null) {
-            String ipAddress = getPlayerIp(onlineTarget);
-            if (ipAddress == null) {
-                sender.sendMessage(MessageUtil.toComponent(MSG_COULD_NOT_RESOLVE_IP));
-                return;
-            }
-            executeUnbanIp(sender, onlineTarget.getUniqueId(), targetName, ipAddress, staffUUID, staffName);
-        } else {
-            OfflinePlayer offlineTarget = Bukkit.getOfflinePlayer(targetName);
-            if (!offlineTarget.hasPlayedBefore()) {
-                sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_NOT_FOUND));
-                return;
-            }
-
-            plugin.getPunishmentDAO().getPlayerIp(offlineTarget.getUniqueId()).thenAccept(optionalIp -> {
-                if (optionalIp.isEmpty()) {
-                    sender.sendMessage(MessageUtil.toComponent("&cNo stored IP found for " + targetName + "!"));
-                    return;
+        plugin.getPunishmentDAO().getActiveIpBanByUUID(targetUUID).thenAccept(optionalBannedIp -> {
+            if (optionalBannedIp.isPresent()) {
+                executeUnbanIp(sender, targetUUID, targetName, optionalBannedIp.get(), staffUUID, staffName);
+            } else {
+                Player onlineTarget = Bukkit.getPlayer(targetName);
+                if (onlineTarget != null) {
+                    String ipAddress = getPlayerIp(onlineTarget);
+                    if (ipAddress != null) {
+                        executeUnbanIp(sender, targetUUID, targetName, ipAddress, staffUUID, staffName);
+                        return;
+                    }
                 }
-                executeUnbanIp(sender, offlineTarget.getUniqueId(), targetName, optionalIp.get(), staffUUID, staffName);
-            });
-        }
+                sender.sendMessage(MessageUtil.toComponent("&c" + targetName + "'s IP is not banned!"));
+            }
+        });
     }
 
     private void executeUnbanIp(CommandSender sender, UUID targetUUID, String targetName, String ipAddress,
@@ -238,33 +237,31 @@ public class PunishmentCommands extends BaseCommand {
     @Description("Remove an IP mute for a player (auto-resolves IP)")
     @Syntax("<player>")
     public void onUnmuteIp(CommandSender sender, String targetName) {
-        Player onlineTarget = Bukkit.getPlayer(targetName);
+        OfflinePlayer offlineTarget = Bukkit.getOfflinePlayer(targetName);
+        if (!offlineTarget.hasPlayedBefore() && !offlineTarget.isOnline()) {
+            sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_NOT_FOUND));
+            return;
+        }
+
+        UUID targetUUID = offlineTarget.getUniqueId();
         UUID staffUUID = sender instanceof Player p ? p.getUniqueId() : null;
         String staffName = sender.getName();
 
-        if (onlineTarget != null) {
-            String ipAddress = getPlayerIp(onlineTarget);
-            if (ipAddress == null) {
-                sender.sendMessage(MessageUtil.toComponent(MSG_COULD_NOT_RESOLVE_IP));
-                return;
-            }
-            executeUnmuteIp(sender, onlineTarget.getUniqueId(), targetName, ipAddress, staffUUID, staffName);
-        } else {
-            OfflinePlayer offlineTarget = Bukkit.getOfflinePlayer(targetName);
-            if (!offlineTarget.hasPlayedBefore()) {
-                sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_NOT_FOUND));
-                return;
-            }
-
-            plugin.getPunishmentDAO().getPlayerIp(offlineTarget.getUniqueId()).thenAccept(optionalIp -> {
-                if (optionalIp.isEmpty()) {
-                    sender.sendMessage(MessageUtil.toComponent("&cNo stored IP found for " + targetName + "!"));
-                    return;
+        plugin.getPunishmentDAO().getActiveIpMuteByUUID(targetUUID).thenAccept(optionalMutedIp -> {
+            if (optionalMutedIp.isPresent()) {
+                executeUnmuteIp(sender, targetUUID, targetName, optionalMutedIp.get(), staffUUID, staffName);
+            } else {
+                Player onlineTarget = Bukkit.getPlayer(targetName);
+                if (onlineTarget != null) {
+                    String ipAddress = getPlayerIp(onlineTarget);
+                    if (ipAddress != null) {
+                        executeUnmuteIp(sender, targetUUID, targetName, ipAddress, staffUUID, staffName);
+                        return;
+                    }
                 }
-                executeUnmuteIp(sender, offlineTarget.getUniqueId(), targetName, optionalIp.get(), staffUUID,
-                        staffName);
-            });
-        }
+                sender.sendMessage(MessageUtil.toComponent("&c" + targetName + "'s IP is not muted!"));
+            }
+        });
     }
 
     private void executeUnmuteIp(CommandSender sender, UUID targetUUID, String targetName, String ipAddress,

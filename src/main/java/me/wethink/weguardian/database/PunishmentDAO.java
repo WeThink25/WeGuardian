@@ -384,6 +384,70 @@ public class PunishmentDAO {
         });
     }
 
+    public CompletableFuture<Optional<String>> getActiveIpBanByUUID(UUID targetUUID) {
+        return CompletableFuture.supplyAsync(() -> {
+            String sql = """
+                        SELECT target_ip FROM punishments
+                        WHERE target_uuid = ? AND active = 1
+                        AND target_ip IS NOT NULL
+                        AND (expires_at IS NULL OR expires_at > ?)
+                        AND type IN (?, ?)
+                        ORDER BY created_at DESC LIMIT 1
+                    """;
+
+            try (Connection conn = databaseManager.getConnection();
+                    PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+                stmt.setString(1, targetUUID.toString());
+                stmt.setLong(2, Instant.now().toEpochMilli());
+                stmt.setString(3, PunishmentType.BANIP.name());
+                stmt.setString(4, PunishmentType.TEMPBANIP.name());
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return Optional.ofNullable(rs.getString("target_ip"));
+                    }
+                }
+                return Optional.empty();
+            } catch (SQLException e) {
+                plugin.getLogger().log(Level.SEVERE, "Failed to get active IP ban by UUID", e);
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    public CompletableFuture<Optional<String>> getActiveIpMuteByUUID(UUID targetUUID) {
+        return CompletableFuture.supplyAsync(() -> {
+            String sql = """
+                        SELECT target_ip FROM punishments
+                        WHERE target_uuid = ? AND active = 1
+                        AND target_ip IS NOT NULL
+                        AND (expires_at IS NULL OR expires_at > ?)
+                        AND type IN (?, ?)
+                        ORDER BY created_at DESC LIMIT 1
+                    """;
+
+            try (Connection conn = databaseManager.getConnection();
+                    PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+                stmt.setString(1, targetUUID.toString());
+                stmt.setLong(2, Instant.now().toEpochMilli());
+                stmt.setString(3, PunishmentType.MUTEIP.name());
+                stmt.setString(4, PunishmentType.TEMPMUTEIP.name());
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return Optional.ofNullable(rs.getString("target_ip"));
+                    }
+                }
+                return Optional.empty();
+            } catch (SQLException e) {
+                plugin.getLogger().log(Level.SEVERE, "Failed to get active IP mute by UUID", e);
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
     private Punishment mapResultSet(ResultSet rs) throws SQLException {
         Punishment p = new Punishment();
         p.setId(rs.getInt("id"));

@@ -22,7 +22,7 @@ public class PlayerChatListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onAsyncChat(AsyncChatEvent event) {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
@@ -74,7 +74,9 @@ public class PlayerChatListener implements Listener {
         muteMessage = muteMessage
                 .replace("{reason}",
                         punishment.getReason() != null ? punishment.getReason() : "No reason specified")
-                .replace("{expires}", TimeUtil.formatRemaining(punishment.getExpiresAt()));
+                .replace("{expires}", TimeUtil.formatRemaining(punishment.getExpiresAt()))
+                .replace("{player}", punishment.getTargetName() != null ? punishment.getTargetName() : player.getName())
+                .replace("{staff}", punishment.getStaffName() != null ? punishment.getStaffName() : "Console");
 
         player.sendMessage(MessageUtil.toComponent(muteMessage));
     }

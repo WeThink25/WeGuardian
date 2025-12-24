@@ -5,6 +5,7 @@ api-version: '1.21'
 authors: [ WeThink ]
 description: Professional punishment management system for Minecraft servers
 folia-supported: true
+load: STARTUP
 
 commands:
   ban:

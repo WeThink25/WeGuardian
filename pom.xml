@@ -6,7 +6,7 @@
 
     <groupId>me.wethink</groupId>
     <artifactId>weguardian</artifactId>
-    <version>2.0</version>
+    <version>2.3</version>
     <packaging>jar</packaging>
 
     <name>WeGuardian</name>
@@ -144,6 +144,14 @@
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
             <version>1.21.1-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.34</version>
             <scope>provided</scope>
         </dependency>
 

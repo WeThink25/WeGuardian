@@ -129,7 +129,7 @@ public class PunishmentManager {
                 .thenApply(ipId -> {
                     ipPunishment.setId(ipId);
                     cacheManager.cacheIpBan(normalizedIp, Optional.of(ipPunishment));
-                    kickIfOnline(targetUUID, ipType, reason, expiresAt);
+                    kickIfOnline(targetUUID, targetName, staffName, ipType, reason, expiresAt);
                     plugin.getWebhookManager().logPunishment(ipPunishment);
                     return ipPunishment;
                 });
@@ -168,7 +168,7 @@ public class PunishmentManager {
                 .thenApply(ipId -> {
                     ipPunishment.setId(ipId);
                     cacheManager.cacheIpMute(normalizedIp, Optional.of(ipPunishment));
-                    notifyMute(targetUUID, reason, expiresAt);
+                    notifyMute(targetUUID, targetName, staffName, reason, expiresAt);
                     plugin.getWebhookManager().logPunishment(ipPunishment);
                     return ipPunishment;
                 });
@@ -241,7 +241,7 @@ public class PunishmentManager {
 
             plugin.getWebhookManager().logPunishment(punishment);
 
-            String kickMessage = buildKickMessage(PunishmentType.KICK, reason, null);
+            String kickMessage = buildKickMessage(targetName, staffName, PunishmentType.KICK, reason, null);
             plugin.getSchedulerManager().runForEntity(target, () -> {
                 target.kick(MessageUtil.toComponent(kickMessage));
             });
@@ -335,10 +335,10 @@ public class PunishmentManager {
 
                     if (type.isIpBan()) {
                         cacheManager.cacheIpBan(ipAddress, Optional.of(punishment));
-                        kickIfOnline(targetUUID, type, reason, expiresAt);
+                        kickIfOnline(targetUUID, targetName, staffName, type, reason, expiresAt);
                     } else if (type.isIpMute()) {
                         cacheManager.cacheIpMute(ipAddress, Optional.of(punishment));
-                        notifyMute(targetUUID, reason, expiresAt);
+                        notifyMute(targetUUID, targetName, staffName, reason, expiresAt);
                     }
 
                     plugin.getWebhookManager().logPunishment(punishment);
@@ -360,10 +360,10 @@ public class PunishmentManager {
 
                     if (type.isBan()) {
                         cacheManager.cacheBan(targetUUID, Optional.of(punishment));
-                        kickIfOnline(targetUUID, type, reason, expiresAt);
+                        kickIfOnline(targetUUID, targetName, staffName, type, reason, expiresAt);
                     } else if (type.isMute()) {
                         cacheManager.cacheMute(targetUUID, Optional.of(punishment));
-                        notifyMute(targetUUID, reason, expiresAt);
+                        notifyMute(targetUUID, targetName, staffName, reason, expiresAt);
                     }
 
                     plugin.getWebhookManager().logPunishment(punishment);
@@ -372,29 +372,33 @@ public class PunishmentManager {
                 });
     }
 
-    private void kickIfOnline(UUID targetUUID, PunishmentType type, String reason, Instant expiresAt) {
+    private void kickIfOnline(UUID targetUUID, String playerName, String staffName, PunishmentType type, String reason,
+            Instant expiresAt) {
         Player target = Bukkit.getPlayer(targetUUID);
         if (target != null && target.isOnline()) {
-            String kickMessage = buildKickMessage(type, reason, expiresAt);
+            String kickMessage = buildKickMessage(playerName, staffName, type, reason, expiresAt);
             plugin.getSchedulerManager().runForEntity(target, () -> {
                 target.kick(MessageUtil.toComponent(kickMessage));
             });
         }
     }
 
-    private void notifyMute(UUID targetUUID, String reason, Instant expiresAt) {
+    private void notifyMute(UUID targetUUID, String playerName, String staffName, String reason, Instant expiresAt) {
         Player target = Bukkit.getPlayer(targetUUID);
         if (target != null && target.isOnline()) {
             String muteMsg = plugin.getConfig().getString("messages.mute.applied",
                     "&c&l⚠ &cYou have been muted!");
             muteMsg = muteMsg.replace("{reason}", reason != null ? reason : "No reason specified");
             muteMsg = muteMsg.replace("{expires}", TimeUtil.formatRemaining(expiresAt));
+            muteMsg = muteMsg.replace("{player}", playerName != null ? playerName : "Unknown");
+            muteMsg = muteMsg.replace("{staff}", staffName != null ? staffName : "Console");
 
             target.sendMessage(MessageUtil.toComponent(muteMsg));
         }
     }
 
-    public String buildKickMessage(PunishmentType type, String reason, Instant expiresAt) {
+    public String buildKickMessage(String playerName, String staffName, PunishmentType type, String reason,
+            Instant expiresAt) {
         String template;
         if (type == PunishmentType.KICK) {
             template = plugin.getConfig().getString("messages.kick.screen",
@@ -409,6 +413,8 @@ public class PunishmentManager {
 
         return template
                 .replace("{reason}", reason != null ? reason : "No reason specified")
-                .replace("{expires}", TimeUtil.formatRemaining(expiresAt));
+                .replace("{expires}", TimeUtil.formatRemaining(expiresAt))
+                .replace("{player}", playerName != null ? playerName : "Unknown")
+                .replace("{staff}", staffName != null ? staffName : "Console");
     }
 }

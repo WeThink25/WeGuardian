@@ -39,7 +39,8 @@ public class PlayerLoginListener implements Listener {
 
                 if (!punishment.isExpired()) {
                     String kickMessage = plugin.getPunishmentManager()
-                            .buildKickMessage(punishment.getType(), punishment.getReason(), punishment.getExpiresAt());
+                            .buildKickMessage(punishment.getTargetName(), punishment.getStaffName(),
+                                    punishment.getType(), punishment.getReason(), punishment.getExpiresAt());
 
                     event.disallow(
                             AsyncPlayerPreLoginEvent.Result.KICK_BANNED,
@@ -61,7 +62,8 @@ public class PlayerLoginListener implements Listener {
 
                 if (!punishment.isExpired()) {
                     String kickMessage = plugin.getPunishmentManager()
-                            .buildKickMessage(punishment.getType(), punishment.getReason(), punishment.getExpiresAt());
+                            .buildKickMessage(punishment.getTargetName(), punishment.getStaffName(),
+                                    punishment.getType(), punishment.getReason(), punishment.getExpiresAt());
 
                     event.disallow(
                             AsyncPlayerPreLoginEvent.Result.KICK_BANNED,
