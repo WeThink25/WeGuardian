@@ -1,0 +1,339 @@
+prefix: "&8[&c&lWeGuardian&8]&r "
+
+punishments:
+  ban:
+    screen: |
+      &c&l❌ YOU ARE BANNED ❌
+      
+      &7Player: &f{player}
+      &7Banned by: &f{staff}
+      &7Reason: &f{reason}
+      &7Expires: &f{expires}
+      
+      &7Appeal at: &ediscord.gg/yourserver
+    broadcast:
+      enabled: true
+      message: "&c{staff} &7banned &c{player} &7for: &f{reason} &7({duration})"
+    success: "&aSuccessfully banned {player}"
+  
+  tempban:
+    broadcast:
+      enabled: true
+      message: "&c{staff} &7temp-banned &c{player} &7for: &f{reason} &7({duration})"
+    success: "&aSuccessfully temp-banned {player} for {duration}"
+
+  unban:
+    broadcast:
+      enabled: true
+      message: "&a{staff} &7unbanned &a{player}"
+    success: "&aSuccessfully unbanned {player}"
+
+  mute:
+    blocked: |
+      &c&l⚠ You are muted!
+      &7Muted by: &f{staff}
+      &7Reason: &f{reason}
+      &7Expires: &f{expires}
+    applied: "&c&l⚠ &cYou have been muted by {staff}! Reason: &f{reason}"
+    broadcast:
+      enabled: true
+      message: "&e{staff} &7muted &e{player} &7for: &f{reason} &7({duration})"
+    success: "&aSuccessfully muted {player}"
+
+  tempmute:
+    broadcast:
+      enabled: true
+      message: "&e{staff} &7temp-muted &e{player} &7for: &f{reason} &7({duration})"
+    success: "&aSuccessfully temp-muted {player} for {duration}"
+
+  unmute:
+    broadcast:
+      enabled: true
+      message: "&a{staff} &7unmuted &a{player}"
+    notify: "&aYou have been unmuted!"
+    success: "&aSuccessfully unmuted {player}"
+
+  kick:
+    screen: |
+      &6&l⚡ YOU HAVE BEEN KICKED ⚡
+      
+      &7Kicked by: &f{staff}
+      &7Reason: &f{reason}
+      
+      &7You may rejoin the server.
+    broadcast:
+      enabled: true
+      message: "&9{staff} &7kicked &9{player} &7for: &f{reason}"
+    success: "&aSuccessfully kicked {player}"
+
+  banip:
+    broadcast:
+      enabled: true
+      message: "&c{staff} &7IP banned &c{player} &7(&f{ip}&7) for: &f{reason} &7({duration})"
+    success: "&aSuccessfully IP banned {player} ({ip})"
+
+  tempbanip:
+    broadcast:
+      enabled: true
+      message: "&c{staff} &7temp IP banned &c{player} &7(&f{ip}&7) for: &f{reason} &7({duration})"
+    success: "&aSuccessfully temp IP banned {player} ({ip}) for {duration}"
+
+  unbanip:
+    broadcast:
+      enabled: true
+      message: "&a{staff} &7removed IP ban for &a{player} &7({ip})"
+    success: "&aSuccessfully removed IP ban for {player}"
+
+  muteip:
+    broadcast:
+      enabled: true
+      message: "&e{staff} &7IP muted &e{player} &7(&f{ip}&7) for: &f{reason} &7({duration})"
+    success: "&aSuccessfully IP muted {player} ({ip})"
+
+  tempmuteip:
+    broadcast:
+      enabled: true
+      message: "&e{staff} &7temp IP muted &e{player} &7(&f{ip}&7) for: &f{reason} &7({duration})"
+    success: "&aSuccessfully temp IP muted {player} ({ip}) for {duration}"
+
+  unmuteip:
+    broadcast:
+      enabled: true
+      message: "&a{staff} &7removed IP mute for &a{player} &7({ip})"
+    success: "&aSuccessfully removed IP mute for {player}"
+
+errors:
+  player-not-found: "&cPlayer not found!"
+  player-not-online: "&cPlayer is not online!"
+  cannot-punish: "&cYou cannot punish this player!"
+  not-banned: "&c{player} is not banned!"
+  not-muted: "&c{player} is not muted!"
+  invalid-duration: "&cInvalid duration format! Use: 1h, 30m, 7d, etc."
+  no-permission: "&cYou don't have permission to do this!"
+
+gui:
+  punish:
+    title: "&c&lPunish &8» &e{player}"
+    items:
+      ban:
+        material: BARRIER
+        name: "&c&lPermanent Ban"
+        lore:
+          - ""
+          - "&7Permanently ban this player"
+          - "&7from the server."
+          - ""
+          - "&cThis action cannot be undone!"
+          - ""
+          - "&e▶ Click to apply"
+      tempban:
+        material: CLOCK
+        name: "&6&lTemporary Ban"
+        lore:
+          - ""
+          - "&7Temporarily ban this player"
+          - "&7for a set duration."
+          - ""
+          - "&e▶ Click to select duration"
+      kick:
+        material: LEATHER_BOOTS
+        name: "&9&lKick"
+        lore:
+          - ""
+          - "&7Kick this player from"
+          - "&7the server."
+          - ""
+          - "&e▶ Click to apply"
+      mute:
+        material: PAPER
+        name: "&e&lPermanent Mute"
+        lore:
+          - ""
+          - "&7Permanently mute this player"
+          - "&7from chatting."
+          - ""
+          - "&e▶ Click to apply"
+      tempmute:
+        material: WRITABLE_BOOK
+        name: "&a&lTemporary Mute"
+        lore:
+          - ""
+          - "&7Temporarily mute this player"
+          - "&7for a set duration."
+          - ""
+          - "&e▶ Click to select duration"
+      history:
+        material: BOOK
+        name: "&d&lView History"
+        lore:
+          - ""
+          - "&7View this player's"
+          - "&7punishment history."
+          - ""
+          - "&e▶ Click to view"
+      close:
+        material: RED_STAINED_GLASS_PANE
+        name: "&c&lClose"
+        lore:
+          - ""
+          - "&e▶ Click to close"
+      player-head:
+        name: "&e{player}"
+        lore:
+          - ""
+          - "&7UUID: &f{uuid}"
+          - "&7Online: {online}"
+          - ""
+          - "&7Select a punishment below"
+
+  duration:
+    title: "&c&lSelect Duration &8» &e{player}"
+    items:
+      glass-pane:
+        material: GRAY_STAINED_GLASS_PANE
+        name: " "
+      back:
+        material: ARROW
+        name: "&7&l← Back"
+        lore:
+          - ""
+          - "&e▶ Click to go back"
+      permanent:
+        material: BEDROCK
+        name: "&c&lPermanent"
+        lore:
+          - ""
+          - "&7Make this punishment"
+          - "&7permanent (no expiry)."
+          - ""
+          - "&e▶ Click to apply"
+      custom:
+        material: NAME_TAG
+        name: "&b&lCustom Duration"
+        lore:
+          - ""
+          - "&7Enter a custom duration"
+          - "&7in chat (e.g. 2h30m, 5d)"
+          - ""
+          - "&e▶ Click to enter"
+      1h:
+        material: LIME_DYE
+        name: "&a1 Hour"
+        lore:
+          - ""
+          - "&7Duration: &f{duration}"
+          - ""
+          - "&e▶ Click to apply"
+      6h:
+        material: YELLOW_DYE
+        name: "&e6 Hours"
+        lore:
+          - ""
+          - "&7Duration: &f{duration}"
+          - ""
+          - "&e▶ Click to apply"
+      1d:
+        material: ORANGE_DYE
+        name: "&61 Day"
+        lore:
+          - ""
+          - "&7Duration: &f{duration}"
+          - ""
+          - "&e▶ Click to apply"
+      3d:
+        material: RED_DYE
+        name: "&c3 Days"
+        lore:
+          - ""
+          - "&7Duration: &f{duration}"
+          - ""
+          - "&e▶ Click to apply"
+      7d:
+        material: PURPLE_DYE
+        name: "&51 Week"
+        lore:
+          - ""
+          - "&7Duration: &f{duration}"
+          - ""
+          - "&e▶ Click to apply"
+      30d:
+        material: MAGENTA_DYE
+        name: "&d30 Days"
+        lore:
+          - ""
+          - "&7Duration: &f{duration}"
+          - ""
+          - "&e▶ Click to apply"
+      90d:
+        material: BLUE_DYE
+        name: "&990 Days"
+        lore:
+          - ""
+          - "&7Duration: &f{duration}"
+          - ""
+          - "&e▶ Click to apply"
+
+  history:
+    title: "&d&lHistory &8» &e{player} &7(Page {page})"
+    items:
+      prev-page:
+        material: ARROW
+        name: "&a← Previous Page"
+        lore:
+          - ""
+          - "&e▶ Click to go back"
+      next-page:
+        material: ARROW
+        name: "&aNext Page →"
+        lore:
+          - ""
+          - "&e▶ Click to continue"
+      back:
+        material: BARRIER
+        name: "&c&lBack to Punish"
+        lore:
+          - ""
+          - "&e▶ Click to go back"
+      player-head:
+        name: "&e{player}"
+        lore:
+          - ""
+          - "&7Total punishments: &f{total}"
+          - "&7Active: &f{active}"
+
+input:
+  reason:
+    header: "&8&m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    title: "&c&lWeGuardian &8» &fEnter Punishment Reason"
+    target: "&7Target: &e{player}"
+    type: "&7Type: {type}"
+    duration: "&7Duration: &f{duration}"
+    instruction: "&7Type your reason in chat, or type &ccancel &7to cancel."
+    cancelled: "&cPunishment cancelled."
+    timeout: "&cPunishment cancelled (timed out)."
+    no-permission: "&cYou don't have permission to use this punishment!"
+    error: "&cAn error occurred while applying the punishment."
+    loading-history: "&7Loading punishment history..."
+
+  custom-duration:
+    header: "&8&m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    title: "&c&lWeGuardian &8» &fEnter Custom Duration"
+    format-header: "&7Format examples:"
+    formats:
+      - "&7  &e1h &7= 1 hour"
+      - "&7  &e30m &7= 30 minutes"
+      - "&7  &e7d &7= 7 days"
+      - "&7  &e2w &7= 2 weeks"
+      - "&7  &e1M &7= 1 month"
+      - "&7  &e1y &7= 1 year"
+      - "&7  &e2h30m &7= 2 hours 30 minutes"
+    instruction: "&7Type your duration, or type &ccancel &7to cancel."
+    cancelled: "&cDuration input cancelled."
+    timeout: "&cDuration input cancelled (timed out)."
+    invalid: "&cInvalid duration format! Try again or type &ecancel&c."
+    success: "&aDuration set to: &f{duration}"
+    no-permission-permanent: "&cYou don't have permission to use permanent punishments!"
+
+online-yes: "&aYes"
+online-no: "&cNo"
+duration-permanent: "Permanent"

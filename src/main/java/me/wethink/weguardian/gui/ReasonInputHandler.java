@@ -4,6 +4,7 @@ import io.papermc.paper.event.player.AsyncChatEvent;
 import me.wethink.weguardian.WeGuardian;
 import me.wethink.weguardian.model.PunishmentType;
 import me.wethink.weguardian.util.MessageUtil;
+import me.wethink.weguardian.util.MessagesManager;
 import me.wethink.weguardian.util.TimeUtil;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.OfflinePlayer;
@@ -38,27 +39,34 @@ public class ReasonInputHandler implements Listener {
         this.durationMs = durationMs;
     }
 
+    private MessagesManager msg() {
+        return plugin.getMessagesManager();
+    }
+
     public void start() {
         if (!staff.hasPermission(type.getPermission())) {
-            staff.sendMessage(MessageUtil.toComponent("&cYou don't have permission to use this punishment!"));
+            staff.sendMessage(MessageUtil.toComponent(msg().getMessage("input.reason.no-permission")));
             return;
         }
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
 
         String typeDisplay = type.getColor() + type.getDisplayName();
-        String durationDisplay = durationMs > 0 ? TimeUtil.formatDuration(durationMs) : "Permanent";
+        String durationDisplay = durationMs > 0 ? TimeUtil.formatDuration(durationMs)
+                : msg().getMessage("duration-permanent");
 
         staff.sendMessage(MessageUtil.toComponent(""));
-        staff.sendMessage(MessageUtil.toComponent("&8&m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"));
-        staff.sendMessage(MessageUtil.toComponent("&c&lWeGuardian &8» &fEnter Punishment Reason"));
+        staff.sendMessage(MessageUtil.toComponent(msg().getMessage("input.reason.header")));
+        staff.sendMessage(MessageUtil.toComponent(msg().getMessage("input.reason.title")));
         staff.sendMessage(MessageUtil.toComponent(""));
-        staff.sendMessage(MessageUtil.toComponent("&7Target: &e" + target.getName()));
-        staff.sendMessage(MessageUtil.toComponent("&7Type: " + typeDisplay));
-        staff.sendMessage(MessageUtil.toComponent("&7Duration: &f" + durationDisplay));
+        staff.sendMessage(
+                MessageUtil.toComponent(msg().getMessage("input.reason.target", "{player}", target.getName())));
+        staff.sendMessage(MessageUtil.toComponent(msg().getMessage("input.reason.type", "{type}", typeDisplay)));
+        staff.sendMessage(
+                MessageUtil.toComponent(msg().getMessage("input.reason.duration", "{duration}", durationDisplay)));
         staff.sendMessage(MessageUtil.toComponent(""));
-        staff.sendMessage(MessageUtil.toComponent("&7Type your reason in chat, or type &ccancel &7to cancel."));
-        staff.sendMessage(MessageUtil.toComponent("&8&m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"));
+        staff.sendMessage(MessageUtil.toComponent(msg().getMessage("input.reason.instruction")));
+        staff.sendMessage(MessageUtil.toComponent(msg().getMessage("input.reason.header")));
 
         plugin.getSchedulerManager().runAsyncLater(this::handleTimeout, 60, TimeUnit.SECONDS);
     }
@@ -67,7 +75,7 @@ public class ReasonInputHandler implements Listener {
         if (!completed) {
             cleanup();
             plugin.getSchedulerManager().runForEntity(staff,
-                    () -> staff.sendMessage(MessageUtil.toComponent("&cPunishment cancelled (timed out).")));
+                    () -> staff.sendMessage(MessageUtil.toComponent(msg().getMessage("input.reason.timeout"))));
         }
     }
 
@@ -82,7 +90,7 @@ public class ReasonInputHandler implements Listener {
 
         if (message.equalsIgnoreCase("cancel")) {
             cleanup();
-            staff.sendMessage(MessageUtil.toComponent("&cPunishment cancelled."));
+            staff.sendMessage(MessageUtil.toComponent(msg().getMessage("input.reason.cancelled")));
             return;
         }
 
@@ -102,7 +110,7 @@ public class ReasonInputHandler implements Listener {
     private void executePunishment(String reason) {
         if (!staff.hasPermission(type.getPermission())) {
             plugin.getSchedulerManager().runForEntity(staff, () -> staff
-                    .sendMessage(MessageUtil.toComponent("&cYou don't have permission to use this punishment!")));
+                    .sendMessage(MessageUtil.toComponent(msg().getMessage("input.reason.no-permission"))));
             return;
         }
 
@@ -125,36 +133,36 @@ public class ReasonInputHandler implements Listener {
         };
 
         future.thenAccept(result -> {
-            String durationStr = durationMs > 0 ? TimeUtil.formatDuration(durationMs) : "permanent";
-            String actionVerb = type.getDisplayName().toLowerCase() + (type == PunishmentType.KICK ? "ed " : "ned ");
+            String durationStr = durationMs > 0 ? TimeUtil.formatDuration(durationMs)
+                    : msg().getMessage("duration-permanent");
 
-            String successMessage = "&aSuccessfully " + actionVerb + target.getName() + " (" + durationStr + ")";
-
-            String configPath;
-            switch (type) {
-                case BAN, TEMPBAN -> configPath = "messages.ban.broadcast";
-                case MUTE, TEMPMUTE -> configPath = "messages.mute.broadcast";
-                case KICK -> configPath = "messages.kick.broadcast";
-                default -> configPath = null;
-            }
+            String configPath = switch (type) {
+                case BAN -> "punishments.ban";
+                case TEMPBAN -> "punishments.tempban";
+                case MUTE -> "punishments.mute";
+                case TEMPMUTE -> "punishments.tempmute";
+                case KICK -> "punishments.kick";
+                default -> null;
+            };
 
             plugin.getSchedulerManager().runSync(() -> {
-                staff.sendMessage(MessageUtil.toComponent(successMessage));
+                staff.sendMessage(MessageUtil.toComponent(msg().getMessage(configPath + ".success",
+                        "{player}", target.getName(),
+                        "{duration}", durationStr)));
 
-                if (configPath != null && plugin.getConfig().getBoolean(configPath + ".enabled", true)) {
-                    String broadcastMsg = plugin.getConfig().getString(configPath + ".message",
-                            "&c{staff} &7" + actionVerb + "&c{player} &7for: &f{reason}")
-                            .replace("{staff}", staffName)
-                            .replace("{player}", target.getName())
-                            .replace("{reason}", reason)
-                            .replace("{duration}", durationStr);
-                    String prefix = plugin.getConfig().getString("messages.prefix", "&8[&c&lWeGuardian&8]&r ");
+                if (configPath != null && msg().getConfig().getBoolean(configPath + ".broadcast.enabled", true)) {
+                    String broadcastMsg = msg().getMessage(configPath + ".broadcast.message",
+                            "{staff}", staffName,
+                            "{player}", target.getName(),
+                            "{reason}", reason,
+                            "{duration}", durationStr);
+                    String prefix = msg().getPrefix();
                     broadcastToStaff(prefix + broadcastMsg);
                 }
             });
         }).exceptionally(e -> {
             plugin.getSchedulerManager().runForEntity(staff, () -> staff
-                    .sendMessage(MessageUtil.toComponent("&cAn error occurred while applying the punishment.")));
+                    .sendMessage(MessageUtil.toComponent(msg().getMessage("input.reason.error"))));
             plugin.getLogger().severe("Failed to apply punishment: " + e.getMessage());
             return null;
         });

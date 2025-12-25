@@ -7,6 +7,7 @@ import me.wethink.weguardian.gui.PunishmentGUI;
 import me.wethink.weguardian.gui.HistoryGUI;
 import me.wethink.weguardian.model.PunishmentType;
 import me.wethink.weguardian.util.MessageUtil;
+import me.wethink.weguardian.util.MessagesManager;
 import me.wethink.weguardian.util.TimeUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -20,17 +21,14 @@ import java.util.UUID;
 @CommandAlias("weguardian|wg")
 public class PunishmentCommands extends BaseCommand {
 
-    private static final String MSG_PLAYER_NOT_FOUND = "&cPlayer not found!";
-    private static final String MSG_PLAYER_NOT_ONLINE = "&cPlayer is not online!";
-    private static final String MSG_PLAYER_BYPASS = "&cYou cannot punish this player!";
-    private static final String MSG_INVALID_DURATION = "&cInvalid duration format! Use: 1h, 30m, 7d, etc.";
-    private static final String MSG_PLAYER_MUST_BE_ONLINE_IP = "&cPlayer must be online to resolve their IP!";
-    private static final String MSG_COULD_NOT_RESOLVE_IP = "&cCould not resolve player's IP address!";
-
     private final WeGuardian plugin;
 
     public PunishmentCommands(WeGuardian plugin) {
         this.plugin = plugin;
+    }
+
+    private MessagesManager msg() {
+        return plugin.getMessagesManager();
     }
 
     @CommandAlias("ban")
@@ -50,7 +48,7 @@ public class PunishmentCommands extends BaseCommand {
     public void onTempBan(CommandSender sender, String targetName, String duration, @Optional String reason) {
         long durationMs = TimeUtil.parseDuration(duration);
         if (durationMs <= 0) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_INVALID_DURATION));
+            sender.sendMessage(MessageUtil.toComponent(msg().getMessage("errors.invalid-duration")));
             return;
         }
         executePunishment(sender, targetName, PunishmentType.TEMPBAN, durationMs, reason);
@@ -64,7 +62,7 @@ public class PunishmentCommands extends BaseCommand {
     public void onUnban(CommandSender sender, String targetName) {
         OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
         if (!target.hasPlayedBefore() && !target.isOnline()) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_NOT_FOUND));
+            sender.sendMessage(MessageUtil.toComponent(msg().getMessage("errors.player-not-found")));
             return;
         }
 
@@ -74,16 +72,17 @@ public class PunishmentCommands extends BaseCommand {
         plugin.getPunishmentManager().unban(target.getUniqueId(), staffUUID, staffName, "Unbanned")
                 .thenAccept(success -> {
                     if (success) {
-                        if (plugin.getConfig().getBoolean("messages.unban.broadcast.enabled", true)) {
-                            String broadcastMsg = plugin.getConfig().getString("messages.unban.broadcast.message",
-                                    "&a{staff} &7unbanned &a{player}")
-                                    .replace("{staff}", staffName)
-                                    .replace("{player}", targetName);
+                        if (msg().getConfig().getBoolean("punishments.unban.broadcast.enabled", true)) {
+                            String broadcastMsg = msg().getMessage("punishments.unban.broadcast.message",
+                                    "{staff}", staffName,
+                                    "{player}", targetName);
                             broadcastStaff(broadcastMsg);
                         }
-                        sender.sendMessage(MessageUtil.toComponent("&aSuccessfully unbanned " + targetName));
+                        sender.sendMessage(MessageUtil.toComponent(msg().getMessage("punishments.unban.success",
+                                "{player}", targetName)));
                     } else {
-                        sender.sendMessage(MessageUtil.toComponent("&c" + targetName + " is not banned!"));
+                        sender.sendMessage(MessageUtil.toComponent(msg().getMessage("errors.not-banned",
+                                "{player}", targetName)));
                     }
                 });
     }
@@ -105,7 +104,7 @@ public class PunishmentCommands extends BaseCommand {
     public void onTempMute(CommandSender sender, String targetName, String duration, @Optional String reason) {
         long durationMs = TimeUtil.parseDuration(duration);
         if (durationMs <= 0) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_INVALID_DURATION));
+            sender.sendMessage(MessageUtil.toComponent(msg().getMessage("errors.invalid-duration")));
             return;
         }
         executePunishment(sender, targetName, PunishmentType.TEMPMUTE, durationMs, reason);
@@ -119,7 +118,7 @@ public class PunishmentCommands extends BaseCommand {
     public void onUnmute(CommandSender sender, String targetName) {
         OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
         if (!target.hasPlayedBefore() && !target.isOnline()) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_NOT_FOUND));
+            sender.sendMessage(MessageUtil.toComponent(msg().getMessage("errors.player-not-found")));
             return;
         }
 
@@ -129,24 +128,24 @@ public class PunishmentCommands extends BaseCommand {
         plugin.getPunishmentManager().unmute(target.getUniqueId(), staffUUID, staffName, "Unmuted")
                 .thenAccept(success -> {
                     if (success) {
-                        if (plugin.getConfig().getBoolean("messages.unmute.broadcast.enabled", true)) {
-                            String broadcastMsg = plugin.getConfig().getString("messages.unmute.broadcast.message",
-                                    "&a{staff} &7unmuted &a{player}")
-                                    .replace("{staff}", staffName)
-                                    .replace("{player}", targetName);
+                        if (msg().getConfig().getBoolean("punishments.unmute.broadcast.enabled", true)) {
+                            String broadcastMsg = msg().getMessage("punishments.unmute.broadcast.message",
+                                    "{staff}", staffName,
+                                    "{player}", targetName);
                             broadcastStaff(broadcastMsg);
                         }
-                        sender.sendMessage(MessageUtil.toComponent("&aSuccessfully unmuted " + targetName));
+                        sender.sendMessage(MessageUtil.toComponent(msg().getMessage("punishments.unmute.success",
+                                "{player}", targetName)));
 
                         Player onlineTarget = Bukkit.getPlayer(target.getUniqueId());
                         if (onlineTarget != null) {
-                            String notifyMsg = plugin.getConfig().getString("messages.unmute.notify",
-                                    "&aYou have been unmuted!");
+                            String notifyMsg = msg().getMessage("punishments.unmute.notify");
                             plugin.getSchedulerManager().runForEntity(onlineTarget, () -> onlineTarget
                                     .sendMessage(MessageUtil.toComponent(notifyMsg)));
                         }
                     } else {
-                        sender.sendMessage(MessageUtil.toComponent("&c" + targetName + " is not muted!"));
+                        sender.sendMessage(MessageUtil.toComponent(msg().getMessage("errors.not-muted",
+                                "{player}", targetName)));
                     }
                 });
     }
@@ -168,7 +167,7 @@ public class PunishmentCommands extends BaseCommand {
     public void onTempBanIp(CommandSender sender, String targetName, String duration, @Optional String reason) {
         long durationMs = TimeUtil.parseDuration(duration);
         if (durationMs <= 0) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_INVALID_DURATION));
+            sender.sendMessage(MessageUtil.toComponent(msg().getMessage("errors.invalid-duration")));
             return;
         }
         executeIpPunishment(sender, targetName, PunishmentType.TEMPBANIP, durationMs, reason);
@@ -182,7 +181,7 @@ public class PunishmentCommands extends BaseCommand {
     public void onUnbanIp(CommandSender sender, String targetName) {
         OfflinePlayer offlineTarget = Bukkit.getOfflinePlayer(targetName);
         if (!offlineTarget.hasPlayedBefore() && !offlineTarget.isOnline()) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_NOT_FOUND));
+            sender.sendMessage(MessageUtil.toComponent(msg().getMessage("errors.player-not-found")));
             return;
         }
 
@@ -213,15 +212,15 @@ public class PunishmentCommands extends BaseCommand {
         plugin.getPunishmentManager().unbanIp(targetUUID, ipAddress, staffUUID, staffName, "Unbanned")
                 .thenAccept(success -> {
                     if (success) {
-                        if (plugin.getConfig().getBoolean("messages.unbanip.broadcast.enabled", true)) {
-                            String broadcastMsg = plugin.getConfig().getString("messages.unbanip.broadcast.message",
-                                    "&a{staff} &7removed IP ban for &a{player} &7({ip})")
-                                    .replace("{staff}", staffName)
-                                    .replace("{player}", targetName)
-                                    .replace("{ip}", ipAddress);
+                        if (msg().getConfig().getBoolean("punishments.unbanip.broadcast.enabled", true)) {
+                            String broadcastMsg = msg().getMessage("punishments.unbanip.broadcast.message",
+                                    "{staff}", staffName,
+                                    "{player}", targetName,
+                                    "{ip}", ipAddress);
                             broadcastStaff(broadcastMsg);
                         }
-                        sender.sendMessage(MessageUtil.toComponent("&aSuccessfully removed IP ban for " + targetName));
+                        sender.sendMessage(MessageUtil.toComponent(msg().getMessage("punishments.unbanip.success",
+                                "{player}", targetName)));
                     } else {
                         sender.sendMessage(MessageUtil.toComponent("&c" + targetName + "'s IP is not banned!"));
                     }
@@ -245,7 +244,7 @@ public class PunishmentCommands extends BaseCommand {
     public void onTempMuteIp(CommandSender sender, String targetName, String duration, @Optional String reason) {
         long durationMs = TimeUtil.parseDuration(duration);
         if (durationMs <= 0) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_INVALID_DURATION));
+            sender.sendMessage(MessageUtil.toComponent(msg().getMessage("errors.invalid-duration")));
             return;
         }
         executeIpPunishment(sender, targetName, PunishmentType.TEMPMUTEIP, durationMs, reason);
@@ -259,7 +258,7 @@ public class PunishmentCommands extends BaseCommand {
     public void onUnmuteIp(CommandSender sender, String targetName) {
         OfflinePlayer offlineTarget = Bukkit.getOfflinePlayer(targetName);
         if (!offlineTarget.hasPlayedBefore() && !offlineTarget.isOnline()) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_NOT_FOUND));
+            sender.sendMessage(MessageUtil.toComponent(msg().getMessage("errors.player-not-found")));
             return;
         }
 
@@ -290,15 +289,15 @@ public class PunishmentCommands extends BaseCommand {
         plugin.getPunishmentManager().unmuteIp(targetUUID, ipAddress, staffUUID, staffName, "Unmuted")
                 .thenAccept(success -> {
                     if (success) {
-                        if (plugin.getConfig().getBoolean("messages.unmuteip.broadcast.enabled", true)) {
-                            String broadcastMsg = plugin.getConfig().getString("messages.unmuteip.broadcast.message",
-                                    "&a{staff} &7removed IP mute for &a{player} &7({ip})")
-                                    .replace("{staff}", staffName)
-                                    .replace("{player}", targetName)
-                                    .replace("{ip}", ipAddress);
+                        if (msg().getConfig().getBoolean("punishments.unmuteip.broadcast.enabled", true)) {
+                            String broadcastMsg = msg().getMessage("punishments.unmuteip.broadcast.message",
+                                    "{staff}", staffName,
+                                    "{player}", targetName,
+                                    "{ip}", ipAddress);
                             broadcastStaff(broadcastMsg);
                         }
-                        sender.sendMessage(MessageUtil.toComponent("&aSuccessfully removed IP mute for " + targetName));
+                        sender.sendMessage(MessageUtil.toComponent(msg().getMessage("punishments.unmuteip.success",
+                                "{player}", targetName)));
                     } else {
                         sender.sendMessage(MessageUtil.toComponent("&c" + targetName + "'s IP is not muted!"));
                     }
@@ -313,13 +312,13 @@ public class PunishmentCommands extends BaseCommand {
     public void onKick(CommandSender sender, String targetName, @Optional String reason) {
         Player target = Bukkit.getPlayer(targetName);
         if (target == null) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_NOT_ONLINE));
+            sender.sendMessage(MessageUtil.toComponent(msg().getMessage("errors.player-not-online")));
             return;
         }
 
         String bypassPerm = plugin.getConfig().getString("bypass.permission", "weguardian.bypass");
         if (target.hasPermission(bypassPerm)) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_BYPASS));
+            sender.sendMessage(MessageUtil.toComponent(msg().getMessage("errors.cannot-punish")));
             return;
         }
 
@@ -330,15 +329,15 @@ public class PunishmentCommands extends BaseCommand {
         plugin.getPunishmentManager().kick(target.getUniqueId(), target.getName(), staffUUID, staffName, finalReason)
                 .thenAccept(success -> {
                     if (success) {
-                        if (plugin.getConfig().getBoolean("messages.kick.broadcast.enabled", true)) {
-                            String broadcastMsg = plugin.getConfig().getString("messages.kick.broadcast.message",
-                                    "&9{staff} &7kicked &9{player} &7for: &f{reason}")
-                                    .replace("{staff}", staffName)
-                                    .replace("{player}", targetName)
-                                    .replace("{reason}", finalReason);
+                        if (msg().getConfig().getBoolean("punishments.kick.broadcast.enabled", true)) {
+                            String broadcastMsg = msg().getMessage("punishments.kick.broadcast.message",
+                                    "{staff}", staffName,
+                                    "{player}", targetName,
+                                    "{reason}", finalReason);
                             broadcastStaff(broadcastMsg);
                         }
-                        sender.sendMessage(MessageUtil.toComponent("&aSuccessfully kicked " + targetName));
+                        sender.sendMessage(MessageUtil.toComponent(msg().getMessage("punishments.kick.success",
+                                "{player}", targetName)));
                     } else {
                         sender.sendMessage(MessageUtil.toComponent("&cFailed to kick " + targetName));
                     }
@@ -353,7 +352,7 @@ public class PunishmentCommands extends BaseCommand {
     public void onPunish(Player sender, String targetName) {
         OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
         if (!target.hasPlayedBefore() && !target.isOnline()) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_NOT_FOUND));
+            sender.sendMessage(MessageUtil.toComponent(msg().getMessage("errors.player-not-found")));
             return;
         }
 
@@ -368,7 +367,7 @@ public class PunishmentCommands extends BaseCommand {
     public void onHistory(Player sender, String targetName) {
         OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
         if (!target.hasPlayedBefore() && !target.isOnline()) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_NOT_FOUND));
+            sender.sendMessage(MessageUtil.toComponent(msg().getMessage("errors.player-not-found")));
             return;
         }
 
@@ -380,6 +379,7 @@ public class PunishmentCommands extends BaseCommand {
     @Description("Reload the plugin configuration")
     public void onReload(CommandSender sender) {
         plugin.reloadConfig();
+        plugin.getMessagesManager().reload();
         plugin.getCacheManager().clear();
         sender.sendMessage(MessageUtil.toComponent("&aWeGuardian configuration reloaded!"));
     }
@@ -430,14 +430,14 @@ public class PunishmentCommands extends BaseCommand {
             long durationMs, String reason) {
         OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
         if (!target.hasPlayedBefore() && !target.isOnline()) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_NOT_FOUND));
+            sender.sendMessage(MessageUtil.toComponent(msg().getMessage("errors.player-not-found")));
             return;
         }
 
         Player onlineTarget = target.getPlayer();
         String bypassPerm = plugin.getConfig().getString("bypass.permission", "weguardian.bypass");
         if (onlineTarget != null && onlineTarget.hasPermission(bypassPerm)) {
-            sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_BYPASS));
+            sender.sendMessage(MessageUtil.toComponent(msg().getMessage("errors.cannot-punish")));
             return;
         }
 
@@ -461,34 +461,38 @@ public class PunishmentCommands extends BaseCommand {
             return;
 
         future.thenAccept(punishment -> {
-            String durationStr = durationMs > 0 ? TimeUtil.formatDuration(durationMs) : "permanent";
+            String durationStr = durationMs > 0 ? TimeUtil.formatDuration(durationMs)
+                    : msg().getMessage("duration-permanent");
 
-            String configPath = (type == PunishmentType.BAN || type == PunishmentType.TEMPBAN)
-                    ? "messages.ban.broadcast"
-                    : "messages.mute.broadcast";
-            if (plugin.getConfig().getBoolean(configPath + ".enabled", true)) {
-                String broadcastMsg = plugin.getConfig().getString(configPath + ".message",
-                        "&c{staff} &7" + type.getDisplayName().toLowerCase()
-                                + "ned &c{player} &7for: &f{reason} &7({duration})")
-                        .replace("{staff}", staffName)
-                        .replace("{player}", targetName)
-                        .replace("{reason}", finalReason)
-                        .replace("{duration}", durationStr);
+            String configPath = switch (type) {
+                case BAN -> "punishments.ban";
+                case TEMPBAN -> "punishments.tempban";
+                case MUTE -> "punishments.mute";
+                case TEMPMUTE -> "punishments.tempmute";
+                default -> null;
+            };
+
+            if (configPath != null && msg().getConfig().getBoolean(configPath + ".broadcast.enabled", true)) {
+                String broadcastMsg = msg().getMessage(configPath + ".broadcast.message",
+                        "{staff}", staffName,
+                        "{player}", targetName,
+                        "{reason}", finalReason,
+                        "{duration}", durationStr);
                 broadcastStaff(broadcastMsg);
             }
 
-            String actionVerb = type.getDisplayName().toLowerCase() + "ned";
-            sender.sendMessage(MessageUtil
-                    .toComponent("&aSuccessfully " + actionVerb + " " + targetName + " (" + durationStr + ")"));
+            sender.sendMessage(MessageUtil.toComponent(msg().getMessage(configPath + ".success",
+                    "{player}", targetName,
+                    "{duration}", durationStr)));
         }).exceptionally(e -> {
-            sender.sendMessage(MessageUtil.toComponent("&cAn error occurred while applying the punishment."));
+            sender.sendMessage(MessageUtil.toComponent(msg().getMessage("input.reason.error")));
             plugin.getLogger().severe("Failed to apply punishment: " + e.getMessage());
             return null;
         });
     }
 
     private void broadcastStaff(String message) {
-        String prefix = plugin.getConfig().getString("messages.prefix", "&8[&c&lWeGuardian&8]&r ");
+        String prefix = msg().getPrefix();
         String formattedMessage = prefix + message;
         Collection<? extends Player> players = Bukkit.getOnlinePlayers();
 
@@ -507,13 +511,13 @@ public class PunishmentCommands extends BaseCommand {
         if (onlineTarget != null) {
             String bypassPerm = plugin.getConfig().getString("bypass.permission", "weguardian.bypass");
             if (onlineTarget.hasPermission(bypassPerm)) {
-                sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_BYPASS));
+                sender.sendMessage(MessageUtil.toComponent(msg().getMessage("errors.cannot-punish")));
                 return;
             }
 
             String ipAddress = getPlayerIp(onlineTarget);
             if (ipAddress == null) {
-                sender.sendMessage(MessageUtil.toComponent(MSG_COULD_NOT_RESOLVE_IP));
+                sender.sendMessage(MessageUtil.toComponent("&cCould not resolve player's IP address!"));
                 return;
             }
 
@@ -521,7 +525,7 @@ public class PunishmentCommands extends BaseCommand {
         } else {
             OfflinePlayer offlineTarget = Bukkit.getOfflinePlayer(targetName);
             if (!offlineTarget.hasPlayedBefore()) {
-                sender.sendMessage(MessageUtil.toComponent(MSG_PLAYER_NOT_FOUND));
+                sender.sendMessage(MessageUtil.toComponent(msg().getMessage("errors.player-not-found")));
                 return;
             }
 
@@ -559,28 +563,33 @@ public class PunishmentCommands extends BaseCommand {
             return;
 
         future.thenAccept(punishment -> {
-            String durationStr = durationMs > 0 ? TimeUtil.formatDuration(durationMs) : "permanent";
+            String durationStr = durationMs > 0 ? TimeUtil.formatDuration(durationMs)
+                    : msg().getMessage("duration-permanent");
 
-            String configPath = (type == PunishmentType.BANIP || type == PunishmentType.TEMPBANIP)
-                    ? "messages.banip.broadcast"
-                    : "messages.muteip.broadcast";
-            if (plugin.getConfig().getBoolean(configPath + ".enabled", true)) {
-                String broadcastMsg = plugin.getConfig().getString(configPath + ".message",
-                        "&c{staff} &7IP " + type.getDisplayName().toLowerCase()
-                                + "ned &c{player} &7(&f{ip}&7) for: &f{reason} &7({duration})")
-                        .replace("{staff}", staffName)
-                        .replace("{player}", targetName)
-                        .replace("{ip}", ipAddress)
-                        .replace("{reason}", finalReason)
-                        .replace("{duration}", durationStr);
+            String configPath = switch (type) {
+                case BANIP -> "punishments.banip";
+                case TEMPBANIP -> "punishments.tempbanip";
+                case MUTEIP -> "punishments.muteip";
+                case TEMPMUTEIP -> "punishments.tempmuteip";
+                default -> null;
+            };
+
+            if (configPath != null && msg().getConfig().getBoolean(configPath + ".broadcast.enabled", true)) {
+                String broadcastMsg = msg().getMessage(configPath + ".broadcast.message",
+                        "{staff}", staffName,
+                        "{player}", targetName,
+                        "{ip}", ipAddress,
+                        "{reason}", finalReason,
+                        "{duration}", durationStr);
                 broadcastStaff(broadcastMsg);
             }
 
-            String actionVerb = type.getDisplayName().toLowerCase() + "ned";
-            sender.sendMessage(MessageUtil.toComponent(
-                    "&aSuccessfully " + actionVerb + " " + targetName + " (" + ipAddress + ") (" + durationStr + ")"));
+            sender.sendMessage(MessageUtil.toComponent(msg().getMessage(configPath + ".success",
+                    "{player}", targetName,
+                    "{ip}", ipAddress,
+                    "{duration}", durationStr)));
         }).exceptionally(e -> {
-            sender.sendMessage(MessageUtil.toComponent("&cAn error occurred while applying the punishment."));
+            sender.sendMessage(MessageUtil.toComponent(msg().getMessage("input.reason.error")));
             plugin.getLogger().severe("Failed to apply IP punishment: " + e.getMessage());
             return null;
         });

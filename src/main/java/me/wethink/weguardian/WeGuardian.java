@@ -11,10 +11,10 @@ import me.wethink.weguardian.listeners.PlayerLoginListener;
 import me.wethink.weguardian.manager.PunishmentManager;
 import me.wethink.weguardian.scheduler.SchedulerManager;
 import me.wethink.weguardian.web.WebServer;
+import me.wethink.weguardian.util.MessagesManager;
 import me.wethink.weguardian.webhook.DiscordWebhookManager;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.java.JavaPlugin;
-
 
 public final class WeGuardian extends JavaPlugin {
 
@@ -29,6 +29,7 @@ public final class WeGuardian extends JavaPlugin {
     private PunishmentDAO punishmentDAO;
     private DiscordWebhookManager webhookManager;
     private WebServer webServer;
+    private MessagesManager messagesManager;
 
     private PaperCommandManager commandManager;
 
@@ -42,6 +43,9 @@ public final class WeGuardian extends JavaPlugin {
         printBanner();
 
         saveDefaultConfig();
+
+        this.messagesManager = new MessagesManager(this);
+        getLogger().info("Messages loaded");
 
         FastInvManager.register(this);
 
@@ -110,7 +114,6 @@ public final class WeGuardian extends JavaPlugin {
         getLogger().info("WeGuardian disabled. Goodbye!");
     }
 
-
     private void initMetrics() {
         try {
             this.metrics = new Metrics(this, BSTATS_PLUGIN_ID);
@@ -148,7 +151,6 @@ public final class WeGuardian extends JavaPlugin {
         }
     }
 
-
     private String colorize(String message) {
         java.util.regex.Pattern hexPattern = java.util.regex.Pattern.compile("&#([A-Fa-f0-9]{6})");
         java.util.regex.Matcher matcher = hexPattern.matcher(message);
@@ -169,7 +171,6 @@ public final class WeGuardian extends JavaPlugin {
     private void registerCommands() {
         this.commandManager = new PaperCommandManager(this);
 
-
         try {
             commandManager.enableUnstableAPI("help");
         } catch (Exception ignored) {
@@ -188,8 +189,6 @@ public final class WeGuardian extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerLoginListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerChatListener(this), this);
     }
-
-
 
     public static WeGuardian getInstance() {
         return instance;
@@ -225,5 +224,9 @@ public final class WeGuardian extends JavaPlugin {
 
     public WebServer getWebServer() {
         return webServer;
+    }
+
+    public MessagesManager getMessagesManager() {
+        return messagesManager;
     }
 }

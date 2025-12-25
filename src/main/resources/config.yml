@@ -1,4 +1,4 @@
-#  __          __     _____                      _ _
+#  __        __     _____                      _ _
 #  \ \        / /    / ____|                    | (_)
 #   \ \  /\  / /___ | |  __ _   _  __ _ _ __ __| |_  __ _ _ __
 #    \ \/  \/ // _ \| | |_ | | | |/ _` | '__/ _` | |/ _` | '_ \
@@ -14,42 +14,32 @@
 # Players with the weguardian.bypass permission will bypass all punishments
 # Permission: weguardian.bypass - Bypasses bans, mutes, and kicks
 bypass:
-  # Permission to bypass punishments (default: weguardian.bypass)
   permission: "weguardian.bypass"
 
 # Database Configuration
 database:
-  # Database type: sqlite (default, no setup required) or mysql (for larger servers)
   type: "sqlite"
   
-  # SQLite Settings (used when type is "sqlite")
   sqlite:
-    # Database file name (stored in plugin folder)
     file: "punishments.db"
   
-  # MySQL Settings (used when type is "mysql")
   mysql:
     host: "localhost"
     port: 3306
     database: "weguardian"
     username: "root"
     password: "password"
-    # Optional: Additional connection properties
     properties:
       useSSL: false
       autoReconnect: true
       characterEncoding: "utf8"
   
-  # Connection pool size (applies to both SQLite and MySQL)
   pool-size: 5
 
 # Cache Configuration
 cache:
-  # How long (in minutes) cached data is stored
   expiry-minutes: 10
-  # Maximum entries in cache
   max-size: 1000
-  # How often (in seconds) to check for expired punishments
   expiry-check-interval: 60
 
 # Duration Presets (shown in GUI)
@@ -64,119 +54,11 @@ durations:
     - "30d"
     - "90d"
 
-# Message Configuration
-# Supports color codes (&), hex colors (&#RRGGBB), and MiniMessage format
-messages:
-  # Prefix for all plugin messages
-  prefix: "&8[&c&lWeGuardian&8]&r "
-  
-  # Ban messages
-  ban:
-    screen: |
-      &c&l❌ YOU ARE BANNED ❌
-      
-      &7Player: &f{player}
-      &7Banned by: &f{staff}
-      &7Reason: &f{reason}
-      &7Expires: &f{expires}
-      
-      &7Appeal at: &ediscord.gg/yourserver
-    
-    broadcast:
-      enabled: true
-      message: "&c{staff} &7banned &c{player} &7for: &f{reason} &7({duration})"
-  
-  # Mute messages
-  mute:
-    blocked: |
-      &c&l⚠ You are muted!
-      &7Muted by: &f{staff}
-      &7Reason: &f{reason}
-      &7Expires: &f{expires}
-    
-    applied: "&c&l⚠ &cYou have been muted by {staff}! Reason: &f{reason}"
-    
-    broadcast:
-      enabled: true
-      message: "&e{staff} &7muted &e{player} &7for: &f{reason} &7({duration})"
-  
-  kick:
-    screen: |
-      &6&l⚡ YOU HAVE BEEN KICKED ⚡
-      
-      &7Kicked by: &f{staff}
-      &7Reason: &f{reason}
-      
-      &7You may rejoin the server.
-    
-    broadcast:
-      enabled: true
-      message: "&9{staff} &7kicked &9{player} &7for: &f{reason}"
-  
-  # Unban/Unmute messages
-  unban:
-    broadcast:
-      enabled: true
-      message: "&a{staff} &7unbanned &a{player}"
-  
-  unmute:
-    broadcast:
-      enabled: true
-      message: "&a{staff} &7unmuted &a{player}"
-    notify: "&aYou have been unmuted!"
-  
-  # IP punishment messages
-  banip:
-    broadcast:
-      enabled: true
-      message: "&c{staff} &7IP banned &c{player} &7(&f{ip}&7) for: &f{reason} &7({duration})"
-  
-  unbanip:
-    broadcast:
-      enabled: true
-      message: "&a{staff} &7removed IP ban for &a{player} &7({ip})"
-  
-  muteip:
-    broadcast:
-      enabled: true
-      message: "&e{staff} &7IP muted &e{player} &7(&f{ip}&7) for: &f{reason} &7({duration})"
-  
-  unmuteip:
-    broadcast:
-      enabled: true
-      message: "&a{staff} &7removed IP mute for &a{player} &7({ip})"
-  
-  # Error messages
-  errors:
-    player-not-found: "&cPlayer not found!"
-    player-not-online: "&cPlayer is not online!"
-    cannot-punish: "&cYou cannot punish this player!"
-    not-banned: "&c{player} is not banned!"
-    not-muted: "&c{player} is not muted!"
-    invalid-duration: "&cInvalid duration format! Use: 1h, 30m, 7d, etc."
-
-# GUI Configuration
-gui:
-  # Punishment menu title
-  punish-title: "&c&lPunish &8» &e{player}"
-  # Duration selection title
-  duration-title: "&c&lSelect Duration &8» &e{player}"
-  # History menu title
-  history-title: "&d&lHistory &8» &e{player}"
-
 # Discord Webhook Configuration
 # Logs all punishments to a Discord channel via webhook
 discord:
-  # Enable/disable Discord webhook logging
   enabled: false
-  
-  # Your Discord webhook URL
-  # Create one in Discord: Server Settings > Integrations > Webhooks > New Webhook
   webhook-url: "YOUR_WEBHOOK_URL_HERE"
-  
-  # Batching settings (to avoid rate limits)
-  # Punishments are batched and sent every X seconds
-  # Discord allows 10 embeds per message, batching optimizes this
   batch-interval-seconds: 5
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -184,23 +66,14 @@ discord:
 # Embedded web panel for viewing and managing punishments
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 web-dashboard:
-  # Enable/disable the web dashboard
   enabled: false
   
-  # Web server settings
   host: "0.0.0.0"
   port: 8080
   
-  # Branding settings (customize the dashboard appearance)
   branding:
-    # Server name displayed in the header
     server-name: "My Server"
-    # Header accent color (hex format)
     accent-color: "#ff5555"
-    # Footer text
     footer-text: "Powered by WeGuardian"
   
-  # Admin authentication
-  # Use this API key in the Authorization header to access admin endpoints
-  # IMPORTANT: Change this to a secure random string!
   admin-api-key: "CHANGE-ME-TO-A-SECURE-KEY"

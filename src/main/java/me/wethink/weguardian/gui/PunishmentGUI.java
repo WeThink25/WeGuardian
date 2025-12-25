@@ -5,11 +5,13 @@ import fr.mrmicky.fastinv.ItemBuilder;
 import me.wethink.weguardian.WeGuardian;
 import me.wethink.weguardian.model.PunishmentType;
 import me.wethink.weguardian.util.MessageUtil;
+import me.wethink.weguardian.util.MessagesManager;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public class PunishmentGUI extends FastInv {
@@ -24,75 +26,52 @@ public class PunishmentGUI extends FastInv {
         private static ItemStack CLOSE_ITEM;
 
         public static void initializeIcons() {
+                MessagesManager msg = WeGuardian.getInstance().getMessagesManager();
+
                 GLASS_PANE = new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE)
                                 .name(" ")
                                 .build();
 
+                List<String> banLore = msg.getMessageList("gui.punish.items.ban.lore");
                 BAN_ITEM = new ItemBuilder(Material.BARRIER)
-                                .name(MessageUtil.colorize("&c&lPermanent Ban"))
-                                .lore(
-                                                "",
-                                                MessageUtil.colorize("&7Permanently ban this player"),
-                                                MessageUtil.colorize("&7from the server."),
-                                                "",
-                                                MessageUtil.colorize("&cThis action cannot be undone!"),
-                                                "",
-                                                MessageUtil.colorize("&e▶ Click to apply"))
+                                .name(MessageUtil.colorize(msg.getMessage("gui.punish.items.ban.name")))
+                                .lore(banLore.stream().map(MessageUtil::colorize).toArray(String[]::new))
                                 .build();
 
+                List<String> tempbanLore = msg.getMessageList("gui.punish.items.tempban.lore");
                 TEMP_BAN_ITEM = new ItemBuilder(Material.CLOCK)
-                                .name(MessageUtil.colorize("&6&lTemporary Ban"))
-                                .lore(
-                                                "",
-                                                MessageUtil.colorize("&7Temporarily ban this player"),
-                                                MessageUtil.colorize("&7for a set duration."),
-                                                "",
-                                                MessageUtil.colorize("&e▶ Click to select duration"))
+                                .name(MessageUtil.colorize(msg.getMessage("gui.punish.items.tempban.name")))
+                                .lore(tempbanLore.stream().map(MessageUtil::colorize).toArray(String[]::new))
                                 .build();
 
+                List<String> kickLore = msg.getMessageList("gui.punish.items.kick.lore");
                 KICK_ITEM = new ItemBuilder(Material.LEATHER_BOOTS)
-                                .name(MessageUtil.colorize("&9&lKick"))
-                                .lore(
-                                                "",
-                                                MessageUtil.colorize("&7Kick this player from"),
-                                                MessageUtil.colorize("&7the server."),
-                                                "",
-                                                MessageUtil.colorize("&e▶ Click to apply"))
+                                .name(MessageUtil.colorize(msg.getMessage("gui.punish.items.kick.name")))
+                                .lore(kickLore.stream().map(MessageUtil::colorize).toArray(String[]::new))
                                 .build();
 
+                List<String> muteLore = msg.getMessageList("gui.punish.items.mute.lore");
                 MUTE_ITEM = new ItemBuilder(Material.PAPER)
-                                .name(MessageUtil.colorize("&e&lPermanent Mute"))
-                                .lore(
-                                                "",
-                                                MessageUtil.colorize("&7Permanently mute this player"),
-                                                MessageUtil.colorize("&7from chatting."),
-                                                "",
-                                                MessageUtil.colorize("&e▶ Click to apply"))
+                                .name(MessageUtil.colorize(msg.getMessage("gui.punish.items.mute.name")))
+                                .lore(muteLore.stream().map(MessageUtil::colorize).toArray(String[]::new))
                                 .build();
 
+                List<String> tempmuteLore = msg.getMessageList("gui.punish.items.tempmute.lore");
                 TEMP_MUTE_ITEM = new ItemBuilder(Material.WRITABLE_BOOK)
-                                .name(MessageUtil.colorize("&a&lTemporary Mute"))
-                                .lore(
-                                                "",
-                                                MessageUtil.colorize("&7Temporarily mute this player"),
-                                                MessageUtil.colorize("&7for a set duration."),
-                                                "",
-                                                MessageUtil.colorize("&e▶ Click to select duration"))
+                                .name(MessageUtil.colorize(msg.getMessage("gui.punish.items.tempmute.name")))
+                                .lore(tempmuteLore.stream().map(MessageUtil::colorize).toArray(String[]::new))
                                 .build();
 
+                List<String> historyLore = msg.getMessageList("gui.punish.items.history.lore");
                 HISTORY_ITEM = new ItemBuilder(Material.BOOK)
-                                .name(MessageUtil.colorize("&d&lView History"))
-                                .lore(
-                                                "",
-                                                MessageUtil.colorize("&7View this player's"),
-                                                MessageUtil.colorize("&7punishment history."),
-                                                "",
-                                                MessageUtil.colorize("&e▶ Click to view"))
+                                .name(MessageUtil.colorize(msg.getMessage("gui.punish.items.history.name")))
+                                .lore(historyLore.stream().map(MessageUtil::colorize).toArray(String[]::new))
                                 .build();
 
+                List<String> closeLore = msg.getMessageList("gui.punish.items.close.lore");
                 CLOSE_ITEM = new ItemBuilder(Material.RED_STAINED_GLASS_PANE)
-                                .name(MessageUtil.colorize("&c&lClose"))
-                                .lore("", MessageUtil.colorize("&e▶ Click to close"))
+                                .name(MessageUtil.colorize(msg.getMessage("gui.punish.items.close.name")))
+                                .lore(closeLore.stream().map(MessageUtil::colorize).toArray(String[]::new))
                                 .build();
         }
 
@@ -104,7 +83,8 @@ public class PunishmentGUI extends FastInv {
         private final OfflinePlayer target;
 
         public PunishmentGUI(WeGuardian plugin, Player staff, OfflinePlayer target) {
-                super(45, MessageUtil.colorize("&c&lPunish &8» &e" + target.getName()));
+                super(45, MessageUtil.colorize(plugin.getMessagesManager().getMessage("gui.punish.title", "{player}",
+                                target.getName())));
 
                 this.plugin = plugin;
                 this.staff = staff;
@@ -112,6 +92,8 @@ public class PunishmentGUI extends FastInv {
         }
 
         public void build() {
+                MessagesManager msg = plugin.getMessagesManager();
+
                 for (int i = 0; i < 9; i++) {
                         setItem(i, GLASS_PANE);
                         setItem(36 + i, GLASS_PANE);
@@ -141,7 +123,7 @@ public class PunishmentGUI extends FastInv {
 
                 setItem(31, HISTORY_ITEM, e -> {
                         staff.closeInventory();
-                        staff.sendMessage(MessageUtil.toComponent("&7Loading punishment history..."));
+                        staff.sendMessage(MessageUtil.toComponent(msg.getMessage("input.reason.loading-history")));
                         plugin.getPunishmentManager().getHistory(target.getUniqueId())
                                         .thenAccept(history -> {
 
@@ -153,17 +135,18 @@ public class PunishmentGUI extends FastInv {
 
                 setItem(40, CLOSE_ITEM, CLOSE_HANDLER);
 
+                String onlineStatus = target.isOnline()
+                                ? msg.getMessage("online-yes")
+                                : msg.getMessage("online-no");
+
+                List<String> headLore = msg.getMessageList("gui.punish.items.player-head.lore",
+                                "{uuid}", target.getUniqueId().toString().substring(0, 8) + "...",
+                                "{online}", MessageUtil.colorize(onlineStatus));
+
                 ItemStack headItem = new ItemBuilder(Material.PLAYER_HEAD)
-                                .name(MessageUtil.colorize("&e" + target.getName()))
-                                .lore(
-                                                "",
-                                                MessageUtil.colorize("&7UUID: &f"
-                                                                + target.getUniqueId().toString().substring(0, 8)
-                                                                + "..."),
-                                                MessageUtil.colorize(
-                                                                "&7Online: " + (target.isOnline() ? "&aYes" : "&cNo")),
-                                                "",
-                                                MessageUtil.colorize("&7Select a punishment below"))
+                                .name(MessageUtil.colorize(msg.getMessage("gui.punish.items.player-head.name",
+                                                "{player}", target.getName())))
+                                .lore(headLore.stream().map(MessageUtil::colorize).toArray(String[]::new))
                                 .build();
                 setItem(4, headItem);
         }
@@ -172,7 +155,8 @@ public class PunishmentGUI extends FastInv {
                 if (!staff.hasPermission(type.getPermission())) {
                         staff.closeInventory();
                         staff.sendMessage(
-                                        MessageUtil.toComponent("&cYou don't have permission to use this punishment!"));
+                                        MessageUtil.toComponent(plugin.getMessagesManager()
+                                                        .getMessage("input.reason.no-permission")));
                         return;
                 }
                 staff.closeInventory();
@@ -187,7 +171,8 @@ public class PunishmentGUI extends FastInv {
                 if (!staff.hasPermission(type.getPermission())) {
                         staff.closeInventory();
                         staff.sendMessage(
-                                        MessageUtil.toComponent("&cYou don't have permission to use this punishment!"));
+                                        MessageUtil.toComponent(plugin.getMessagesManager()
+                                                        .getMessage("input.reason.no-permission")));
                         return;
                 }
                 staff.closeInventory();

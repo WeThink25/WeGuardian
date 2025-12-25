@@ -5,11 +5,14 @@ import fr.mrmicky.fastinv.ItemBuilder;
 import me.wethink.weguardian.WeGuardian;
 import me.wethink.weguardian.model.PunishmentType;
 import me.wethink.weguardian.util.MessageUtil;
+import me.wethink.weguardian.util.MessagesManager;
 import me.wethink.weguardian.util.TimeUtil;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.List;
 
 public class DurationGUI extends FastInv {
 
@@ -35,6 +38,8 @@ public class DurationGUI extends FastInv {
     private static long DURATION_90D;
 
     public static void initializeIcons() {
+        MessagesManager msg = WeGuardian.getInstance().getMessagesManager();
+
         DURATION_1H = TimeUtil.parseDuration("1h");
         DURATION_6H = TimeUtil.parseDuration("6h");
         DURATION_1D = TimeUtil.parseDuration("1d");
@@ -47,48 +52,40 @@ public class DurationGUI extends FastInv {
                 .name(" ")
                 .build();
 
+        List<String> backLore = msg.getMessageList("gui.duration.items.back.lore");
         BACK_BUTTON = new ItemBuilder(Material.ARROW)
-                .name(MessageUtil.colorize("&7&l← Back"))
-                .lore("", MessageUtil.colorize("&e▶ Click to go back"))
+                .name(MessageUtil.colorize(msg.getMessage("gui.duration.items.back.name")))
+                .lore(backLore.stream().map(MessageUtil::colorize).toArray(String[]::new))
                 .build();
 
+        List<String> permLore = msg.getMessageList("gui.duration.items.permanent.lore");
         PERM_ITEM = new ItemBuilder(Material.BEDROCK)
-                .name(MessageUtil.colorize("&c&lPermanent"))
-                .lore(
-                        "",
-                        MessageUtil.colorize("&7Make this punishment"),
-                        MessageUtil.colorize("&7permanent (no expiry)."),
-                        "",
-                        MessageUtil.colorize("&e▶ Click to apply"))
+                .name(MessageUtil.colorize(msg.getMessage("gui.duration.items.permanent.name")))
+                .lore(permLore.stream().map(MessageUtil::colorize).toArray(String[]::new))
                 .build();
 
+        List<String> customLore = msg.getMessageList("gui.duration.items.custom.lore");
         CUSTOM_ITEM = new ItemBuilder(Material.NAME_TAG)
-                .name(MessageUtil.colorize("&b&lCustom Duration"))
-                .lore(
-                        "",
-                        MessageUtil.colorize("&7Enter a custom duration"),
-                        MessageUtil.colorize("&7in chat (e.g. 2h30m, 5d)"),
-                        "",
-                        MessageUtil.colorize("&e▶ Click to enter"))
+                .name(MessageUtil.colorize(msg.getMessage("gui.duration.items.custom.name")))
+                .lore(customLore.stream().map(MessageUtil::colorize).toArray(String[]::new))
                 .build();
 
-        HOUR_1 = createDurationItem(Material.LIME_DYE, "&a1 Hour", DURATION_1H);
-        HOURS_6 = createDurationItem(Material.YELLOW_DYE, "&e6 Hours", DURATION_6H);
-        DAY_1 = createDurationItem(Material.ORANGE_DYE, "&61 Day", DURATION_1D);
-        DAYS_3 = createDurationItem(Material.RED_DYE, "&c3 Days", DURATION_3D);
-        WEEK_1 = createDurationItem(Material.PURPLE_DYE, "&51 Week", DURATION_7D);
-        DAYS_30 = createDurationItem(Material.MAGENTA_DYE, "&d30 Days", DURATION_30D);
-        DAYS_90 = createDurationItem(Material.BLUE_DYE, "&990 Days", DURATION_90D);
+        HOUR_1 = createDurationItem(msg, "1h", Material.LIME_DYE, DURATION_1H);
+        HOURS_6 = createDurationItem(msg, "6h", Material.YELLOW_DYE, DURATION_6H);
+        DAY_1 = createDurationItem(msg, "1d", Material.ORANGE_DYE, DURATION_1D);
+        DAYS_3 = createDurationItem(msg, "3d", Material.RED_DYE, DURATION_3D);
+        WEEK_1 = createDurationItem(msg, "7d", Material.PURPLE_DYE, DURATION_7D);
+        DAYS_30 = createDurationItem(msg, "30d", Material.MAGENTA_DYE, DURATION_30D);
+        DAYS_90 = createDurationItem(msg, "90d", Material.BLUE_DYE, DURATION_90D);
     }
 
-    private static ItemStack createDurationItem(Material material, String name, long durationMs) {
+    private static ItemStack createDurationItem(MessagesManager msg, String key, Material material, long durationMs) {
+        String name = msg.getMessage("gui.duration.items." + key + ".name");
+        List<String> lore = msg.getMessageList("gui.duration.items." + key + ".lore",
+                "{duration}", TimeUtil.formatDuration(durationMs));
         return new ItemBuilder(material)
                 .name(MessageUtil.colorize(name))
-                .lore(
-                        "",
-                        MessageUtil.colorize("&7Duration: &f" + TimeUtil.formatDuration(durationMs)),
-                        "",
-                        MessageUtil.colorize("&e▶ Click to apply"))
+                .lore(lore.stream().map(MessageUtil::colorize).toArray(String[]::new))
                 .build();
     }
 
@@ -98,7 +95,8 @@ public class DurationGUI extends FastInv {
     private final PunishmentType type;
 
     public DurationGUI(WeGuardian plugin, Player staff, OfflinePlayer target, PunishmentType type) {
-        super(36, MessageUtil.colorize("&c&lSelect Duration &8» &e" + target.getName()));
+        super(36, MessageUtil
+                .colorize(plugin.getMessagesManager().getMessage("gui.duration.title", "{player}", target.getName())));
 
         this.plugin = plugin;
         this.staff = staff;
@@ -107,6 +105,8 @@ public class DurationGUI extends FastInv {
     }
 
     public void build() {
+        MessagesManager msg = plugin.getMessagesManager();
+
         for (int i = 0; i < 9; i++) {
             setItem(i, GLASS_PANE);
             setItem(27 + i, GLASS_PANE);
@@ -124,7 +124,8 @@ public class DurationGUI extends FastInv {
             staff.closeInventory();
             PunishmentType permType = type == PunishmentType.TEMPBAN ? PunishmentType.BAN : PunishmentType.MUTE;
             if (!staff.hasPermission(permType.getPermission())) {
-                staff.sendMessage(MessageUtil.toComponent("&cYou don't have permission to use permanent punishments!"));
+                staff.sendMessage(
+                        MessageUtil.toComponent(msg.getMessage("input.custom-duration.no-permission-permanent")));
                 return;
             }
             new ReasonInputHandler(plugin, staff, target, permType, -1).start();

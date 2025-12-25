@@ -5,6 +5,7 @@ import fr.mrmicky.fastinv.ItemBuilder;
 import me.wethink.weguardian.WeGuardian;
 import me.wethink.weguardian.model.Punishment;
 import me.wethink.weguardian.util.MessageUtil;
+import me.wethink.weguardian.util.MessagesManager;
 import me.wethink.weguardian.util.TimeUtil;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -14,34 +15,36 @@ import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class HistoryGUI extends FastInv {
-
 
     private static ItemStack GLASS_PANE;
     private static ItemStack PREV_PAGE;
     private static ItemStack NEXT_PAGE;
     private static ItemStack BACK_BUTTON;
 
-
     public static void initializeIcons() {
+        MessagesManager msg = WeGuardian.getInstance().getMessagesManager();
+
         GLASS_PANE = new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE)
                 .name(" ")
                 .build();
 
+        List<String> prevLore = msg.getMessageList("gui.history.items.prev-page.lore");
         PREV_PAGE = new ItemBuilder(Material.ARROW)
-                .name(MessageUtil.colorize("&a← Previous Page"))
-                .lore("", MessageUtil.colorize("&e▶ Click to go back"))
+                .name(MessageUtil.colorize(msg.getMessage("gui.history.items.prev-page.name")))
+                .lore(prevLore.stream().map(MessageUtil::colorize).toArray(String[]::new))
                 .build();
 
+        List<String> nextLore = msg.getMessageList("gui.history.items.next-page.lore");
         NEXT_PAGE = new ItemBuilder(Material.ARROW)
-                .name(MessageUtil.colorize("&aNext Page →"))
-                .lore("", MessageUtil.colorize("&e▶ Click to continue"))
+                .name(MessageUtil.colorize(msg.getMessage("gui.history.items.next-page.name")))
+                .lore(nextLore.stream().map(MessageUtil::colorize).toArray(String[]::new))
                 .build();
 
+        List<String> backLore = msg.getMessageList("gui.history.items.back.lore");
         BACK_BUTTON = new ItemBuilder(Material.BARRIER)
-                .name(MessageUtil.colorize("&c&lBack to Punish"))
-                .lore("", MessageUtil.colorize("&e▶ Click to go back"))
+                .name(MessageUtil.colorize(msg.getMessage("gui.history.items.back.name")))
+                .lore(backLore.stream().map(MessageUtil::colorize).toArray(String[]::new))
                 .build();
     }
 
@@ -53,7 +56,6 @@ public class HistoryGUI extends FastInv {
     };
 
     private static final int ITEMS_PER_PAGE = ITEM_SLOTS.length;
-
 
     private final WeGuardian plugin;
     private final Player staff;
@@ -69,7 +71,9 @@ public class HistoryGUI extends FastInv {
     }
 
     public HistoryGUI(WeGuardian plugin, Player staff, OfflinePlayer target, List<Punishment> history, int page) {
-        super(54, MessageUtil.colorize("&d&lHistory &8» &e" + target.getName() + " &7(Page " + (page + 1) + ")"));
+        super(54, MessageUtil.colorize(plugin.getMessagesManager().getMessage("gui.history.title",
+                "{player}", target.getName(),
+                "{page}", String.valueOf(page + 1))));
 
         this.plugin = plugin;
         this.staff = staff;
@@ -78,15 +82,19 @@ public class HistoryGUI extends FastInv {
         this.page = page;
     }
 
-
     public void build() {
+        MessagesManager msg = plugin.getMessagesManager();
+
         long activeCount = history.stream().filter(Punishment::isActive).count();
+
+        List<String> headLore = msg.getMessageList("gui.history.items.player-head.lore",
+                "{total}", String.valueOf(history.size()),
+                "{active}", String.valueOf(activeCount));
+
         headItem = new ItemBuilder(Material.PLAYER_HEAD)
-                .name(MessageUtil.colorize("&e" + target.getName()))
-                .lore(
-                        "",
-                        MessageUtil.colorize("&7Total punishments: &f" + history.size()),
-                        MessageUtil.colorize("&7Active: &f" + activeCount))
+                .name(MessageUtil
+                        .colorize(msg.getMessage("gui.history.items.player-head.name", "{player}", target.getName())))
+                .lore(headLore.stream().map(MessageUtil::colorize).toArray(String[]::new))
                 .build();
 
         int startIndex = page * ITEMS_PER_PAGE;
@@ -98,8 +106,6 @@ public class HistoryGUI extends FastInv {
 
         populateInventory();
     }
-
-
 
     private void populateInventory() {
         for (int i = 0; i < 9; i++) {
@@ -125,7 +131,6 @@ public class HistoryGUI extends FastInv {
         setItem(49, BACK_BUTTON, e -> PunishmentGUI.openAsync(plugin, staff, target));
     }
 
-
     private void openPageAsync(int newPage) {
         staff.closeInventory();
         plugin.getSchedulerManager().runAsync(() -> {
@@ -135,12 +140,16 @@ public class HistoryGUI extends FastInv {
         });
     }
 
-
     private ItemStack createPunishmentItem(Punishment punishment) {
+        MessagesManager msg = plugin.getMessagesManager();
         Material material = getMaterialForType(punishment.getType());
 
         String statusColor = punishment.isActive() ? "&a" : "&c";
         String status = punishment.isActive() ? (punishment.isExpired() ? "Expired" : "Active") : "Removed";
+
+        String durationText = punishment.getType().isTemporary()
+                ? TimeUtil.formatRemaining(punishment.getExpiresAt())
+                : msg.getMessage("duration-permanent");
 
         List<String> lore = new ArrayList<>(12);
         lore.add("");
@@ -151,13 +160,7 @@ public class HistoryGUI extends FastInv {
         lore.add(MessageUtil.colorize("&7By: &f" + punishment.getStaffName()));
         lore.add(MessageUtil.colorize("&7Date: &f" + TimeUtil.formatDate(punishment.getCreatedAt())));
         lore.add("");
-
-        if (punishment.getType().isTemporary()) {
-            lore.add(MessageUtil.colorize("&7Duration: &f" + TimeUtil.formatRemaining(punishment.getExpiresAt())));
-        } else {
-            lore.add(MessageUtil.colorize("&7Duration: &fPermanent"));
-        }
-
+        lore.add(MessageUtil.colorize("&7Duration: &f" + durationText));
         lore.add(MessageUtil.colorize("&7Status: " + statusColor + status));
 
         if (!punishment.isActive() && punishment.getRemovedByName() != null) {
@@ -172,7 +175,6 @@ public class HistoryGUI extends FastInv {
                 .lore(lore.toArray(new String[0]))
                 .build();
     }
-
 
     private static Material getMaterialForType(me.wethink.weguardian.model.PunishmentType type) {
         return switch (type) {
@@ -192,9 +194,9 @@ public class HistoryGUI extends FastInv {
         open(staff);
     }
 
-
     public static void openAsync(WeGuardian plugin, Player staff, OfflinePlayer target) {
-        staff.sendMessage(MessageUtil.toComponent("&7Loading punishment history..."));
+        staff.sendMessage(
+                MessageUtil.toComponent(plugin.getMessagesManager().getMessage("input.reason.loading-history")));
 
         plugin.getPunishmentManager().getHistory(target.getUniqueId())
                 .thenAccept(history -> {

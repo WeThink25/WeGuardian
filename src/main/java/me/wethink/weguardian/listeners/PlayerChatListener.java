@@ -65,18 +65,12 @@ public class PlayerChatListener implements Listener {
 
     private void handleMute(AsyncChatEvent event, Player player, Punishment punishment) {
         event.setCancelled(true);
-
-        String muteMessage = plugin.getConfig().getString("messages.mute.blocked",
-                "&c&l⚠ &cYou are muted and cannot chat!\n" +
-                        "&7Reason: &f{reason}\n" +
-                        "&7Expires: &f{expires}");
-
-        muteMessage = muteMessage
-                .replace("{reason}",
-                        punishment.getReason() != null ? punishment.getReason() : "No reason specified")
-                .replace("{expires}", TimeUtil.formatRemaining(punishment.getExpiresAt()))
-                .replace("{player}", punishment.getTargetName() != null ? punishment.getTargetName() : player.getName())
-                .replace("{staff}", punishment.getStaffName() != null ? punishment.getStaffName() : "Console");
+        event.viewers().clear();
+        String muteMessage = plugin.getMessagesManager().getMessage("punishments.mute.blocked",
+                "{reason}", punishment.getReason() != null ? punishment.getReason() : "No reason specified",
+                "{expires}", TimeUtil.formatRemaining(punishment.getExpiresAt()),
+                "{player}", punishment.getTargetName() != null ? punishment.getTargetName() : player.getName(),
+                "{staff}", punishment.getStaffName() != null ? punishment.getStaffName() : "Console");
 
         player.sendMessage(MessageUtil.toComponent(muteMessage));
     }

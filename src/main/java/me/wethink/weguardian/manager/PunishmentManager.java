@@ -6,6 +6,7 @@ import me.wethink.weguardian.database.PunishmentDAO;
 import me.wethink.weguardian.model.Punishment;
 import me.wethink.weguardian.model.PunishmentType;
 import me.wethink.weguardian.util.MessageUtil;
+import me.wethink.weguardian.util.MessagesManager;
 import me.wethink.weguardian.util.TimeUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -29,6 +30,10 @@ public class PunishmentManager {
         this.cacheManager = cacheManager;
 
         startExpiryTask();
+    }
+
+    private MessagesManager msg() {
+        return plugin.getMessagesManager();
     }
 
     private void startExpiryTask() {
@@ -386,12 +391,11 @@ public class PunishmentManager {
     private void notifyMute(UUID targetUUID, String playerName, String staffName, String reason, Instant expiresAt) {
         Player target = Bukkit.getPlayer(targetUUID);
         if (target != null && target.isOnline()) {
-            String muteMsg = plugin.getConfig().getString("messages.mute.applied",
-                    "&c&l⚠ &cYou have been muted!");
-            muteMsg = muteMsg.replace("{reason}", reason != null ? reason : "No reason specified");
-            muteMsg = muteMsg.replace("{expires}", TimeUtil.formatRemaining(expiresAt));
-            muteMsg = muteMsg.replace("{player}", playerName != null ? playerName : "Unknown");
-            muteMsg = muteMsg.replace("{staff}", staffName != null ? staffName : "Console");
+            String muteMsg = msg().getMessage("punishments.mute.applied",
+                    "{reason}", reason != null ? reason : "No reason specified",
+                    "{expires}", TimeUtil.formatRemaining(expiresAt),
+                    "{player}", playerName != null ? playerName : "Unknown",
+                    "{staff}", staffName != null ? staffName : "Console");
 
             target.sendMessage(MessageUtil.toComponent(muteMsg));
         }
@@ -401,14 +405,9 @@ public class PunishmentManager {
             Instant expiresAt) {
         String template;
         if (type == PunishmentType.KICK) {
-            template = plugin.getConfig().getString("messages.kick.screen",
-                    "&c&lYou have been kicked!\n\n&7Reason: &f{reason}");
+            template = msg().getMessage("punishments.kick.screen");
         } else {
-            template = plugin.getConfig().getString("messages.ban.screen",
-                    "&c&lYou are banned from this server!\n\n" +
-                            "&7Reason: &f{reason}\n" +
-                            "&7Expires: &f{expires}\n\n" +
-                            "&7Appeal at: &ediscord.gg/example");
+            template = msg().getMessage("punishments.ban.screen");
         }
 
         return template
